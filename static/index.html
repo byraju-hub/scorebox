@@ -64,6 +64,7 @@ dialog::backdrop{background:#0008}
     <input type="search" id="q" placeholder="제목 · 파일명 · 태그 검색">
     <select id="sort"><option value="title">제목순</option><option value="key">코드순</option><option value="tempo">빠르기순</option></select>
     <label style="color:var(--mut);white-space:nowrap">카드 크기 <input type="range" id="zoom" min="130" max="520" step="10" value="170" style="vertical-align:middle;padding:0"></label>
+    <button id="selall" title="지금 보이는 곡을 모두 선택/해제">☑ 전체 선택</button>
     <span id="cnt"></span>
   </div>
   <div id="bulk">
@@ -187,6 +188,8 @@ $('#e-save').onclick=()=>save(false);$('#e-next').onclick=()=>save(true);$('#e-c
 $('#q').oninput=render;$('#sort').onchange=render;
 $('#f-unrev').onclick=()=>{st.unrev=!st.unrev;render()};
 $('#bclear').onclick=()=>{st.sel.clear();render()};
+$('#selall').onclick=()=>{const ids=st.list.map(i=>i.id),all=ids.length&&ids.every(id=>st.sel.has(id));
+  ids.forEach(id=>all?st.sel.delete(id):st.sel.add(id));render()};
 $('#bapply').onclick=async()=>{
   const patch={reviewed:true};if($('#bk').value)patch.key=$('#bk').value;if($('#bt').value)patch.tempo=$('#bt').value;
   await post('/api/update',{ids:[...st.sel],patch,add_tags:$('#bat').value.split(/[,，]/)});
