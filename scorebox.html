@@ -119,6 +119,10 @@ dialog::backdrop{background:#0008}
       <button id="e-next">저장 후 다음 ▶</button>
       <button id="e-close">닫기</button>
     </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;padding-top:10px;border-top:1px solid var(--line)">
+      <button id="e-ex" title="파일은 그대로 두고 앱 목록에서만 숨깁니다 (되돌릴 수 있음)">목록에서 제외</button>
+      <button id="e-del" style="background:#c92a2a;color:#fff;border-color:#c92a2a" title="실제 파일을 삭제합니다 (복구 불가)">🗑 파일 삭제</button>
+    </div>
   </div>
 </div></dialog>
 
@@ -333,7 +337,7 @@ async function openDlg(it){
   st.cur=it;
   $('#view').innerHTML='';
   $('#e-title').value=it.title;$('#e-key').value=it.key;$('#e-tempo').value=it.tempo;
-  $('#e-tags').value=it.tags.join(', ');$('#e-note').value=it.note;$('#e-file').textContent=it.id;
+  $('#e-tags').value=it.tags.join(', ');$('#e-note').value=it.note;$('#e-file').textContent=it.id;$('#e-ex').textContent=st.showEx?'↩ 목록으로 복원':'목록에서 제외';
   if(!$('#dlg').open)$('#dlg').showModal();
   const u=await getUrl(it.id);if(st.cur!==it)return;
   $('#view').innerHTML=isPdf(it.id)?`<iframe src="${u}"></iframe>`:`<img src="${u}">`;
@@ -346,6 +350,22 @@ async function save(next){
   const nx=next&&st.list[Math.min(idx,st.list.length-1)];
   if(nx)openDlg(nx);else $('#dlg').close();
 }
+async function afterRemove(idx){
+  await load();const nx=st.list[Math.min(idx,st.list.length-1)];
+  if(nx)openDlg(nx);else $('#dlg').close();
+}
+$('#e-ex').onclick=async()=>{
+  const it=st.cur,idx=st.list.indexOf(it);
+  if(!confirm(st.showEx?'이 곡을 목록으로 복원합니다.':'이 곡을 앱 목록에서 제외합니다.\n파일은 그대로 남아 있고, 왼쪽 "제외한 곡"에서 복원할 수 있습니다.'))return;
+  await apiUpdate([it.id],{excluded:!st.showEx});await afterRemove(idx);
+};
+$('#e-del').onclick=async()=>{
+  const it=st.cur,idx=st.list.indexOf(it);
+  if(!confirm(`이 파일을 컴퓨터에서 삭제합니다.\n\n· ${it.id}\n\n⚠ 휴지통으로 가지 않으며 되돌릴 수 없습니다.\n(파일은 두고 목록에서만 숨기려면 "목록에서 제외"를 사용하세요)`))return;
+  try{await removeFile(it.id);delete fsx.db.scores[it.id];await saveDb()}
+  catch(e){alert('삭제하지 못했습니다: '+e.message);return}
+  await afterRemove(idx);
+};
 $('#e-save').onclick=()=>save(false);$('#e-next').onclick=()=>save(true);$('#e-close').onclick=()=>$('#dlg').close();
 $('#q').oninput=render;$('#sort').onchange=render;
 $('#f-unrev').onclick=()=>{st.unrev=!st.unrev;render()};
