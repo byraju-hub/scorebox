@@ -12,6 +12,9 @@ Python 3.8+ 만 있으면 되고 추가 설치는 필요 없습니다.
   현재 설정: `"C:/Users/byraj/Pictures/scorebox_data.json"`
 - 프로그램 폴더 자체를 OneDrive 안에 두어도 됩니다.
 
+## 업데이트
+`update.bat` 더블클릭 (git 으로 받은 경우). ZIP 으로 받은 폴더는 git 저장소가 아니라 동작하지 않습니다.
+
 ## 사용법
 1. 처음 실행하면 폴더를 스캔하고 **파일명에서 코드/빠르기를 자동 추정**합니다
    (예: `은혜_G_느린.pdf`, `Amazing Grace - D.jpg`). 하위 폴더 이름은 주제 태그가 됩니다.
