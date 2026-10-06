@@ -9,6 +9,7 @@ import re
 import sys
 import threading
 import urllib.parse
+import uuid
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -17,13 +18,15 @@ ROOT = Path(__file__).resolve().parent
 CONFIG_PATH = Path(os.environ.get("SCOREBOX_CONFIG", ROOT / "config.json"))
 EXTS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".pdf"}
 KEYS = ["C", "C#", "Db", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"]
-TEMPOS = {"fast": "빠른", "mid": "보통", "slow": "느린"}
+DEFAULT_TEMPOS = [
+    {"id": "fast", "label": "빠른", "keywords": ["빠른", "fast", "경쾌", "신나는"]},
+    {"id": "mid", "label": "보통", "keywords": []},
+    {"id": "slow", "label": "느린", "keywords": ["느린", "slow", "잔잔", "고요", "묵상"]},
+]
 LOCK = threading.Lock()
 
 # 파일명에서 코드/빠르기 추정
 KEY_RE = re.compile(r"(?:^|[\s_\-()\[\].,])([A-G](?:#|b)?m?)(?=$|[\s_\-()\[\].,])")
-FAST_WORDS = ("빠른", "fast", "경쾌", "신나는")
-SLOW_WORDS = ("느린", "slow", "잔잔", "고요", "묵상")
 
 
 def load_config():
@@ -45,9 +48,9 @@ DATA_FILE: Path = CFG["data_file"]
 
 
 def load_db():
-    if DATA_FILE.exists():
-        return json.loads(DATA_FILE.read_text(encoding="utf-8"))
-    return {"scores": {}}
+    db = json.loads(DATA_FILE.read_text(encoding="utf-8")) if DATA_FILE.exists() else {"scores": {}}
+    db.setdefault("tempos", [dict(t) for t in DEFAULT_TEMPOS])
+    return db
 
 
 def save_db(db):
@@ -57,20 +60,19 @@ def save_db(db):
     os.replace(tmp, DATA_FILE)  # 원자적 교체 (OneDrive 동기화 중 깨짐 방지)
 
 
-def guess(stem):
+def guess(stem, tempos):
     key = ""
     for m in KEY_RE.finditer(stem):
         key = m.group(1)
         break
     low = stem.lower()
     tempo = ""
-    if any(w in low for w in FAST_WORDS):
-        tempo = "fast"
-    elif any(w in low for w in SLOW_WORDS):
-        tempo = "slow"
     title = KEY_RE.sub(" ", stem)
-    for w in FAST_WORDS + SLOW_WORDS:
-        title = re.sub(re.escape(w), " ", title, flags=re.I)
+    for t in tempos:
+        for w in t.get("keywords", []):
+            if w and w.lower() in low:
+                tempo = tempo or t["id"]
+                title = re.sub(re.escape(w), " ", title, flags=re.I)
     title = re.sub(r"[_\-]+", " ", title)
     title = re.sub(r"\s+", " ", title).strip() or stem
     return title, key, tempo
@@ -87,7 +89,7 @@ def scan():
                 rel = p.relative_to(SCORES_DIR).as_posix()
                 found.add(rel)
                 if rel not in scores:
-                    title, key, tempo = guess(p.stem)
+                    title, key, tempo = guess(p.stem, db["tempos"])
                     folder = p.parent.relative_to(SCORES_DIR).as_posix()
                     tags = [] if folder == "." else [t for t in folder.split("/") if t]
                     scores[rel] = {"title": title, "key": key, "tempo": tempo, "tags": tags,
@@ -101,13 +103,13 @@ def scan():
     return {"total": len(found), "missing": sum(1 for s in scores.values() if s["missing"])}
 
 
-def clean_patch(patch):
+def clean_patch(patch, tempos):
     out = {}
     if "title" in patch:
         out["title"] = str(patch["title"]).strip()
     if "key" in patch:
         out["key"] = str(patch["key"]).strip()
-    if "tempo" in patch and patch["tempo"] in ("", *TEMPOS):
+    if "tempo" in patch and patch["tempo"] in ("", *(t["id"] for t in tempos)):
         out["tempo"] = patch["tempo"]
     if "tags" in patch:
         out["tags"] = sorted({str(t).strip() for t in patch["tags"] if str(t).strip()})
@@ -121,7 +123,7 @@ def clean_patch(patch):
 def update(ids, patch, add_tags=(), remove_tags=()):
     with LOCK:
         db = load_db()
-        patch = clean_patch(patch)
+        patch = clean_patch(patch, db["tempos"])
         for i in ids:
             s = db["scores"].get(i)
             if not s:
@@ -133,13 +135,36 @@ def update(ids, patch, add_tags=(), remove_tags=()):
         save_db(db)
 
 
+def set_tempos(items):
+    """분류 목록 저장. 새 항목은 id 부여, 삭제된 분류를 쓰던 곡은 분류 해제."""
+    tempos, seen = [], set()
+    for t in items:
+        label = str(t.get("label", "")).strip()
+        if not label:
+            continue
+        tid = str(t.get("id") or "") or "c" + uuid.uuid4().hex[:6]
+        if tid in seen:
+            continue
+        seen.add(tid)
+        kws = [k.strip() for k in t.get("keywords", []) if str(k).strip()]
+        tempos.append({"id": tid, "label": label, "keywords": kws})
+    with LOCK:
+        db = load_db()
+        db["tempos"] = tempos
+        for sc in db["scores"].values():
+            if sc["tempo"] not in seen:
+                sc["tempo"] = ""
+        save_db(db)
+
+
 def export_csv():
     db = load_db()
+    labels = {t["id"]: t["label"] for t in db["tempos"]}
     buf = io.StringIO()
     w = csv.writer(buf)
     w.writerow(["파일", "제목", "코드", "빠르기", "주제", "메모"])
     for rel, s in sorted(db["scores"].items()):
-        w.writerow([rel, s["title"], s["key"], TEMPOS.get(s["tempo"], ""), ",".join(s["tags"]), s["note"]])
+        w.writerow([rel, s["title"], s["key"], labels.get(s["tempo"], ""), ",".join(s["tags"]), s["note"]])
     return ("﻿" + buf.getvalue()).encode("utf-8")  # 엑셀 한글 호환(BOM)
 
 
@@ -169,7 +194,7 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/scores":
             db = load_db()
             items = [{"id": k, **v} for k, v in db["scores"].items()]
-            return self._send(200, {"items": items, "keys": KEYS, "tempos": TEMPOS,
+            return self._send(200, {"items": items, "keys": KEYS, "tempos": db["tempos"],
                                     "scores_dir": str(SCORES_DIR)})
         if path == "/api/export.csv":
             return self._send(200, export_csv(), "text/csv; charset=utf-8",
@@ -189,6 +214,9 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/scan":
                 with LOCK:
                     return self._send(200, scan())
+            if path == "/api/tempos":
+                set_tempos(data.get("tempos", []))
+                return self._send(200, {"ok": True})
             if path == "/api/update":
                 update(data.get("ids", []), data.get("patch", {}),
                        data.get("add_tags", []), data.get("remove_tags", []))

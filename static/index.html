@@ -48,10 +48,11 @@ dialog::backdrop{background:#0008}
   <h1>🎼 ScoreBox</h1>
   <div><span class="chip" id="f-unrev">⚠ 확인 필요 <small id="n-unrev"></small></span></div>
   <h3>코드 (Key)</h3><div id="f-key"></div>
-  <h3>빠르기</h3><div id="f-tempo"></div>
+  <h3>빠르기 / 분류</h3><div id="f-tempo"></div>
   <h3>주제 / 태그</h3><div id="f-tag"></div>
   <h3>도구</h3>
   <button id="rescan">📁 폴더 다시 스캔</button>
+  <button id="cfg" style="margin-top:6px">⚙ 빠르기 분류 설정</button>
   <a href="/api/export.csv"><button style="margin-top:6px">⬇ 엑셀(CSV) 내보내기</button></a>
   <p style="color:var(--mut);font-size:12px" id="dir"></p>
 </aside>
@@ -73,6 +74,11 @@ dialog::backdrop{background:#0008}
 </main>
 <datalist id="taglist"></datalist>
 
+<dialog id="cdlg" style="width:min(560px,96vw);height:auto;padding:16px"><h2 style="margin-top:0;font-size:16px">빠르기 / 분류 설정</h2>
+  <p style="color:var(--mut);font-size:12px">이름을 바꾸거나 추가·삭제할 수 있습니다. 키워드는 쉼표로 구분하며, 파일명에 포함되면 스캔 때 자동으로 이 분류가 지정됩니다. 삭제한 분류를 쓰던 곡은 "미지정"이 됩니다.</p>
+  <div id="crows" style="display:flex;flex-direction:column;gap:6px"></div>
+  <div style="margin-top:12px;display:flex;gap:6px"><button id="cadd">+ 분류 추가</button><span style="flex:1"></span>
+  <button id="csave" class="p">저장</button><button id="cclose">취소</button></div></dialog>
 <dialog id="dlg"><div class="dl">
   <div class="view" id="view"></div>
   <div class="form">
@@ -100,7 +106,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 
 async function load(){
   const d=await fetch('/api/scores').then(r=>r.json());
-  st.items=d.items.filter(i=>!i.missing);st.tempos=d.tempos;
+  st.items=d.items.filter(i=>!i.missing);st.tempoList=d.tempos;st.tempos=Object.fromEntries(d.tempos.map(t=>[t.id,t.label]));
   st.keys=d.keys.flatMap(k=>[k,k+'m']);
   $('#dir').textContent='악보 폴더: '+d.scores_dir;
   for(const id of ['#e-key','#bk']){const el=$(id);el.innerHTML='<option value="">(미지정)</option>'+st.keys.map(k=>`<option>${k}</option>`).join('')}
@@ -178,6 +184,20 @@ $('#bapply').onclick=async()=>{
   st.sel.clear();$('#bat').value='';load();
 };
 $('#rescan').onclick=async()=>{const r=await post('/api/scan');await load();alert(`스캔 완료: 파일 ${r.total}개 (사라진 파일 ${r.missing}개)`)};
+function crow(t){
+  const r=document.createElement('div');r.style.cssText='display:flex;gap:6px';r.dataset.id=t.id||'';
+  r.innerHTML=`<input class="cl" placeholder="이름 (예: 빠른)" size="10" value="${esc(t.label||'')}"><input class="ck2" placeholder="자동 인식 키워드 (쉼표)" style="flex:1" value="${esc((t.keywords||[]).join(', '))}"><button title="삭제">🗑</button>`;
+  r.querySelector('button').onclick=()=>r.remove();return r;
+}
+$('#cfg').onclick=()=>{$('#crows').replaceChildren(...st.tempoList.map(crow));$('#cdlg').showModal()};
+$('#cadd').onclick=()=>$('#crows').append(crow({}));
+$('#cclose').onclick=()=>$('#cdlg').close();
+$('#csave').onclick=async()=>{
+  const tempos=[...$('#crows').children].map(r=>({id:r.dataset.id,label:r.querySelector('.cl').value,keywords:r.querySelector('.ck2').value.split(/[,，]/)}));
+  const gone=st.tempoList.filter(t=>!tempos.some(n=>n.id===t.id)&&st.items.some(i=>i.tempo===t.id));
+  if(gone.length&&!confirm(`삭제되는 분류(${gone.map(t=>t.label).join(', ')})를 쓰는 곡은 "미지정"이 됩니다. 계속할까요?`))return;
+  await post('/api/tempos',{tempos});st.tempo.clear();$('#cdlg').close();load();
+};
 load();
 </script>
 </body>
