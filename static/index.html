@@ -8,6 +8,7 @@
 :root{--bg:#f6f5f2;--fg:#222;--mut:#777;--card:#fff;--line:#ddd;--acc:#2f5fd0;--warn:#e08a00}
 @media(prefers-color-scheme:dark){:root{--bg:#1c1c1e;--fg:#eee;--mut:#999;--card:#2a2a2d;--line:#3c3c40;--acc:#7aa2ff;--warn:#ffb340}}
 *{box-sizing:border-box}
+a{color:inherit;text-decoration:none}
 body{margin:0;font:14px/1.4 "Malgun Gothic",system-ui,sans-serif;background:var(--bg);color:var(--fg);display:flex;height:100vh}
 aside{width:250px;padding:14px;overflow:auto;border-right:1px solid var(--line);flex-shrink:0}
 main{flex:1;display:flex;flex-direction:column;min-width:0}
@@ -20,7 +21,7 @@ input,select,textarea,button{font:inherit;color:inherit;background:var(--card);b
 button{cursor:pointer}button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
 #bar{display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);align-items:center;flex-wrap:wrap}
 #bar input[type=search]{flex:1;min-width:160px}
-#grid{flex:1;overflow:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;align-content:start}
+#grid{flex:1;overflow:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;align-content:start;grid-auto-rows:max-content}
 .card{background:var(--card);border:2px solid var(--line);border-radius:8px;overflow:hidden;cursor:pointer;position:relative}
 .card.sel{border-color:var(--acc)}
 .thumb{height:190px;background:#8883;display:flex;align-items:center;justify-content:center;font-size:40px}
@@ -147,7 +148,7 @@ function render(){
   const unrev=st.items.filter(i=>!i.reviewed).length;
   $('#n-unrev').textContent=unrev;$('#f-unrev').classList.toggle('on',st.unrev);
 
-  const s=$('#sort').value,ko=(a,b)=>String(a).localeCompare(String(b),'ko');
+  const s=$('#sort').value,ko=(a,b)=>String(a).localeCompare(String(b),'ko',{numeric:true});
   st.list=st.items.filter(i=>matches(i)).sort((a,b)=>{
     if(s==='key')return (st.keys.indexOf(a.key)+99)%99-(st.keys.indexOf(b.key)+99)%99||ko(a.title,b.title);
     if(s==='tempo')return ko(a.tempo,b.tempo)||ko(a.title,b.title);
