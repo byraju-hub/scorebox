@@ -7,6 +7,7 @@ import mimetypes
 import os
 import re
 import sys
+import time
 import threading
 import urllib.parse
 import uuid
@@ -58,9 +59,16 @@ def load_db():
 
 def save_db(db):
     DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
+    text = json.dumps(db, ensure_ascii=False, indent=1)
     tmp = DATA_FILE.with_suffix(".tmp")
-    tmp.write_text(json.dumps(db, ensure_ascii=False, indent=1), encoding="utf-8")
-    os.replace(tmp, DATA_FILE)  # 원자적 교체 (OneDrive 동기화 중 깨짐 방지)
+    tmp.write_text(text, encoding="utf-8")
+    for i in range(8):  # OneDrive 가 파일을 동기화 중이면 잠시 잠겨 있을 수 있어 재시도
+        try:
+            os.replace(tmp, DATA_FILE)  # 원자적 교체 (동기화 중 깨짐 방지)
+            return
+        except PermissionError:
+            time.sleep(0.25 * (i + 1))
+    DATA_FILE.write_text(text, encoding="utf-8")
 
 
 def guess(stem, tempos, keys):
