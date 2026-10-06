@@ -1,5 +1,5 @@
 {
-  "scores_dir": "C:/Users/byraj/Pictures",
+  "scores_dir": "C:/Users/byraj/OneDrive/문서/Scorebox",
   "data_file": "./scorebox_data.json",
   "host": "127.0.0.1",
   "port": 8765
