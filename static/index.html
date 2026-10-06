@@ -53,6 +53,8 @@ dialog::backdrop{background:#0008}
   <h3>도구</h3>
   <button id="rescan">📁 폴더 다시 스캔</button>
   <button id="cfg" style="margin-top:6px">⚙ 빠르기 분류 설정</button>
+  <button id="kcfg" style="margin-top:6px">⚙ 코드(Key) 목록 설정</button>
+  <button id="reg" style="margin-top:6px" title="확인 안 한 곡의 빈 코드/빠르기를 파일명으로 다시 채웁니다">🔁 파일명으로 재추정</button>
   <a href="/api/export.csv"><button style="margin-top:6px">⬇ 엑셀(CSV) 내보내기</button></a>
   <p style="color:var(--mut);font-size:12px" id="dir"></p>
 </aside>
@@ -79,6 +81,11 @@ dialog::backdrop{background:#0008}
   <div id="crows" style="display:flex;flex-direction:column;gap:6px"></div>
   <div style="margin-top:12px;display:flex;gap:6px"><button id="cadd">+ 분류 추가</button><span style="flex:1"></span>
   <button id="csave" class="p">저장</button><button id="cclose">취소</button></div></dialog>
+<dialog id="kdlg" style="width:min(560px,96vw);height:80vh;padding:16px;overflow:auto"><h2 style="margin-top:0;font-size:16px">코드(Key) 목록 설정</h2>
+  <p style="color:var(--mut);font-size:12px">파일명에 코드 이름이 있으면(특히 맨 앞) 자동으로 해당 코드에 들어갑니다. "별칭"에는 다른 표기를 쉼표로 적으세요 (예: Bb → B♭, 내림나장조). ▲▼로 목록 순서를 바꿀 수 있고, 삭제한 코드를 쓰던 곡은 "미지정"이 됩니다.</p>
+  <div id="krows" style="display:flex;flex-direction:column;gap:6px"></div>
+  <div style="margin-top:12px;display:flex;gap:6px"><button id="kadd">+ 코드 추가</button><span style="flex:1"></span>
+  <button id="ksave" class="p">저장</button><button id="kclose">취소</button></div></dialog>
 <dialog id="dlg"><div class="dl">
   <div class="view" id="view"></div>
   <div class="form">
@@ -107,7 +114,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 async function load(){
   const d=await fetch('/api/scores').then(r=>r.json());
   st.items=d.items.filter(i=>!i.missing);st.tempoList=d.tempos;st.tempos=Object.fromEntries(d.tempos.map(t=>[t.id,t.label]));
-  st.keys=d.keys.flatMap(k=>[k,k+'m']);
+  st.keyList=d.keys;st.keys=d.keys.map(k=>k.name);
   $('#dir').textContent='악보 폴더: '+d.scores_dir;
   for(const id of ['#e-key','#bk']){const el=$(id);el.innerHTML='<option value="">(미지정)</option>'+st.keys.map(k=>`<option>${k}</option>`).join('')}
   for(const id of ['#e-tempo','#bt']){const el=$(id);el.innerHTML='<option value="">(미지정)</option>'+Object.entries(st.tempos).map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}
@@ -198,6 +205,24 @@ $('#csave').onclick=async()=>{
   if(gone.length&&!confirm(`삭제되는 분류(${gone.map(t=>t.label).join(', ')})를 쓰는 곡은 "미지정"이 됩니다. 계속할까요?`))return;
   await post('/api/tempos',{tempos});st.tempo.clear();$('#cdlg').close();load();
 };
+function krow(k){
+  const r=document.createElement('div');r.style.cssText='display:flex;gap:6px';r.dataset.old=k.name||'';
+  r.innerHTML=`<input class="kn" placeholder="코드 (예: G)" size="7" value="${esc(k.name||'')}"><input class="ka" placeholder="별칭 (쉼표)" style="flex:1" value="${esc((k.aliases||[]).join(', '))}"><button class="up">▲</button><button class="dn">▼</button><button class="rm" title="삭제">🗑</button>`;
+  r.querySelector('.up').onclick=()=>r.previousElementSibling&&r.previousElementSibling.before(r);
+  r.querySelector('.dn').onclick=()=>r.nextElementSibling&&r.nextElementSibling.after(r);
+  r.querySelector('.rm').onclick=()=>r.remove();return r;
+}
+$('#kcfg').onclick=()=>{$('#krows').replaceChildren(...st.keyList.map(krow));$('#kdlg').showModal()};
+$('#kadd').onclick=()=>{const r=krow({});$('#krows').append(r);r.querySelector('.kn').focus()};
+$('#kclose').onclick=()=>$('#kdlg').close();
+$('#ksave').onclick=async()=>{
+  const keys=[...$('#krows').children].map(r=>({old:r.dataset.old,name:r.querySelector('.kn').value,aliases:r.querySelector('.ka').value.split(/[,，]/)}));
+  const names=new Set(keys.map(k=>k.name.trim()));
+  const gone=st.keyList.filter(k=>!keys.some(n=>n.old===k.name)&&st.items.some(i=>i.key===k.name));
+  if(gone.length&&!confirm(`삭제되는 코드(${gone.map(k=>k.name).join(', ')})를 쓰는 곡은 "미지정"이 됩니다. 계속할까요?`))return;
+  await post('/api/keys',{keys});st.key.clear();$('#kdlg').close();load();
+};
+$('#reg').onclick=async()=>{const r=await post('/api/reguess');await load();alert(`${r.updated}곡에 파일명 기준 코드/빠르기를 채웠습니다.`)};
 load();
 </script>
 </body>

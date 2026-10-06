@@ -17,7 +17,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 CONFIG_PATH = Path(os.environ.get("SCOREBOX_CONFIG", ROOT / "config.json"))
 EXTS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".pdf"}
-KEYS = ["C", "C#", "Db", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"]
+_BASE = ["C", "C#", "Db", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"]
+DEFAULT_KEYS = [{"name": n + m, "aliases": []} for n in _BASE for m in ("", "m")]
 DEFAULT_TEMPOS = [
     {"id": "fast", "label": "빠른", "keywords": ["빠른", "fast", "경쾌", "신나는"]},
     {"id": "mid", "label": "보통", "keywords": []},
@@ -26,7 +27,8 @@ DEFAULT_TEMPOS = [
 LOCK = threading.Lock()
 
 # 파일명에서 코드/빠르기 추정
-KEY_RE = re.compile(r"(?:^|[\s_\-()\[\].,])([A-G](?:#|b)?m?)(?=$|[\s_\-()\[\].,])")
+SEP = r"[\s_\-()\[\].,]"
+KEY_END = r"(?=$|" + SEP + r"|[^\x00-\x7f])"  # 뒤에 영문/숫자가 오면 코드가 아님 (예: Gloria)
 
 
 def load_config():
@@ -50,6 +52,7 @@ DATA_FILE: Path = CFG["data_file"]
 def load_db():
     db = json.loads(DATA_FILE.read_text(encoding="utf-8")) if DATA_FILE.exists() else {"scores": {}}
     db.setdefault("tempos", [dict(t) for t in DEFAULT_TEMPOS])
+    db.setdefault("keys", [dict(k) for k in DEFAULT_KEYS])
     return db
 
 
@@ -60,14 +63,23 @@ def save_db(db):
     os.replace(tmp, DATA_FILE)  # 원자적 교체 (OneDrive 동기화 중 깨짐 방지)
 
 
-def guess(stem, tempos):
-    key = ""
-    for m in KEY_RE.finditer(stem):
-        key = m.group(1)
-        break
+def guess(stem, tempos, keys):
+    """파일명에서 (제목, 코드, 빠르기) 추정. 파일명 맨 앞의 코드를 우선한다."""
+    alias = {}
+    for k in keys:
+        for n in [k["name"], *k.get("aliases", [])]:
+            if n:
+                alias[n] = k["name"]
+    key, title = "", stem
+    if alias:
+        alts = "|".join(re.escape(n) for n in sorted(alias, key=len, reverse=True))
+        m = (re.match(rf"{SEP}*({alts}){KEY_END}", stem)
+             or re.search(rf"(?:^|{SEP})({alts}){KEY_END}", stem))
+        if m:
+            key = alias[m.group(1)]
+            title = stem[:m.start(1)] + " " + stem[m.end(1):]
     low = stem.lower()
     tempo = ""
-    title = KEY_RE.sub(" ", stem)
     for t in tempos:
         for w in t.get("keywords", []):
             if w and w.lower() in low:
@@ -89,7 +101,7 @@ def scan():
                 rel = p.relative_to(SCORES_DIR).as_posix()
                 found.add(rel)
                 if rel not in scores:
-                    title, key, tempo = guess(p.stem, db["tempos"])
+                    title, key, tempo = guess(p.stem, db["tempos"], db["keys"])
                     folder = p.parent.relative_to(SCORES_DIR).as_posix()
                     tags = [] if folder == "." else [t for t in folder.split("/") if t]
                     scores[rel] = {"title": title, "key": key, "tempo": tempo, "tags": tags,
@@ -103,11 +115,11 @@ def scan():
     return {"total": len(found), "missing": sum(1 for s in scores.values() if s["missing"])}
 
 
-def clean_patch(patch, tempos):
+def clean_patch(patch, tempos, keys):
     out = {}
     if "title" in patch:
         out["title"] = str(patch["title"]).strip()
-    if "key" in patch:
+    if "key" in patch and str(patch["key"]).strip() in ("", *(k["name"] for k in keys)):
         out["key"] = str(patch["key"]).strip()
     if "tempo" in patch and patch["tempo"] in ("", *(t["id"] for t in tempos)):
         out["tempo"] = patch["tempo"]
@@ -123,7 +135,7 @@ def clean_patch(patch, tempos):
 def update(ids, patch, add_tags=(), remove_tags=()):
     with LOCK:
         db = load_db()
-        patch = clean_patch(patch, db["tempos"])
+        patch = clean_patch(patch, db["tempos"], db["keys"])
         for i in ids:
             s = db["scores"].get(i)
             if not s:
@@ -155,6 +167,42 @@ def set_tempos(items):
             if sc["tempo"] not in seen:
                 sc["tempo"] = ""
         save_db(db)
+
+
+def set_keys(items):
+    """코드 목록 저장. old→name 으로 이름 변경 반영, 삭제된 코드를 쓰던 곡은 코드 해제."""
+    keys, rename = [], {}
+    for k in items:
+        name = str(k.get("name", "")).strip()
+        if not name or name in rename.values():
+            continue
+        old = str(k.get("old") or name)
+        rename.setdefault(old, name)
+        aliases = [a.strip() for a in k.get("aliases", []) if str(a).strip() and str(a).strip() != name]
+        keys.append({"name": name, "aliases": aliases})
+    with LOCK:
+        db = load_db()
+        db["keys"] = keys
+        for sc in db["scores"].values():
+            sc["key"] = rename.get(sc["key"], "")
+        save_db(db)
+
+
+def reguess():
+    """아직 확인 안 한 곡의 코드/빠르기를 파일명으로 다시 추정 (비어 있는 값만 채움)."""
+    with LOCK:
+        db = load_db()
+        n = 0
+        for rel, sc in db["scores"].items():
+            if sc.get("reviewed"):
+                continue
+            _, key, tempo = guess(Path(rel).stem, db["tempos"], db["keys"])
+            if (key and not sc["key"]) or (tempo and not sc["tempo"]):
+                sc["key"] = sc["key"] or key
+                sc["tempo"] = sc["tempo"] or tempo
+                n += 1
+        save_db(db)
+    return {"updated": n}
 
 
 def export_csv():
@@ -194,7 +242,7 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/scores":
             db = load_db()
             items = [{"id": k, **v} for k, v in db["scores"].items()]
-            return self._send(200, {"items": items, "keys": KEYS, "tempos": db["tempos"],
+            return self._send(200, {"items": items, "keys": db["keys"], "tempos": db["tempos"],
                                     "scores_dir": str(SCORES_DIR)})
         if path == "/api/export.csv":
             return self._send(200, export_csv(), "text/csv; charset=utf-8",
@@ -214,6 +262,11 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/scan":
                 with LOCK:
                     return self._send(200, scan())
+            if path == "/api/keys":
+                set_keys(data.get("keys", []))
+                return self._send(200, {"ok": True})
+            if path == "/api/reguess":
+                return self._send(200, reguess())
             if path == "/api/tempos":
                 set_tempos(data.get("tempos", []))
                 return self._send(200, {"ok": True})
