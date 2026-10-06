@@ -65,6 +65,8 @@ dialog::backdrop{background:#0008}
   <button id="cfg" style="margin-top:6px">⚙ 빠르기 분류 설정</button>
   <button id="kcfg" style="margin-top:6px">⚙ 코드(Key) 목록 설정</button>
   <button id="reg" style="margin-top:6px" title="확인 안 한 곡의 빈 코드/빠르기를 파일명으로 다시 채웁니다">🔁 파일명으로 재추정</button>
+  <button id="sug" style="margin-top:6px" title="tempo_suggestions.json 파일을 불러와 빈 곡에 빠르기를 채웁니다">🎯 빠르기 제안 가져오기</button>
+  <input type="file" id="sugfile" accept=".json" style="display:none">
   <button id="csv" style="margin-top:6px">⬇ 엑셀(CSV) 내보내기</button>
   <button id="chdir" style="margin-top:6px">📂 폴더 바꾸기</button>
   <p style="color:var(--mut);font-size:12px" id="dir"></p>
@@ -345,6 +347,19 @@ $('#bapply').onclick=async()=>{
 };
 $('#rescan').onclick=async()=>{const r=await scanFs();await load();alert(`스캔 완료: 파일 ${r.total}개 (사라진 파일 ${r.missing}개)`)};
 $('#csv').onclick=exportCsv;
+$('#sug').onclick=()=>$('#sugfile').click();
+$('#sugfile').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  let sg;try{sg=JSON.parse(await f.text()).suggestions||{}}catch(err){alert('제안 파일을 읽을 수 없습니다.');return}
+  const ids=new Set(fsx.db.tempos.map(t=>t.id)),targets=[];
+  for(const [rel,v] of Object.entries(sg)){const s=fsx.db.scores[rel];
+    if(s&&!s.missing&&!s.tempo&&!s.reviewed&&ids.has(v.tempo))targets.push([s,v])}
+  if(!targets.length){alert('적용할 곡이 없습니다. (이미 분류했거나 확인한 곡은 건드리지 않습니다)');return}
+  const hi=targets.filter(([,v])=>v.confidence==='높음').length;
+  if(!confirm(`${targets.length}곡에 빠르기를 채웁니다 (확신 높음 ${hi}곡, 보통 ${targets.length-hi}곡).\n곡 이름으로 추정한 값이라 틀릴 수 있으며, 모두 "확인 필요"로 남습니다. 계속할까요?`))return;
+  for(const [s,v] of targets){s.tempo=v.tempo;if(!s.note)s.note=`빠르기 제안(확신 ${v.confidence}) - 곡 이름 기반 추정`}
+  await saveDb();await load();alert(`${targets.length}곡에 빠르기를 채웠습니다.`);
+};
 function crow(t){
   const r=document.createElement('div');r.style.cssText='display:flex;gap:6px';r.dataset.id=t.id||'';
   r.innerHTML=`<input class="cl" placeholder="이름 (예: 빠른)" size="10" value="${esc(t.label||'')}"><input class="ck2" placeholder="자동 인식 키워드 (쉼표)" style="flex:1" value="${esc((t.keywords||[]).join(', '))}"><button title="삭제">🗑</button>`;

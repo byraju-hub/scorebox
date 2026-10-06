@@ -1,0 +1,1700 @@
+{
+ "basis": "곡 이름으로 추정 (웹검색 미사용, 판단 근거는 곡에 대한 일반 지식). 틀릴 수 있으므로 확인 후 사용하세요.",
+ "suggestions": {
+  "A-갈릴리마을그숲속에서.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "갈릴리마을"
+  },
+  "A-갈보리산위에150.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "갈보리산위에"
+  },
+  "A-갈보리산위에_편곡.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "갈보리산위에"
+  },
+  "A-괴로울때주님의얼굴보라.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "괴로울때주님의얼굴보라"
+  },
+  "A-교회여일어나라.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "교회여일어나라"
+  },
+  "A-그럼에도불구하고.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "그럼에도불구하고"
+  },
+  "A-그맑고환한밤중에.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "그맑고환한밤중에"
+  },
+  "A-그맑고환한밤중에2.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "그맑고환한밤중에"
+  },
+  "A-나의가장낮은마음.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "나의가장낮은마음"
+  },
+  "A-나의가장낮은마음2.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "나의가장낮은마음"
+  },
+  "A-나의안에거하라.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "나의안에거하라"
+  },
+  "A-나의영혼이.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "나의영혼이"
+  },
+  "A-나의영혼이잠잠히.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "나의영혼이"
+  },
+  "A-낮아지신예수.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "낮아지신예수"
+  },
+  "A-낮은자의하나님-브리지.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "낮은자의하나님"
+  },
+  "A-내안에부어주소서.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내안에부어주소서"
+  },
+  "A-너근심걱정말아라382.jpg": {
+   "tempo": "fast",
+   "confidence": "높음",
+   "matched": "너근심걱정말아라"
+  },
+  "A-마귀들과싸울지라-브리지임팩트.png": {
+   "tempo": "fast",
+   "confidence": "높음",
+   "matched": "마귀들과싸울지라"
+  },
+  "A-마귀들과싸울지라.gif": {
+   "tempo": "fast",
+   "confidence": "높음",
+   "matched": "마귀들과싸울지라"
+  },
+  "A-많은사람들(난예수가좋다오).jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "많은사람들"
+  },
+  "A-모든능력과모든권세-우리때문에.jpg": {
+   "tempo": "mid",
+   "confidence": "보통",
+   "matched": "모든능력과모든권세"
+  },
+  "A-모든능력과모든권세.jpg": {
+   "tempo": "mid",
+   "confidence": "보통",
+   "matched": "모든능력과모든권세"
+  },
+  "A-무화과나무잎이마르고.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "무화과나무잎"
+  },
+  "A-무화과나뭇잎이마르고.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "무화과나뭇잎"
+  },
+  "A-복음들고산을.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "복음들고산을"
+  },
+  "A-새벽이슬같은주의청년들이.jpg": {
+   "tempo": "fast",
+   "confidence": "높음",
+   "matched": "새벽이슬같은주의청년들이"
+  },
+  "A-십자가군병들아352.jpg": {
+   "tempo": "fast",
+   "confidence": "높음",
+   "matched": "십자가군병"
+  },
+  "A-예수우리왕이여.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "예수우리왕이여"
+  },
+  "A-예수우리왕이여4.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "예수우리왕이여"
+  },
+  "A-오신실하신주.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "오신실하신주"
+  },
+  "A-우리때문에.gif": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "우리때문에"
+  },
+  "A-우리죄위해죽으신주.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "우리죄위해죽으신주"
+  },
+  "A-우리주안에서노래하며-높이계신주님께.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "우리주안에서노래하며"
+  },
+  "A-우물가의여인처럼.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "우물가의여인처럼"
+  },
+  "A-우물가의여인처럼.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "우물가의여인처럼"
+  },
+  "A-은혜손경민.png": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "은혜손경민"
+  },
+  "A-저높은곳을향하여491.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "저높은곳을향하여"
+  },
+  "A-전능하신나의주하나님은.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "전능하신나의주하나님은"
+  },
+  "A-주가일하시네.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "주가일하시네"
+  },
+  "A-주께가까이.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주께가까이"
+  },
+  "A-주께구속된자들이돌아오네.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "주께구속된자들이돌아오네"
+  },
+  "A-주는완전합니다.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주는완전합니다"
+  },
+  "A-주는완전합니다2.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주는완전합니다"
+  },
+  "A-주님약속하신말씀위에서546.jpg": {
+   "tempo": "fast",
+   "confidence": "높음",
+   "matched": "주님약속하신말씀위에서"
+  },
+  "A-주님은산같아서.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주님은산같아서"
+  },
+  "A-주님은아시네.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주님은아시네"
+  },
+  "A-주님큰영광받으소서.gif": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "주님큰영광받으소서"
+  },
+  "A-주님큰영광받으소서.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "주님큰영광받으소서"
+  },
+  "A-주안에우린하나(기대).png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "주안에우린하나"
+  },
+  "A-주의아름다움은말로다.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주의아름다움은말로다"
+  },
+  "A-주하나님지으신모든세계79.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주하나님지으신모든세계"
+  },
+  "A-하나님의그늘아래.JPG": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "하나님의그늘아래"
+  },
+  "A-하나님이시여-주는나의.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "하나님이시여"
+  },
+  "A-하늘위에주님밖에.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "하늘위에주님밖에"
+  },
+  "A-하늘위에주님밖에.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "하늘위에주님밖에"
+  },
+  "A-하늘위에주님밖에전주.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "하늘위에주님밖에"
+  },
+  "A-한라에서백두까지.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "한라에서백두까지"
+  },
+  "A-할수있다하신이는.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "할수있다하신이는"
+  },
+  "ABS2_11_귀하신-친구-내게-계시니.pdf": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "귀하신친구내게계시니"
+  },
+  "Bb-복음들고산을-편곡.pdf": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "복음들고산을"
+  },
+  "Bb-예수우리왕이여.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "예수우리왕이여"
+  },
+  "Bb-저들밖에한밤중에123.jpg": {
+   "tempo": "mid",
+   "confidence": "보통",
+   "matched": "저들밖에한밤중에"
+  },
+  "Bb-주가일하시네.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "주가일하시네"
+  },
+  "Bb-주님다시오실때까지.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "주님다시오실때까지"
+  },
+  "Bb-주님은산같아서.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주님은산같아서"
+  },
+  "Bb-주안에우린하나-기대.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "주안에우린하나"
+  },
+  "Bb-하나님아버지의마음.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "하나님아버지의마음"
+  },
+  "Bb-하나님의음성을.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "하나님의음성을"
+  },
+  "Bb-하나님이시여.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "하나님이시여"
+  },
+  "Bm-저성벽을향해.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "저성벽을향해"
+  },
+  "Bm-주께서전진해온다.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "주께서전진해온다"
+  },
+  "Bm-주님과담대히나아가.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "주님과담대히나아가"
+  },
+  "C#m-저성벽을향해.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "저성벽을향해"
+  },
+  "C#m-주님과담대히나아가.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "주님과담대히나아가"
+  },
+  "C-나의입술의모든말과.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "나의입술의모든말과"
+  },
+  "C-내기도하는그시간.png": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "내기도하는그시간"
+  },
+  "C-내기도하는그시간364.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "내기도하는그시간"
+  },
+  "C-마귀들과싸울지라348.jpg": {
+   "tempo": "fast",
+   "confidence": "높음",
+   "matched": "마귀들과싸울지라"
+  },
+  "C-보소서주님(주님마음내게주소서).jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주님마음내게주소서"
+  },
+  "C-사랑하는나의아버지.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "사랑하는나의아버지"
+  },
+  "C-아버지당신의마음이있는곳에.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "아버지당신의마음이있는곳에"
+  },
+  "C-오소서진리의성령님.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "오소서진리의성령님"
+  },
+  "C-주가일하시네.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "주가일하시네"
+  },
+  "C-주께와엎드려.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주께와엎드려"
+  },
+  "C-주님다시오실때까지.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "주님다시오실때까지"
+  },
+  "C-주님의성령지금이곳에.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주님의성령지금이곳에"
+  },
+  "C-주안에우린하나.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "주안에우린하나"
+  },
+  "C-주예수보다더귀한것은없네94.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주예수보다더귀한것은없네"
+  },
+  "C-주의거룩하심생각할때.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주의거룩하심생각할때"
+  },
+  "C-주의거룩하심생각할때.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주의거룩하심생각할때"
+  },
+  "C-주의신을내가떠나-어노인팅.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주의신을내가떠나"
+  },
+  "C-주품에.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "주품에"
+  },
+  "C-하나님의음성을.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "하나님의음성을"
+  },
+  "C-하나님이시여-주는나의.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "하나님이시여"
+  },
+  "C-하나님한번도나를.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "하나님한번도나를"
+  },
+  "C-할수있다하신이는.gif": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "할수있다하신이는"
+  },
+  "C-할수있다하신이는.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "할수있다하신이는"
+  },
+  "D-그크신하나님의사랑304.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "그크신하나님의사랑"
+  },
+  "D-기쁘다구주오셨네115.jpg": {
+   "tempo": "fast",
+   "confidence": "높음",
+   "matched": "기쁘다구주오셨네"
+  },
+  "D-나무엇과도주님을.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "나무엇과도주님을"
+  },
+  "D-나의갈길다가도록434.png": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "나의갈길다가도록"
+  },
+  "D-나의갈길다가도록_편곡.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "나의갈길다가도록"
+  },
+  "D-나의맘받으소서.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "나의맘받으소서"
+  },
+  "D-날마다숨쉬는순간마다.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "날마다숨쉬는순간마다"
+  },
+  "D-내가주님을사랑합니다-고백.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내가주님을사랑합니다"
+  },
+  "D-내게있는모든것을50.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내게있는모든것을"
+  },
+  "D-내모든시험무거운짐을337.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내모든시험무거운짐을"
+  },
+  "D-내모습이대로.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내모습이대로"
+  },
+  "D-내모습이대로2.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내모습이대로"
+  },
+  "D-내주없인살수없네.jpeg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내주없인살수없네"
+  },
+  "D-내주여뜻대로549.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "내주여뜻대로"
+  },
+  "D-내주의보혈은254.png": {
+   "tempo": "mid",
+   "confidence": "보통",
+   "matched": "내주의보혈은"
+  },
+  "D-너예수께조용히나가539.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "너예수께조용히나가"
+  },
+  "D-너예수께조용히나가539.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "너예수께조용히나가"
+  },
+  "D-복의근원강림하사28.jpg": {
+   "tempo": "mid",
+   "confidence": "보통",
+   "matched": "복의근원강림하사"
+  },
+  "D-선하신목자.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "선하신목자"
+  },
+  "D-선한목자되신우리주569.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "선한목자되신우리주"
+  },
+  "D-십자가군병되어서353.jpg": {
+   "tempo": "fast",
+   "confidence": "높음",
+   "matched": "십자가군병"
+  },
+  "D-아하나님의은혜로310-2.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "아하나님의은혜로"
+  },
+  "D-아하나님의은혜로310.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "아하나님의은혜로"
+  },
+  "D-여정-손경민.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "여정"
+  },
+  "D-예수사랑하심은563.jpg": {
+   "tempo": "mid",
+   "confidence": "보통",
+   "matched": "예수사랑하심은"
+  },
+  "D-오직예수다른이름은없네.JPG": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "오직예수다른이름은없네"
+  },
+  "D-저들밖에한밤중에.png": {
+   "tempo": "mid",
+   "confidence": "보통",
+   "matched": "저들밖에한밤중에"
+  },
+  "D-주님내가여기있사오니.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주님내가여기있사오니"
+  },
+  "D-주믿는사람일어나357.jpg": {
+   "tempo": "fast",
+   "confidence": "높음",
+   "matched": "주믿는사람일어나"
+  },
+  "D-주의임재앞에잠잠해.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "주의임재앞에잠잠해"
+  },
+  "D-주품에.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "주품에"
+  },
+  "D-지금까지지내온것301.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "지금까지지내온것"
+  },
+  "D-참아름다워라478.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "참아름다워라"
+  },
+  "D-푸른초장.pdf": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "푸른초장"
+  },
+  "D-할렐루야살아계신주.jpg": {
+   "tempo": "fast",
+   "confidence": "높음",
+   "matched": "할렐루야살아계신주"
+  },
+  "D-행군나팔소리에360-피아버전.png": {
+   "tempo": "fast",
+   "confidence": "높음",
+   "matched": "행군나팔소리에"
+  },
+  "D-행군나팔소리에360.gif": {
+   "tempo": "fast",
+   "confidence": "높음",
+   "matched": "행군나팔소리에"
+  },
+  "D-행군나팔소리에360.png": {
+   "tempo": "fast",
+   "confidence": "높음",
+   "matched": "행군나팔소리에"
+  },
+  "Dm-저성벽을향해.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "저성벽을향해"
+  },
+  "Dm-주께서전진해온다.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "주께서전진해온다"
+  },
+  "Dm-주님과담대히나아가.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "주님과담대히나아가"
+  },
+  "E-구원열차.png": {
+   "tempo": "fast",
+   "confidence": "높음",
+   "matched": "구원열차"
+  },
+  "E-기뻐하며승리의노래부르리.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "기뻐하며승리의노래부르리"
+  },
+  "E-날마다숨쉬는순간마다.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "날마다숨쉬는순간마다"
+  },
+  "E-내모습이대로.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내모습이대로"
+  },
+  "E-내영혼은안전합니다.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내영혼은안전합니다"
+  },
+  "E-내이름아시죠-나를지으신주님.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내이름아시죠"
+  },
+  "E-내주를가까이하게함은338.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내주를가까이하게함은"
+  },
+  "E-내진정사모하는(어노인팅)88.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "내진정사모하는"
+  },
+  "E-내진정사모하는88.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "내진정사모하는"
+  },
+  "E-너 예수께 조용히나가.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "너예수께조용히나가"
+  },
+  "E-부르신곳에서-따스한성령님.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "부르신곳에서"
+  },
+  "E-부르신곳에서.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "부르신곳에서"
+  },
+  "E-선한능력으로.png": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "선한능력으로"
+  },
+  "E-손을높이들고.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "손을높이들고"
+  },
+  "E-시편13-먼슬리쌈.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "시편"
+  },
+  "E-시편139편.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "시편"
+  },
+  "E-아바아버지.JPG": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "아바아버지"
+  },
+  "E-어둔밤쉬되리니330.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "어둔밤쉬되리니"
+  },
+  "E-여정-손경민.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "여정"
+  },
+  "E-여호와를즐거이불러.jpg": {
+   "tempo": "fast",
+   "confidence": "높음",
+   "matched": "여호와를즐거이불러"
+  },
+  "E-예수님그의희생기억할때.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "예수님그의희생기억할때"
+  },
+  "E-예수님목마릅니다.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "예수님목마릅니다"
+  },
+  "E-위대하고강하신주님.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "위대하고강하신주님"
+  },
+  "E-이날은이날은.jpg": {
+   "tempo": "fast",
+   "confidence": "높음",
+   "matched": "이날은이날은"
+  },
+  "E-존귀오존귀하신주.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "존귀오존귀하신주"
+  },
+  "E-주님의사랑이이곳에가득하기를.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주님의사랑이이곳에가득하기를"
+  },
+  "E-주님의영광나타나셨네.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "주님의영광나타나셨네"
+  },
+  "E-주를위한이곳에.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주를위한이곳에"
+  },
+  "E-주를향한나의사랑을.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주를향한나의사랑을"
+  },
+  "E-주앞에엎드려.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주앞에엎드려"
+  },
+  "E-주의보좌로나아갈때에.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주의보좌로나아갈때에"
+  },
+  "E-주의자녀로산다는것은-부르신곳에서1.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주의자녀로산다는것은"
+  },
+  "E-주의자녀로산다는것은-부르신곳에서2.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주의자녀로산다는것은"
+  },
+  "E-주의자녀로산다는것은-부르신곳에서3.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주의자녀로산다는것은"
+  },
+  "E-천부여의지없어서.png": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "천부여의지없어서"
+  },
+  "Eb-너예수께조용히나가539.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "너예수께조용히나가"
+  },
+  "Eb-주님의뜻을이루소서(찬425).jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주님의뜻을이루소서"
+  },
+  "F-거룩하신하나님.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "거룩하신하나님"
+  },
+  "F-구주의십자가보혈로250.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "구주의십자가보혈로"
+  },
+  "F-기뻐하며왕께.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "기뻐하며왕께"
+  },
+  "F-꽃들도.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "꽃들도"
+  },
+  "F-나는예배자입니다.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "나는예배자입니다"
+  },
+  "F-나의갈길다가도록384.png": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "나의갈길다가도록"
+  },
+  "F-나의죄를씻기는252.jpg": {
+   "tempo": "mid",
+   "confidence": "보통",
+   "matched": "나의죄를씻기는"
+  },
+  "F-날대속하신예수께321.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "날대속하신예수께"
+  },
+  "F-내눈주의영광을보네.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "내눈주의영광을보네"
+  },
+  "F-내모습이대로.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내모습이대로"
+  },
+  "F-내영혼이은총입어4박자.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내영혼이은총입어"
+  },
+  "F-내주되신주를참사랑하고.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내주되신주를참사랑하고"
+  },
+  "F-내주되신주를참사랑하고315.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내주되신주를참사랑하고"
+  },
+  "F-내주를가까이하게함은338.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내주를가까이하게함은"
+  },
+  "F-내주를가까이하게함은338.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내주를가까이하게함은"
+  },
+  "F-누군가널위해기도하네.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "누군가널위해기도하네"
+  },
+  "F-따스한성령님-부르신곳에서.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "부르신곳에서"
+  },
+  "F-마음이상한자를.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "마음이상한자를"
+  },
+  "F-베드로의고백.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "베드로의고백"
+  },
+  "F-보혈을지나편곡.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "보혈을지나"
+  },
+  "F-빛의사자들이여.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "빛의사자들이여"
+  },
+  "F-십자가를내가지고341.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "십자가를내가지고"
+  },
+  "F-십자가의길순교자의삶-내마음에.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "십자가의길순교자의삶"
+  },
+  "F-아버지사랑내가노래해-그사랑.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "아버지사랑내가노래해"
+  },
+  "F-약할때강함되시네.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "약할때강함되시네"
+  },
+  "F-어둔밤쉬되리니330.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "어둔밤쉬되리니"
+  },
+  "F-예배하는이에게-주님만이.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "예배하는이에게"
+  },
+  "F-예배합니다-편곡.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "예배합니다"
+  },
+  "F-예수나를위하여144.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "예수나를위하여"
+  },
+  "F-예수더알기원하네-브라운워십.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "예수더알기원하네"
+  },
+  "F-예수이름높이세.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "예수이름높이세"
+  },
+  "F-우리안에사랑을.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "우리안에사랑을"
+  },
+  "F-우리의모습속에.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "우리의모습속에"
+  },
+  "F-위로송.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "위로송"
+  },
+  "F-이런교회되게하소서.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "이런교회되게하소서"
+  },
+  "F-이런교회되게하소서.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "이런교회되게하소서"
+  },
+  "F-이몸의소망무언가488.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "이몸의소망무언가"
+  },
+  "F-일어나라주의백성.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "일어나라주의백성"
+  },
+  "F-저높은곳을향하여.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "저높은곳을향하여"
+  },
+  "F-정결한마음주시옵소서-어노인팅.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "정결한마음주시옵소서"
+  },
+  "F-정결한맘주시옵소서.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "정결한맘"
+  },
+  "F-주는나를기르시는목자570.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주는나를기르시는목자"
+  },
+  "F-주님과같이.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주님과같이"
+  },
+  "F-주님만사랑하리.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주님만사랑하리"
+  },
+  "F-주님을더욱알기원하네.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주님을더욱알기원하네"
+  },
+  "F-주님의사랑이이곳에.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주님의사랑이이곳에"
+  },
+  "F-주달려죽은십자가149.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "주달려죽은십자가"
+  },
+  "F-주달려죽은십자가149.png": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "주달려죽은십자가"
+  },
+  "F-주은혜임을(주나의모습보네).jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주은혜임을"
+  },
+  "F-주의자녀로산다는것은.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주의자녀로산다는것은"
+  },
+  "F-주의자녀로산다는것은2.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주의자녀로산다는것은"
+  },
+  "F-참반가운성도여122.jpg": {
+   "tempo": "mid",
+   "confidence": "보통",
+   "matched": "참반가운성도여"
+  },
+  "F-천부여의지없어서-편곡.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "천부여의지없어서"
+  },
+  "F-천부여의지없어서280.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "천부여의지없어서"
+  },
+  "F-천사들의노래가125.png": {
+   "tempo": "mid",
+   "confidence": "보통",
+   "matched": "천사들의노래가"
+  },
+  "F-천사들의노래가2.jpg": {
+   "tempo": "mid",
+   "confidence": "보통",
+   "matched": "천사들의노래가"
+  },
+  "F-하나님아버지-강명식.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "하나님아버지"
+  },
+  "F-형제의모습속에.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "형제의모습속에"
+  },
+  "G-갈릴리마을-가서제자삼으라.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "갈릴리마을"
+  },
+  "G-거룩한성전에거하시며.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "거룩한성전에거하시며"
+  },
+  "G-곤한내영혼편히쉴곳과406.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "곤한내영혼편히쉴곳과"
+  },
+  "G-구주를생각만해도85.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "구주를생각만해도"
+  },
+  "G-구주의십자가보혈로250.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "구주의십자가보혈로"
+  },
+  "G-귀하신친구내게계시니-어노인팅.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "귀하신친구내게계시니"
+  },
+  "G-귀하신친구내게계시니.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "귀하신친구내게계시니"
+  },
+  "G-귀하신친구내게계시니434.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "귀하신친구내게계시니"
+  },
+  "G-귀하신친구내게계시니어노인팅2.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "귀하신친구내게계시니"
+  },
+  "G-그가오신이유.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "그가오신이유"
+  },
+  "G-그어린주예수-108.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "그어린주예수"
+  },
+  "G-기도할수있는데.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "기도할수있는데"
+  },
+  "G-기뻐하며왕께노래부르리.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "기뻐하며왕께"
+  },
+  "G-꽃들도.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "꽃들도"
+  },
+  "G-나같은죄인살리신305.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "나같은죄인살리신"
+  },
+  "G-나같은죄인살리신3052.png": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "나같은죄인살리신"
+  },
+  "G-나는예배자입니다.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "나는예배자입니다"
+  },
+  "G-나의갈길다가도록384.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "나의갈길다가도록"
+  },
+  "G-나의갈길다가도록384.png": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "나의갈길다가도록"
+  },
+  "G-나의생명되신주380.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "나의생명되신주"
+  },
+  "G-나의안에거하라.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "나의안에거하라"
+  },
+  "G-나의영원하신기업435.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "나의영원하신기업"
+  },
+  "G-나의죄를씻기는252.jpg": {
+   "tempo": "mid",
+   "confidence": "보통",
+   "matched": "나의죄를씻기는"
+  },
+  "G-나의죄를씻기는2522.jpg": {
+   "tempo": "mid",
+   "confidence": "보통",
+   "matched": "나의죄를씻기는"
+  },
+  "G-내가매일기쁘게191.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "내가매일기쁘게"
+  },
+  "G-내가매일기쁘게191어노인팅.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "내가매일기쁘게"
+  },
+  "G-내게강같은평화-어노인팅.jpg": {
+   "tempo": "mid",
+   "confidence": "보통",
+   "matched": "내게강같은평화"
+  },
+  "G-내게강같은평화.jpg": {
+   "tempo": "mid",
+   "confidence": "보통",
+   "matched": "내게강같은평화"
+  },
+  "G-내구주예수를더욱사랑2.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내구주예수를더욱사랑"
+  },
+  "G-내구주예수를더욱사랑314.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내구주예수를더욱사랑"
+  },
+  "G-내눈주의영광을보네.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "내눈주의영광을보네"
+  },
+  "G-내영혼에햇빛비치니428.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "내영혼에햇빛비치니"
+  },
+  "G-내영혼의그윽히깊은데서412.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "내영혼의그윽히깊은데서"
+  },
+  "G-내영혼의그윽히깊은데서412.png": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "내영혼의그윽히깊은데서"
+  },
+  "G-내영혼이은총입어438.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내영혼이은총입어"
+  },
+  "G-내영혼이은총입어4박자.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내영혼이은총입어"
+  },
+  "G-내주를가까이하게함은338.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "내주를가까이하게함은"
+  },
+  "G-누군가널위하여.PNG": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "누군가널위하여"
+  },
+  "G-다와서찬양해.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "다와서찬양해"
+  },
+  "G-때로는너의앞에(축복송).jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "때로는너의앞에"
+  },
+  "G-때로는너의앞에.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "때로는너의앞에"
+  },
+  "G-많은사람들-난예수가좋다오.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "많은사람들"
+  },
+  "G-모든능력과모든권세-우리때문에.png": {
+   "tempo": "mid",
+   "confidence": "보통",
+   "matched": "모든능력과모든권세"
+  },
+  "G-보혈을지나.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "보혈을지나"
+  },
+  "G-빛의사자들이여502.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "빛의사자들이여"
+  },
+  "G-사랑스런주님음성.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "사랑스런주님음성"
+  },
+  "G-사랑합니다나의예수님.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "사랑합니다나의예수님"
+  },
+  "G-성령의불타는교회.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "성령의불타는교회"
+  },
+  "G-슬픈마음있는사람91.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "슬픈마음있는사람"
+  },
+  "G-슬픈마음있는사람FIA.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "슬픈마음있는사람"
+  },
+  "G-승리하였네.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "승리하였네"
+  },
+  "G-시편51편-하나님이시여.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "하나님이시여"
+  },
+  "G-십자가그사랑.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "십자가그사랑"
+  },
+  "G-십자가를질수있나461.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "십자가를질수있나"
+  },
+  "G-십자가를참으신.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "십자가를참으신"
+  },
+  "G-십자가의길순교자의삶.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "십자가의길순교자의삶"
+  },
+  "G-십자가의길순교자의삶.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "십자가의길순교자의삶"
+  },
+  "G-아버지사랑내가노래해(그사랑).jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "아버지사랑내가노래해"
+  },
+  "G-예수더알기원하네453.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "예수더알기원하네"
+  },
+  "G-예수십자가에흘린피로써259.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "예수십자가에흘린피로써"
+  },
+  "G-예수십자가에흘린피로써2592.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "예수십자가에흘린피로써"
+  },
+  "G-예수우리왕이여.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "예수우리왕이여"
+  },
+  "G-예수우리왕이여.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "예수우리왕이여"
+  },
+  "G-오늘이곳에계신성령님.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "오늘이곳에계신성령님"
+  },
+  "G-오이기쁨.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "오이기쁨"
+  },
+  "G-완전하신나의주-예배합니다편곡.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "예배합니다"
+  },
+  "G-우리들이싸울것은350.jpg": {
+   "tempo": "fast",
+   "confidence": "높음",
+   "matched": "우리들이싸울것은"
+  },
+  "G-우물가의여인처럼.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "우물가의여인처럼"
+  },
+  "G-웬말인가날위하여143.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "웬말인가날위하여"
+  },
+  "G-이눈에아무증거아니뵈어도.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "이눈에아무증거아니뵈어도"
+  },
+  "G-이눈에아무증거아니뵈어도545.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "이눈에아무증거아니뵈어도"
+  },
+  "G-저높은곳을향하여.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "저높은곳을향하여"
+  },
+  "G-저높은곳을향하여491.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "저높은곳을향하여"
+  },
+  "G-저장미꽃위에이슬442.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "저장미꽃위에이슬"
+  },
+  "G-전능하신나의주하나님은.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "전능하신나의주하나님은"
+  },
+  "G-정결한맘주시옵소서.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "정결한맘"
+  },
+  "G-주님과같이.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주님과같이"
+  },
+  "G-주님마음내게주소서.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주님마음내게주소서"
+  },
+  "G-주님약속하신말씀위에서.png": {
+   "tempo": "fast",
+   "confidence": "높음",
+   "matched": "주님약속하신말씀위에서"
+  },
+  "G-주님을보게하소서.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주님을보게하소서"
+  },
+  "G-주님의영광나타나셨네.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "주님의영광나타나셨네"
+  },
+  "G-주님의임재앞에서.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주님의임재앞에서"
+  },
+  "G-주님한분만으로.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주님한분만으로"
+  },
+  "G-주달려죽은십자가.jpg": {
+   "tempo": "slow",
+   "confidence": "높음",
+   "matched": "주달려죽은십자가"
+  },
+  "G-주없이살수없네292.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주없이살수없네"
+  },
+  "G-주우리아버지.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주우리아버지"
+  },
+  "G-주음성외에는446.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주음성외에는"
+  },
+  "G-주의인자하심이생명보다.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주의인자하심이생명보다"
+  },
+  "G-주의진리위해십자가군기.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "주의진리위해십자가군기"
+  },
+  "G-주의진리위해십자가군기358.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "주의진리위해십자가군기"
+  },
+  "G-주의친절한팔에안기세.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주의친절한팔에안기세"
+  },
+  "G-주의친절한팔에안기세405.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "주의친절한팔에안기세"
+  },
+  "G-찬양중에눈을들어호산나.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "찬양중에눈을들어호산나"
+  },
+  "G-찬양하라내영혼아.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "찬양하라내영혼아"
+  },
+  "G-참반가운성도여.png": {
+   "tempo": "mid",
+   "confidence": "보통",
+   "matched": "참반가운성도여"
+  },
+  "G-참반가운성도여122.jpg": {
+   "tempo": "mid",
+   "confidence": "보통",
+   "matched": "참반가운성도여"
+  },
+  "G-충만.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "충만"
+  },
+  "G-하나님께로더가까이.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "하나님께로더가까이"
+  },
+  "G-하나님아버지-강명식.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "하나님아버지"
+  },
+  "G-하나님아버지주신책은202.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "하나님아버지"
+  },
+  "G-하나님의그늘아래.png": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "하나님의그늘아래"
+  },
+  "G-하나님의나팔소리.png": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "하나님의나팔소리"
+  },
+  "G-하나님의나팔소리180.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "하나님의나팔소리"
+  },
+  "G-하나님제겐참두려운게많습니다.jpg": {
+   "tempo": "slow",
+   "confidence": "보통",
+   "matched": "하나님제겐참두려운게많습니다"
+  },
+  "G-호산나호산나.jpg": {
+   "tempo": "fast",
+   "confidence": "높음",
+   "matched": "호산나호산나"
+  },
+  "G-환난과핍박중에도336.jpg": {
+   "tempo": "fast",
+   "confidence": "보통",
+   "matched": "환난과핍박중에도"
+  }
+ }
+}
