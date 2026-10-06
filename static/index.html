@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ScoreBox 악보함</title>
+<style>
+:root{--bg:#f6f5f2;--fg:#222;--mut:#777;--card:#fff;--line:#ddd;--acc:#2f5fd0;--warn:#e08a00}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1c1e;--fg:#eee;--mut:#999;--card:#2a2a2d;--line:#3c3c40;--acc:#7aa2ff;--warn:#ffb340}}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.4 "Malgun Gothic",system-ui,sans-serif;background:var(--bg);color:var(--fg);display:flex;height:100vh}
+aside{width:250px;padding:14px;overflow:auto;border-right:1px solid var(--line);flex-shrink:0}
+main{flex:1;display:flex;flex-direction:column;min-width:0}
+h1{font-size:18px;margin:0 0 10px}
+h3{font-size:12px;color:var(--mut);margin:16px 0 6px;text-transform:uppercase}
+.chip{display:inline-block;padding:3px 9px;margin:2px;border:1px solid var(--line);border-radius:14px;background:var(--card);cursor:pointer;user-select:none}
+.chip.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.chip small{opacity:.6;margin-left:3px}
+input,select,textarea,button{font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+button{cursor:pointer}button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+#bar{display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);align-items:center;flex-wrap:wrap}
+#bar input[type=search]{flex:1;min-width:160px}
+#grid{flex:1;overflow:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;align-content:start}
+.card{background:var(--card);border:2px solid var(--line);border-radius:8px;overflow:hidden;cursor:pointer;position:relative}
+.card.sel{border-color:var(--acc)}
+.thumb{height:190px;background:#8883;display:flex;align-items:center;justify-content:center;font-size:40px}
+.thumb img{width:100%;height:100%;object-fit:cover;object-position:top}
+.meta{padding:7px 9px}
+.t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{font-size:11px;padding:1px 6px;border-radius:4px;background:#8883;margin-right:3px}
+.badge.k{background:var(--acc);color:#fff}.badge.fast{background:#d9480f;color:#fff}.badge.slow{background:#1c7ed6;color:#fff}
+.card .rv{position:absolute;top:6px;right:6px;background:var(--warn);color:#000;font-size:11px;padding:1px 6px;border-radius:4px}
+.card .ck{position:absolute;top:6px;left:6px;width:18px;height:18px}
+#bulk{display:none;gap:6px;padding:8px 14px;background:var(--acc);color:#fff;align-items:center;flex-wrap:wrap}
+#bulk select,#bulk input,#bulk button{color:var(--fg)}
+dialog{border:1px solid var(--line);border-radius:10px;padding:0;background:var(--bg);color:var(--fg);width:min(1000px,96vw);height:90vh}
+dialog::backdrop{background:#0008}
+.dl{display:flex;height:100%}
+.view{flex:1;background:#555;min-width:0}.view img,.view iframe{width:100%;height:100%;border:0;object-fit:contain}
+.form{width:290px;padding:14px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.form label{font-size:12px;color:var(--mut)}
+#cnt{color:var(--mut)}
+@media(max-width:700px){aside{display:none}.dl{flex-direction:column}.form{width:auto}}
+</style>
+</head>
+<body>
+<aside>
+  <h1>🎼 ScoreBox</h1>
+  <div><span class="chip" id="f-unrev">⚠ 확인 필요 <small id="n-unrev"></small></span></div>
+  <h3>코드 (Key)</h3><div id="f-key"></div>
+  <h3>빠르기</h3><div id="f-tempo"></div>
+  <h3>주제 / 태그</h3><div id="f-tag"></div>
+  <h3>도구</h3>
+  <button id="rescan">📁 폴더 다시 스캔</button>
+  <a href="/api/export.csv"><button style="margin-top:6px">⬇ 엑셀(CSV) 내보내기</button></a>
+  <p style="color:var(--mut);font-size:12px" id="dir"></p>
+</aside>
+<main>
+  <div id="bar">
+    <input type="search" id="q" placeholder="제목 · 파일명 · 태그 검색">
+    <select id="sort"><option value="title">제목순</option><option value="key">코드순</option><option value="tempo">빠르기순</option></select>
+    <span id="cnt"></span>
+  </div>
+  <div id="bulk">
+    <b id="bn"></b>
+    <select id="bk"><option value="">코드…</option></select>
+    <select id="bt"><option value="">빠르기…</option></select>
+    <input id="bat" placeholder="태그 추가" list="taglist" size="10">
+    <button id="bapply" class="p">적용</button>
+    <button id="bclear">선택 해제</button>
+  </div>
+  <div id="grid"></div>
+</main>
+<datalist id="taglist"></datalist>
+
+<dialog id="dlg"><div class="dl">
+  <div class="view" id="view"></div>
+  <div class="form">
+    <label>제목</label><input id="e-title">
+    <label>코드</label><select id="e-key"></select>
+    <label>빠르기</label><select id="e-tempo"></select>
+    <label>주제 / 태그 (쉼표로 구분)</label><input id="e-tags" list="taglist">
+    <label>메모</label><textarea id="e-note" rows="3"></textarea>
+    <div id="e-file" style="font-size:11px;color:var(--mut);word-break:break-all"></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button id="e-save" class="p">저장 ✓ 확인완료</button>
+      <button id="e-next">저장 후 다음 ▶</button>
+      <button id="e-close">닫기</button>
+    </div>
+  </div>
+</div></dialog>
+
+<script>
+const $=s=>document.querySelector(s);
+const st={items:[],keys:[],tempos:{},key:new Set(),tempo:new Set(),tag:new Set(),unrev:false,sel:new Set(),cur:null,list:[]};
+const isPdf=id=>id.toLowerCase().endsWith('.pdf');
+const url=id=>'/files/'+id.split('/').map(encodeURIComponent).join('/');
+const post=(u,b)=>fetch(u,{method:'POST',body:JSON.stringify(b||{})}).then(r=>r.json());
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+async function load(){
+  const d=await fetch('/api/scores').then(r=>r.json());
+  st.items=d.items.filter(i=>!i.missing);st.tempos=d.tempos;
+  st.keys=d.keys.flatMap(k=>[k,k+'m']);
+  $('#dir').textContent='악보 폴더: '+d.scores_dir;
+  for(const id of ['#e-key','#bk']){const el=$(id);el.innerHTML='<option value="">(미지정)</option>'+st.keys.map(k=>`<option>${k}</option>`).join('')}
+  for(const id of ['#e-tempo','#bt']){const el=$(id);el.innerHTML='<option value="">(미지정)</option>'+Object.entries(st.tempos).map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}
+  render();
+}
+function chips(el,entries,set,label){
+  el.innerHTML=entries.map(([v,n])=>`<span class="chip ${set.has(v)?'on':''}" data-v="${esc(v)}">${esc(label?label(v):v)}<small>${n}</small></span>`).join('')||'<small style="color:var(--mut)">없음</small>';
+  el.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{const v=c.dataset.v;set.has(v)?set.delete(v):set.add(v);render()});
+}
+const count=(arr)=>{const m={};arr.forEach(v=>m[v]=(m[v]||0)+1);return m};
+function matches(i,ign){
+  const q=$('#q').value.trim().toLowerCase();
+  if(q&&!(i.title+' '+i.id+' '+i.tags.join(' ')).toLowerCase().includes(q))return false;
+  if(ign!=='key'&&st.key.size&&!st.key.has(i.key||'(미지정)'))return false;
+  if(ign!=='tempo'&&st.tempo.size&&!st.tempo.has(i.tempo||'-'))return false;
+  if(ign!=='tag'&&st.tag.size&&![...st.tag].every(t=>i.tags.includes(t)))return false;
+  if(st.unrev&&i.reviewed)return false;
+  return true;
+}
+function render(){
+  const kc=count(st.items.filter(i=>matches(i,'key')).map(i=>i.key||'(미지정)'));
+  const order=[...st.keys,'(미지정)'];
+  chips($('#f-key'),order.filter(k=>kc[k]).map(k=>[k,kc[k]]),st.key);
+  const tc=count(st.items.filter(i=>matches(i,'tempo')).map(i=>i.tempo||'-'));
+  chips($('#f-tempo'),[...Object.keys(st.tempos),'-'].filter(k=>tc[k]).map(k=>[k,tc[k]]),st.tempo,v=>st.tempos[v]||'(미지정)');
+  const tg=count(st.items.filter(i=>matches(i,'tag')).flatMap(i=>i.tags));
+  chips($('#f-tag'),Object.entries(tg).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'ko')),st.tag);
+  const allTags=[...new Set(st.items.flatMap(i=>i.tags))].sort((a,b)=>a.localeCompare(b,'ko'));
+  $('#taglist').innerHTML=allTags.map(t=>`<option value="${esc(t)}">`).join('');
+  const unrev=st.items.filter(i=>!i.reviewed).length;
+  $('#n-unrev').textContent=unrev;$('#f-unrev').classList.toggle('on',st.unrev);
+
+  const s=$('#sort').value,ko=(a,b)=>String(a).localeCompare(String(b),'ko');
+  st.list=st.items.filter(i=>matches(i)).sort((a,b)=>{
+    if(s==='key')return (st.keys.indexOf(a.key)+99)%99-(st.keys.indexOf(b.key)+99)%99||ko(a.title,b.title);
+    if(s==='tempo')return ko(a.tempo,b.tempo)||ko(a.title,b.title);
+    return ko(a.title,b.title)});
+  $('#cnt').textContent=`${st.list.length} / ${st.items.length}곡`;
+  $('#grid').innerHTML=st.list.map((i,n)=>`<div class="card ${st.sel.has(i.id)?'sel':''}" data-n="${n}">
+    <input type="checkbox" class="ck" ${st.sel.has(i.id)?'checked':''}>
+    ${i.reviewed?'':'<span class="rv">확인 필요</span>'}
+    <div class="thumb">${isPdf(i.id)?'📄':`<img loading="lazy" src="${url(i.id)}">`}</div>
+    <div class="meta"><div class="t" title="${esc(i.title)}">${esc(i.title)}</div>
+    ${i.key?`<span class="badge k">${esc(i.key)}</span>`:''}${i.tempo?`<span class="badge ${i.tempo}">${st.tempos[i.tempo]}</span>`:''}
+    ${i.tags.map(t=>`<span class="badge">${esc(t)}</span>`).join('')}</div></div>`).join('');
+  document.querySelectorAll('.card').forEach(c=>{
+    const it=st.list[c.dataset.n];
+    c.onclick=e=>{if(e.target.classList.contains('ck')){st.sel.has(it.id)?st.sel.delete(it.id):st.sel.add(it.id);render()}else openDlg(it)};
+  });
+  $('#bulk').style.display=st.sel.size?'flex':'none';$('#bn').textContent=st.sel.size+'곡 선택';
+}
+function openDlg(it){
+  st.cur=it;
+  $('#view').innerHTML=isPdf(it.id)?`<iframe src="${url(it.id)}"></iframe>`:`<img src="${url(it.id)}">`;
+  $('#e-title').value=it.title;$('#e-key').value=it.key;$('#e-tempo').value=it.tempo;
+  $('#e-tags').value=it.tags.join(', ');$('#e-note').value=it.note;$('#e-file').textContent=it.id;
+  if(!$('#dlg').open)$('#dlg').showModal();
+}
+async function save(next){
+  const it=st.cur;
+  await post('/api/update',{ids:[it.id],patch:{title:$('#e-title').value,key:$('#e-key').value,tempo:$('#e-tempo').value,
+    tags:$('#e-tags').value.split(/[,，]/),note:$('#e-note').value,reviewed:true}});
+  const idx=st.list.indexOf(it);await load();
+  const nx=next&&st.list[Math.min(idx,st.list.length-1)];
+  if(nx)openDlg(nx);else $('#dlg').close();
+}
+$('#e-save').onclick=()=>save(false);$('#e-next').onclick=()=>save(true);$('#e-close').onclick=()=>$('#dlg').close();
+$('#q').oninput=render;$('#sort').onchange=render;
+$('#f-unrev').onclick=()=>{st.unrev=!st.unrev;render()};
+$('#bclear').onclick=()=>{st.sel.clear();render()};
+$('#bapply').onclick=async()=>{
+  const patch={reviewed:true};if($('#bk').value)patch.key=$('#bk').value;if($('#bt').value)patch.tempo=$('#bt').value;
+  await post('/api/update',{ids:[...st.sel],patch,add_tags:$('#bat').value.split(/[,，]/)});
+  st.sel.clear();$('#bat').value='';load();
+};
+$('#rescan').onclick=async()=>{const r=await post('/api/scan');await load();alert(`스캔 완료: 파일 ${r.total}개 (사라진 파일 ${r.missing}개)`)};
+load();
+</script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+scorebox_data.json
+*.tmp
+__pycache__/
