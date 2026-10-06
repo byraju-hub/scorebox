@@ -9,7 +9,7 @@ Python 3.8+ 만 있으면 되고 추가 설치는 필요 없습니다.
 ## 설정 (`config.json`)
 - `scores_dir`: 악보 파일이 있는 폴더 (하위 폴더까지 검색). 원본 파일은 수정/이동하지 않습니다.
 - `data_file`: 분류 정보 저장 파일(JSON). OneDrive 폴더 안에 두면 자동 백업/동기화됩니다.
-  현재 설정: `"C:/Users/byraj/OneDrive/문서/Scorebox/scorebox_data.json"`
+  현재 설정: `"C:/Users/byraj/Pictures/scorebox_data.json"`
 - 프로그램 폴더 자체를 OneDrive 안에 두어도 됩니다.
 
 ## 사용법
