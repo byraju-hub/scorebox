@@ -188,11 +188,12 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
 #hdlg details{margin:6px 0}#hdlg summary{cursor:pointer;font-weight:600;padding:4px 0}
 #hdlg ul{margin:4px 0 0;padding:0 0 0 16px;max-height:220px;overflow:auto;font-size:12px;columns:2}
 #hdlg li small{color:var(--mut)}
+.logo{width:1.15em;height:1.15em;vertical-align:-.2em;margin-right:.35em;border-radius:22%}
 </style>
 </head>
 <body>
 <div id="start">
-  <h1 style="font-size:26px">🎼 Raju's ScoreBox</h1>
+  <h1 style="font-size:26px"><img class="logo" alt="">Raju's ScoreBox</h1>
   <p style="color:var(--mut);max-width:480px">악보(이미지·PDF)가 들어 있는 폴더를 선택하세요. 분류 정보는 그 폴더의 <b>scorebox_data.json</b> 에 저장되며, 악보 파일은 수정하지 않습니다.</p>
   <button id="btn-resume" class="p" style="display:none"></button>
   <button id="btn-pick">📁 악보 폴더 선택…</button>
@@ -200,7 +201,7 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
 </div>
 <aside>
   <div id="sidemain">
-  <h1>🎼 Raju's ScoreBox</h1>
+  <h1><img class="logo" alt="">Raju's ScoreBox</h1>
   <div id="tabs"><button id="tab-lib" class="p">🎼 악보함</button><button id="tab-conti">📋 콘티</button></div>
   <div id="contiside">
     <h3 class="sec conti-h"><span class="si">📊</span>콘티 도구</h3>
@@ -1455,5 +1456,6 @@ $('#happly').onclick=async()=>{
 };
 $('#hclose').onclick=()=>$('#hdlg').close();
 </script>
+<script>document.querySelectorAll('img.logo').forEach(i=>i.src=document.querySelector('link[rel=icon]').href)</script>
 </body>
 </html>
