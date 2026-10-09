@@ -13,7 +13,7 @@ body{margin:0;font:14px/1.4 "Malgun Gothic",system-ui,sans-serif;background:var(
 aside{width:250px;padding:14px;overflow:auto;border-right:1px solid var(--line);flex-shrink:0}
 main{flex:1;display:flex;flex-direction:column;min-width:0}
 h1{font-size:18px;margin:0 0 10px}
-h3{font-size:12px;color:var(--mut);margin:16px 0 6px;text-transform:uppercase}
+h3{font-size:13px;font-weight:700;color:var(--mut);margin:16px 0 6px;text-transform:none}
 .chip{display:inline-block;padding:3px 9px;margin:2px;border:1px solid var(--line);border-radius:14px;background:var(--card);cursor:pointer;user-select:none}
 .chip.on{background:var(--acc);color:#fff;border-color:var(--acc)}
 .chip small{opacity:.6;margin-left:3px}
@@ -113,6 +113,16 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
 #lightbox{position:fixed;inset:0;z-index:100;background:#000d;display:flex;align-items:center;justify-content:center;cursor:zoom-out}
 #lightbox img{max-width:96vw;max-height:96vh;background:#fff}
 #e-tagchips{display:flex;flex-wrap:wrap;margin:-2px 0 4px}
+.tools-h{color:var(--fg);font-size:14px;text-transform:none;border-top:1px solid var(--line);padding-top:14px;margin-top:22px}
+#toolbox{display:flex;flex-direction:column;gap:8px}
+.tool{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;font-weight:600;text-align:left;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--acc);border-radius:8px;box-shadow:0 1px 2px #0002;transition:background .12s,color .12s,transform .12s}
+.tool .ti{font-size:18px;width:22px;text-align:center;flex-shrink:0}
+.tool:hover{background:var(--acc);color:#fff;transform:translateX(2px)}
+.tool:active{transform:translateX(2px) scale(.98)}
+.tool.set{border-left-color:#8b5cf6}.tool.set:hover{background:#8b5cf6}
+.tool.out{border-left-color:#16a34a}.tool.out:hover{background:#16a34a}
+.tool.warn{border-left-color:var(--warn)}.tool.warn:hover{background:var(--warn);color:#000}
+.tool .bdg{margin-left:auto;background:var(--warn);color:#000;border-radius:10px;padding:0 8px;font-size:12px}
 </style>
 </head>
 <body>
@@ -129,17 +139,19 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
   <div id="libside">
   <div><span class="chip" id="f-ex" title="앱 목록에서 제외한 곡 (파일은 그대로 있음)">🚫 제외한 곡 <small id="n-ex"></small></span>
   <span class="chip" id="f-unrev">⚠ 확인 필요 <small id="n-unrev"></small></span></div>
-  <h3>코드 (Key)</h3><div id="f-key"></div>
-  <h3>빠르기 / 분류</h3><div id="f-tempo"></div>
-  <h3>주제 / 태그</h3><div id="f-tag"></div>
-  <h3>도구</h3>
-  <button id="rescan">📁 폴더 다시 스캔</button>
-  <button id="cfg" style="margin-top:6px">⚙ 빠르기 분류 설정</button>
-  <button id="kcfg" style="margin-top:6px">⚙ 코드(Key) 목록 설정</button>
-  <button id="tcfg" style="margin-top:6px">⚙ 주제/태그 설정</button>
-  <button id="dupbtn" style="margin-top:6px">🧩 중복 곡 정리</button>
-  <button id="csv" style="margin-top:6px">⬇ 엑셀(CSV) 내보내기</button>
-  <button id="chdir" style="margin-top:6px">📂 폴더 바꾸기</button>
+  <h3>코드(Key)</h3><div id="f-key"></div>
+  <h3>빠르기(Speed)</h3><div id="f-tempo"></div>
+  <h3>카테고리(Tag)</h3><div id="f-tag"></div>
+  <h3 class="tools-h">🧰 도구 모음</h3>
+  <div id="toolbox">
+    <button class="tool" id="rescan"><span class="ti">📁</span>폴더 다시 스캔</button>
+    <button class="tool" id="chdir"><span class="ti">📂</span>폴더 바꾸기</button>
+    <button class="tool set" id="kcfg"><span class="ti">⚙</span>코드(Key) 설정</button>
+    <button class="tool set" id="cfg"><span class="ti">⚙</span>빠르기(Speed) 설정</button>
+    <button class="tool set" id="tcfg"><span class="ti">⚙</span>카테고리(Tag) 설정</button>
+    <button class="tool out" id="csv"><span class="ti">⬇</span>엑셀(CSV) 내보내기</button>
+    <button class="tool warn" id="dupbtn"><span class="ti">🧩</span>중복 곡 정리</button>
+  </div>
   <p style="color:var(--mut);font-size:12px" id="dir"></p>
   </div>
 </aside>
@@ -156,7 +168,7 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
     <b id="bn"></b>
     <select id="bk"><option value="">코드…</option></select>
     <select id="bt"><option value="">빠르기…</option></select>
-    <input id="bat" placeholder="태그 추가" list="taglist" size="10">
+    <input id="bat" placeholder="카테고리 추가" list="taglist" size="10">
     <button id="bapply" class="p">적용</button>
     <button id="bex" title="파일은 그대로 두고 앱 목록에서만 숨깁니다 (되돌릴 수 있음)">목록에서 제외</button>
     <button id="brestore" style="display:none">↩ 목록으로 복원</button>
@@ -183,17 +195,17 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
 </div>
 </main>
 <datalist id="taglist"></datalist>
-<dialog id="tdlg" style="width:min(560px,96vw);height:80vh;padding:16px;overflow:auto"><h2 style="margin-top:0;font-size:16px">주제 / 태그 설정</h2>
-  <p style="color:var(--mut);font-size:12px">주제(태그)를 추가·이름 변경·삭제하고 ▲▼로 순서를 바꿀 수 있습니다. 이름을 바꾸면 그 주제를 쓰던 곡도 같이 바뀌고, 삭제하면 곡에서 그 주제가 빠집니다. "자동 인식 키워드"는 쉼표로 구분하며, 새로 스캔되는 파일명에 포함되면 이 주제가 자동으로 붙습니다 (하위 폴더 이름은 원래대로 주제가 됩니다).</p>
+<dialog id="tdlg" style="width:min(560px,96vw);height:80vh;padding:16px;overflow:auto"><h2 style="margin-top:0;font-size:16px">카테고리(Tag) 설정</h2>
+  <p style="color:var(--mut);font-size:12px">카테고리(태그)를 추가·이름 변경·삭제하고 ▲▼로 순서를 바꿀 수 있습니다. 이름을 바꾸면 그 카테고리를 쓰던 곡도 같이 바뀌고, 삭제하면 곡에서 그 카테고리가 빠집니다. "자동 인식 키워드"는 쉼표로 구분하며, 새로 스캔되는 파일명에 포함되면 이 카테고리가 자동으로 붙습니다 (하위 폴더 이름은 원래대로 카테고리가 됩니다).</p>
   <div id="trows" style="display:flex;flex-direction:column;gap:6px"></div>
-  <div style="margin-top:12px;display:flex;gap:6px"><button id="tadd">+ 주제 추가</button><span style="flex:1"></span>
+  <div style="margin-top:12px;display:flex;gap:6px"><button id="tadd">+ 카테고리 추가</button><span style="flex:1"></span>
   <button id="tsave" class="p">저장</button><button id="tclose">취소</button></div></dialog>
 <div id="dupdlg">
   <div class="top"><b id="duptitle">중복 곡 정리</b><span style="flex:1"></span>
     <label>정리 방식 <select id="dupmode"><option value="exclude">남기고 나머지는 목록에서 제외 (복원 가능)</option><option value="delete">남기고 나머지는 파일 삭제 (복구 불가)</option></select></label>
     <label><input type="checkbox" id="dupign"> '중복 아님' 표시한 것도 보기</label>
     <button id="dupclose">닫기</button></div>
-  <div id="dupnote">제목(숫자 제외)과 코드가 같은 곡을 묶어 보여 줍니다. 악보 이미지의 첫 가사는 읽을 수 없어서 제목과 코드로 찾습니다. 같은 곡의 1쪽·2쪽처럼 중복이 아니면 <b>중복 아님</b>을 눌러 목록에서 빼세요. 정리하면 태그·메모·빠르기는 남기는 곡에 합쳐지고, 콘티에 쓰인 악보도 남기는 곡으로 바뀝니다. 그림을 누르면 크게 볼 수 있습니다.</div>
+  <div id="dupnote">제목(숫자 제외)과 코드가 같은 곡을 묶어 보여 줍니다. 악보 이미지의 첫 가사는 읽을 수 없어서 제목과 코드로 찾습니다. 같은 곡의 1쪽·2쪽처럼 중복이 아니면 <b>중복 아님</b>을 눌러 목록에서 빼세요. 정리하면 카테고리·메모·빠르기는 남기는 곡에 합쳐지고, 콘티에 쓰인 악보도 남기는 곡으로 바뀝니다. 그림을 누르면 크게 볼 수 있습니다.</div>
   <div id="dupbody"></div>
 </div>
 
@@ -232,12 +244,12 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
   <div id="pickres"></div></dialog>
 
 
-<dialog id="cdlg" style="width:min(560px,96vw);height:auto;padding:16px"><h2 style="margin-top:0;font-size:16px">빠르기 / 분류 설정</h2>
-  <p style="color:var(--mut);font-size:12px">이름을 바꾸거나 추가·삭제할 수 있습니다. 키워드는 쉼표로 구분하며, 파일명에 포함되면 스캔 때 자동으로 이 분류가 지정됩니다. 삭제한 분류를 쓰던 곡은 "미지정"이 됩니다.</p>
+<dialog id="cdlg" style="width:min(560px,96vw);height:auto;padding:16px"><h2 style="margin-top:0;font-size:16px">빠르기(Speed) 설정</h2>
+  <p style="color:var(--mut);font-size:12px">이름을 바꾸거나 추가·삭제할 수 있습니다. 키워드는 쉼표로 구분하며, 파일명에 포함되면 스캔 때 자동으로 이 빠르기가 지정됩니다. 삭제한 빠르기를 쓰던 곡은 "미지정"이 됩니다.</p>
   <div id="crows" style="display:flex;flex-direction:column;gap:6px"></div>
-  <div style="margin-top:12px;display:flex;gap:6px"><button id="cadd">+ 분류 추가</button><span style="flex:1"></span>
+  <div style="margin-top:12px;display:flex;gap:6px"><button id="cadd">+ 빠르기 추가</button><span style="flex:1"></span>
   <button id="csave" class="p">저장</button><button id="cclose">취소</button></div></dialog>
-<dialog id="kdlg" style="width:min(560px,96vw);height:80vh;padding:16px;overflow:auto"><h2 style="margin-top:0;font-size:16px">코드(Key) 목록 설정</h2>
+<dialog id="kdlg" style="width:min(560px,96vw);height:80vh;padding:16px;overflow:auto"><h2 style="margin-top:0;font-size:16px">코드(Key) 설정</h2>
   <p style="color:var(--mut);font-size:12px">파일명에 코드 이름이 있으면(특히 맨 앞) 자동으로 해당 코드에 들어갑니다. "별칭"에는 다른 표기를 쉼표로 적으세요 (예: Bb → B♭, 내림나장조). ▲▼로 목록 순서를 바꿀 수 있고, 삭제한 코드를 쓰던 곡은 "미지정"이 됩니다.</p>
   <div id="krows" style="display:flex;flex-direction:column;gap:6px"></div>
   <div style="margin-top:12px;display:flex;gap:6px"><button id="kadd">+ 코드 추가</button><span style="flex:1"></span>
@@ -248,7 +260,7 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
     <label>제목</label><input id="e-title">
     <label>코드</label><select id="e-key"></select>
     <label>빠르기</label><select id="e-tempo"></select>
-    <label>주제 / 태그 (쉼표로 구분)</label><input id="e-tags" list="taglist"><div id="e-tagchips"></div>
+    <label>카테고리(Tag) (쉼표로 구분)</label><input id="e-tags" list="taglist"><div id="e-tagchips"></div>
     <label>메모</label><textarea id="e-note" rows="3"></textarea>
     <div id="e-file" style="font-size:11px;color:var(--mut);word-break:break-all"></div>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -384,7 +396,7 @@ async function apiKeys(items){
 function exportCsv(){
   const labels=Object.fromEntries(fsx.db.tempos.map(t=>[t.id,t.label]));
   const q=v=>/[",\n]/.test(v)?'"'+String(v).replace(/"/g,'""')+'"':v;
-  const rows=[['파일','제목','코드','빠르기','주제','메모'],...Object.entries(fsx.db.scores).sort(([a],[b])=>a<b?-1:1)
+  const rows=[['파일','제목','코드','빠르기','카테고리','메모'],...Object.entries(fsx.db.scores).sort(([a],[b])=>a<b?-1:1)
     .map(([rel,s])=>[rel,s.title,s.key,labels[s.tempo]||'',s.tags.join(','),s.note])];
   const blob=new Blob(['﻿'+rows.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='scorebox.csv';a.click();
@@ -547,7 +559,7 @@ $('#cclose').onclick=()=>$('#cdlg').close();
 $('#csave').onclick=async()=>{
   const tempos=[...$('#crows').children].map(r=>({id:r.dataset.id,label:r.querySelector('.cl').value,keywords:splitTags(r.querySelector('.ck2').value)}));
   const gone=st.tempoList.filter(t=>!tempos.some(n=>n.id===t.id)&&st.items.some(i=>i.tempo===t.id));
-  if(gone.length&&!confirm(`삭제되는 분류(${gone.map(t=>t.label).join(', ')})를 쓰는 곡은 "미지정"이 됩니다. 계속할까요?`))return;
+  if(gone.length&&!confirm(`삭제되는 빠르기(${gone.map(t=>t.label).join(', ')})를 쓰는 곡은 "미지정"이 됩니다. 계속할까요?`))return;
   await apiTempos(tempos);st.tempo.clear();$('#cdlg').close();load();
 };
 function krow(k){
@@ -973,7 +985,7 @@ function scanTags(rel,parts){
 }
 function renderTagChips(){
   const box=$('#e-tagchips'),cur=new Set(splitTags($('#e-tags').value).map(t=>t.trim()).filter(Boolean));
-  box.innerHTML=tagList().map(t=>`<span class="chip ${cur.has(t.name)?'on':''}" data-t="${esc(t.name)}">${esc(t.name)}</span>`).join('')||'<small style="color:var(--mut)">⚙ 주제/태그 설정에서 주제를 추가하세요</small>';
+  box.innerHTML=tagList().map(t=>`<span class="chip ${cur.has(t.name)?'on':''}" data-t="${esc(t.name)}">${esc(t.name)}</span>`).join('')||'<small style="color:var(--mut)">⚙ 카테고리(Tag) 설정에서 추가하세요</small>';
   box.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{
     const set=new Set(splitTags($('#e-tags').value).map(x=>x.trim()).filter(Boolean));
     set.has(c.dataset.t)?set.delete(c.dataset.t):set.add(c.dataset.t);$('#e-tags').value=[...set].join(', ');renderTagChips();
@@ -983,7 +995,7 @@ $('#e-tags').addEventListener('input',renderTagChips);
 const tagUse=()=>{const u={};for(const s of Object.values(fsx.db.scores))if(!s.missing)for(const t of s.tags||[])u[t]=(u[t]||0)+1;return u};
 function trow(t,n){
   const r=document.createElement('div');r.style.cssText='display:flex;gap:6px;align-items:center';r.dataset.old=t.name||'';
-  r.innerHTML=`<input class="tn" placeholder="주제 이름 (예: 성령)" size="12" value="${esc(t.name||'')}"><input class="tk" placeholder="자동 인식 키워드 (쉼표)" style="flex:1" value="${esc((t.keywords||[]).join(', '))}"><small style="color:var(--mut);white-space:nowrap">${n}곡</small><button class="up">▲</button><button class="dn">▼</button><button class="rm" title="삭제">🗑</button>`;
+  r.innerHTML=`<input class="tn" placeholder="카테고리 이름 (예: 성령)" size="12" value="${esc(t.name||'')}"><input class="tk" placeholder="자동 인식 키워드 (쉼표)" style="flex:1" value="${esc((t.keywords||[]).join(', '))}"><small style="color:var(--mut);white-space:nowrap">${n}곡</small><button class="up">▲</button><button class="dn">▼</button><button class="rm" title="삭제">🗑</button>`;
   r.querySelector('.up').onclick=()=>r.previousElementSibling&&r.previousElementSibling.before(r);
   r.querySelector('.dn').onclick=()=>r.nextElementSibling&&r.nextElementSibling.after(r);
   r.querySelector('.rm').onclick=()=>r.remove();return r;
@@ -1005,7 +1017,7 @@ $('#tsave').onclick=async()=>{
   const rows=[...$('#trows').children].map(r=>({old:r.dataset.old,name:r.querySelector('.tn').value.trim(),keywords:splitTags(r.querySelector('.tk').value).map(k=>k.trim()).filter(Boolean)}));
   const keep=new Set(rows.filter(r=>r.old&&r.name).map(r=>r.old)),u=tagUse();
   const gone=tagList().filter(t=>!keep.has(t.name)&&u[t.name]>0);
-  if(gone.length&&!confirm(`삭제되는 주제(${gone.map(t=>`${t.name} ${u[t.name]}곡`).join(', ')})는 곡에서도 빠집니다. 계속할까요?`))return;
+  if(gone.length&&!confirm(`삭제되는 카테고리(${gone.map(t=>`${t.name} ${u[t.name]}곡`).join(', ')})는 곡에서도 빠집니다. 계속할까요?`))return;
   await apiTags(rows);st.tag.clear();$('#tdlg').close();load();
 };
 
@@ -1020,7 +1032,7 @@ function dupGroups(){
     .map(([k,a])=>({k,title:a[0].title,key:a[0].key,items:a.sort((x,y)=>x.id.localeCompare(y.id)),ignored:ign.has(k)}))
     .filter(g=>D.showIgn||!g.ignored).sort((a,b)=>a.title.localeCompare(b.title,'ko',{numeric:true}));
 }
-function updateDupBadge(){const n=dupGroups().filter(g=>!g.ignored).length;$('#dupbtn').textContent=`🧩 중복 곡 정리${n?` (${n}묶음)`:''}`}
+function updateDupBadge(){const n=dupGroups().filter(g=>!g.ignored).length;$('#dupbtn').innerHTML=`<span class="ti">🧩</span>중복 곡 정리${n?`<b class="bdg">${n}묶음</b>`:''}`}
 const _load=load;load=async function(){const r=await _load.apply(this,arguments);updateDupBadge();return r};
 function lightbox(id){
   getUrl(id).then(u=>{if(!u)return;const d=document.createElement('div');d.id='lightbox';d.innerHTML=`<img src="${u}">`;d.onclick=()=>d.remove();document.body.append(d)});
