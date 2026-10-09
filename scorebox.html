@@ -56,6 +56,8 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
 #cl .tools{padding:10px;display:flex;flex-direction:column;gap:6px;border-bottom:1px solid var(--line)}
 #cl .tools .row{display:flex;gap:6px;flex-wrap:wrap}
 #clist{overflow:auto;flex:1}
+#cpager{display:none;flex-shrink:0;gap:3px;justify-content:center;align-items:center;flex-wrap:wrap;padding:8px 6px;border-top:1px solid var(--line);background:var(--bg)}
+#cpager button{min-width:30px;padding:4px 6px}#cpager button:disabled{opacity:.35;cursor:default}
 .ci{padding:8px 12px;border-bottom:1px solid var(--line);cursor:pointer}
 .ci:hover{background:#8881}.ci.on{background:var(--acc);color:#fff}
 .ci small{opacity:.7}.ci b{font-weight:600}
@@ -273,6 +275,7 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
       <input type="file" id="cimpf" accept=".json" style="display:none">
     </div>
     <div id="clist"></div>
+    <div id="cpager"></div>
   </div>
   <div id="cd"><p style="color:var(--mut)">왼쪽에서 콘티를 선택하거나 <b>＋ 새 콘티</b>를 눌러 만드세요. 처음이면 <b>📥 콘티 가져오기</b>로 <code>contis.json</code>을 불러오세요.</p></div>
 </div>
@@ -741,7 +744,7 @@ window.ScoreBox={open:openRoot};  // (테스트용)
 </script>
 <script>
 /* ================= 콘티 (목록 · 편집 · 인쇄 · JPG) ================= */
-const C={sel:null,q:'',type:'',year:'',timer:null};
+const C={sel:null,q:'',type:'',year:'',timer:null,page:1,per:15,jump:false};
 const DOW='일월화수목금토';
 const normT=s=>String(s||'').replace(/[0-9\s\-_().,·~!?:;+'"“”‘’]/g,'');
 const contis=()=>fsx.db.contis=fsx.db.contis||[];
@@ -814,12 +817,24 @@ function renderContiList(){
   const ys=$('#cyear');if(ys.options.length!==years.length+1){const v=ys.value;ys.innerHTML='<option value="">모든 연도</option>'+years.map(y=>`<option>${y}</option>`).join('');ys.value=v}
   const list=all.filter(contiMatches);
   $('#ccnt').textContent=`${list.length} / ${all.length}개`;
-  $('#clist').innerHTML=list.map(c=>`<div class="ci ${C.sel&&C.sel.id===c.id?'on':''}" data-id="${esc(c.id)}"><b>${esc(c.date)} (${dowOf(c.date)})</b> ${esc(c.service)}${c.subtitle?' · '+esc(c.subtitle):''}<br><small>${songsOf(c).length}곡${c.theme?' · '+esc(c.theme):''}</small></div>`).join('')||'<p style="padding:12px;color:var(--mut)">콘티가 없습니다.</p>';
+  const pages=Math.max(1,Math.ceil(list.length/C.per));
+  if(C.jump&&C.sel){const ix=list.findIndex(c=>c.id===C.sel.id);if(ix>=0)C.page=Math.floor(ix/C.per)+1}C.jump=false;
+  C.page=Math.min(Math.max(1,C.page),pages);
+  $('#clist').innerHTML=list.slice((C.page-1)*C.per,C.page*C.per).map(c=>`<div class="ci ${C.sel&&C.sel.id===c.id?'on':''}" data-id="${esc(c.id)}"><b>${esc(c.date)} (${dowOf(c.date)})</b> ${esc(c.service)}${c.subtitle?' · '+esc(c.subtitle):''}<br><small>${songsOf(c).length}곡${c.theme?' · '+esc(c.theme):''}</small></div>`).join('')||'<p style="padding:12px;color:var(--mut)">콘티가 없습니다.</p>';
   $('#clist').querySelectorAll('.ci').forEach(el=>el.onclick=()=>{C.sel=contis().find(c=>c.id===el.dataset.id);renderContiList();renderContiDetail()});
+  const pg=$('#cpager');pg.style.display=pages>1?'flex':'none';
+  if(pages>1){
+    const a=Math.max(1,Math.min(C.page-2,pages-4)),b=Math.min(pages,a+4);let h=`<button data-p="1" ${C.page===1?'disabled':''} title="처음">«</button><button data-p="${C.page-1}" ${C.page===1?'disabled':''} title="이전">‹</button>`;
+    for(let i=a;i<=b;i++)h+=`<button data-p="${i}" ${i===C.page?'class="p"':''}>${i}</button>`;
+    h+=`<button data-p="${C.page+1}" ${C.page===pages?'disabled':''} title="다음">›</button><button data-p="${pages}" ${C.page===pages?'disabled':''} title="마지막">»</button><select id="cpsel" title="페이지 선택">${Array.from({length:pages},(_,i)=>`<option value="${i+1}" ${i+1===C.page?'selected':''}>${i+1} / ${pages}</option>`).join('')}</select>`;
+    pg.innerHTML=h;
+    pg.querySelectorAll('button[data-p]').forEach(bt=>bt.onclick=()=>{C.page=+bt.dataset.p;renderContiList();$('#clist').scrollTop=0});
+    $('#cpsel').onchange=e=>{C.page=+e.target.value;renderContiList();$('#clist').scrollTop=0};
+  }
 }
-$('#cq').oninput=e=>{C.q=e.target.value;renderContiList()};
-$('#ctype').onchange=e=>{C.type=e.target.value;renderContiList()};
-$('#cyear').onchange=e=>{C.year=e.target.value;renderContiList()};
+$('#cq').oninput=e=>{C.q=e.target.value;C.page=1;renderContiList()};
+$('#ctype').onchange=e=>{C.type=e.target.value;C.page=1;renderContiList()};
+$('#cyear').onchange=e=>{C.year=e.target.value;C.page=1;renderContiList()};
 $('#cimp').onclick=()=>$('#cimpf').click();
 $('#cimpf').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
@@ -828,7 +843,7 @@ $('#cimpf').onchange=async e=>{
 };
 $('#cnew').onclick=()=>{
   const c={id:'n'+Date.now(),date:todayStr(),type:'금요기도회',service:'금요기도회 찬양',subtitle:'',theme:'',songs:[],notes:''};
-  contis().push(c);C.sel=c;saveSoon();renderContiList();renderContiDetail();
+  contis().push(c);C.sel=c;C.jump=true;saveSoon();renderContiList();renderContiDetail();
 };
 
 /* --- 콘티 상세/편집 --- */
@@ -875,7 +890,7 @@ function renderContiDetail(){
   if(!songsOf(c).length)sb.innerHTML='<p style="color:var(--mut)">곡이 없습니다. <b>＋ 곡 추가</b>로 악보함에서 고르세요.</p>';
   $('#d-add').onclick=openPicker;$('#d-print').onclick=()=>openPrint(c);
   $('#d-copy').onclick=async()=>{try{await navigator.clipboard.writeText(contiText(c));alert('콘티 텍스트를 복사했습니다.')}catch(e){prompt('복사하세요',contiText(c))}};
-  $('#d-dup').onclick=()=>{const n=JSON.parse(JSON.stringify(c));n.id='n'+Date.now();n.date=todayStr();contis().push(n);C.sel=n;saveSoon();renderContiList();renderContiDetail()};
+  $('#d-dup').onclick=()=>{const n=JSON.parse(JSON.stringify(c));n.id='n'+Date.now();n.date=todayStr();contis().push(n);C.sel=n;C.jump=true;saveSoon();renderContiList();renderContiDetail()};
   $('#d-del').onclick=()=>{if(!confirm(`${c.date} ${c.service} 콘티를 삭제할까요?`))return;fsx.db.contis=contis().filter(x=>x!==c);C.sel=null;saveSoon();renderContiList();renderContiDetail()};
 }
 
@@ -1395,7 +1410,7 @@ function renderStats(){
 function gotoConti(id){
   $('#statdlg').classList.remove('on');tipHide();setMode('conti');
   C.q='';C.type='';C.year='';$('#cq').value='';$('#ctype').value='';$('#cyear').value='';
-  C.sel=contis().find(c=>c.id===id)||null;renderContiList();renderContiDetail();
+  C.sel=contis().find(c=>c.id===id)||null;C.jump=true;renderContiList();renderContiDetail();
   const it=[...document.querySelectorAll('#clist .ci')].find(e=>e.dataset.id===id);if(it)it.scrollIntoView({block:'center'});
 }
 $('#statbtn').onclick=()=>{ST.top=20;ST.never_n=30;$('#statdlg').classList.add('on');renderStats()};
