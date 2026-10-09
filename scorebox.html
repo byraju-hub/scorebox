@@ -848,7 +848,7 @@ $('#cnew').onclick=()=>{
 
 /* --- 콘티 상세/편집 --- */
 function contiText(c){
-  const [y,m,d]=c.date.split('-');let out=`${+m}/${+d} ${c.service}${c.subtitle?' - '+c.subtitle:''}입니다.\n`,sec=null,i=0;
+  const [y,m,d]=c.date.split('-');let out=`${+m}/${+d} ${c.service}입니다.\n`,sec=null,i=0;
   for(const g of songsOf(c)){
     if(g.sec&&g.sec!==sec&&/#\d/.test(g.sec)){out+=`${i?'\n':''}[${g.sec.replace(/^\s*/, '')}]\n`;sec=g.sec;i=0}
     i++;out+=`${i}. ${g.title}${g.key?` (${g.key}${g.refrain?', 후렴':''})`:g.refrain?' (후렴)':''}\n`;
