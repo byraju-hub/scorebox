@@ -130,6 +130,7 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
 .tool:active{transform:translateX(2px) scale(.98)}
 .tool.set{border-left-color:#8b5cf6}.tool.set:hover{background:#8b5cf6}
 .tool.out{border-left-color:#16a34a}.tool.out:hover{background:#16a34a}
+.tool.all{border-left-color:#0ea5e9;margin-top:4px}.tool.all.cur{background:var(--acc);color:#fff;border-color:var(--acc);border-left-color:var(--acc)}
 .tool.warn{border-left-color:var(--warn)}.tool.warn:hover{background:var(--warn);color:#000}
 .tool .bdg{margin-left:auto;background:var(--warn);color:#000;border-radius:10px;padding:0 8px;font-size:12px}
 </style>
@@ -147,6 +148,7 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
   <h1>🎼 Raju's ScoreBox</h1>
   <div id="tabs"><button id="tab-lib" class="p">🎼 악보함</button><button id="tab-conti">📋 콘티</button></div>
   <div id="libside">
+  <button class="tool all" id="showall"><span class="ti">📚</span>전체 악보 보기</button>
   <h3 class="sec key"><span class="si"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2" fill="#fff" stroke="#222" stroke-width="1.1"/><path d="M6 14.5V20M10 14.5V20M14 4v16M18 14.5V20" stroke="#222" stroke-width=".8"/><g fill="#222"><rect x="4.7" y="4" width="2.6" height="10.5" rx=".6"/><rect x="8.7" y="4" width="2.6" height="10.5" rx=".6"/><rect x="16.7" y="4" width="2.6" height="10.5" rx=".6"/></g></svg></span>코드(Key)</h3><div id="f-key"></div>
   <h3 class="sec speed"><span class="si">⏱</span>빠르기(Speed)</h3><div id="f-tempo"></div>
   <h3 class="sec tag"><span class="si">🏷️</span>카테고리(Tag)</h3><div id="f-tag"></div>
@@ -439,7 +441,7 @@ async function load(){
 }
 function chips(el,entries,set,label){
   el.innerHTML=entries.map(([v,n])=>`<span class="chip ${set.has(v)?'on':''}" data-v="${esc(v)}">${esc(label?label(v):v)}<small>${n}</small></span>`).join('')||'<small style="color:var(--mut)">없음</small>';
-  el.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{const v=c.dataset.v;set.has(v)?set.delete(v):set.add(v);render()});
+  el.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{const v=c.dataset.v;if(set.has(v))set.delete(v);else{set.clear();set.add(v)}render()});
 }
 const count=(arr)=>{const m={};arr.forEach(v=>m[v]=(m[v]||0)+1);return m};
 function matches(i,ign){
@@ -461,6 +463,7 @@ function render(){
   const tagOrder=tagList().map(t=>t.name);
   chips($('#f-tag'),[...tagOrder.filter(t=>tg[t]||st.tag.has(t)).map(t=>[t,tg[t]||0]),...Object.keys(tg).filter(t=>!tagOrder.includes(t)).map(t=>[t,tg[t]])],st.tag);
   $('#taglist').innerHTML=tagList().map(t=>`<option value="${esc(t.name)}">`).join('');
+  $('#showall').classList.toggle('cur',!st.key.size&&!st.tempo.size&&!st.tag.size&&!st.unrev&&!st.showEx&&!$('#q').value.trim());
   const unrev=st.items.filter(i=>!i.reviewed).length;
   $('#n-ex').textContent=st.exCount;$('#f-ex').classList.toggle('on',st.showEx);
   $('#bex').style.display=st.showEx?'none':'';$('#brestore').style.display=st.showEx?'':'none';
@@ -534,6 +537,10 @@ $('#csv').onclick=exportCsv;
 $('#f-ex').onclick=()=>{st.showEx=!st.showEx;st.sel.clear();load()};
 $('#selall').onclick=()=>{const ids=st.list.map(i=>i.id),all=ids.length&&ids.every(id=>st.sel.has(id));
   ids.forEach(id=>all?st.sel.delete(id):st.sel.add(id));render()};
+$('#showall').onclick=()=>{
+  st.key.clear();st.tempo.clear();st.tag.clear();st.unrev=false;$('#q').value='';
+  if(st.showEx){st.showEx=false;st.sel.clear();load()}else render();
+};
 $('#bsel').onclick=()=>$('#selall').onclick();
 $('#bnote').onclick=async()=>{
   const ids=[...st.sel],withNote=ids.filter(id=>(fsx.db.scores[id]||{}).note);
