@@ -90,6 +90,8 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
 #crbox img{max-width:100%;max-height:60vh}
 #crbox .sh{position:absolute;left:0;right:0;background:#0009}
 #crbox .ln{position:absolute;left:0;right:0;border-top:2px solid #e03131}
+#crbox .shv{position:absolute;top:0;bottom:0;background:#0009}
+#crbox .lnv{position:absolute;top:0;bottom:0;border-left:2px solid #e03131}
 #pickdlg{width:min(720px,96vw);height:80vh;padding:14px;flex-direction:column}
 #pickdlg[open]{display:flex}
 #pickres{overflow:auto;flex:1;margin-top:8px}
@@ -339,9 +341,11 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
 </div>
 <div id="printroot"></div>
 <dialog id="crdlg"><h3 style="margin:0 0 8px;font-size:15px">악보 자르기 <small id="crtitle" style="color:var(--mut)"></small></h3>
-  <div id="crbox"><img id="crimg"><div class="sh" id="crsh1" style="top:0"></div><div class="sh" id="crsh2" style="bottom:0"></div><div class="ln" id="crln1"></div><div class="ln" id="crln2"></div></div>
+  <div id="crbox"><img id="crimg"><div class="sh" id="crsh1" style="top:0"></div><div class="sh" id="crsh2" style="bottom:0"></div><div class="ln" id="crln1"></div><div class="ln" id="crln2"></div><div class="shv" id="crsh3" style="left:0"></div><div class="shv" id="crsh4" style="right:0"></div><div class="lnv" id="crln3"></div><div class="lnv" id="crln4"></div></div>
   <div class="fr" style="margin-top:8px"><label>위쪽 <input type="range" id="crtop" min="0" max="95" value="0"> <span id="crtv"></span></label>
     <label>아래쪽 <input type="range" id="crbot" min="5" max="100" value="100"> <span id="crbv"></span></label></div>
+  <div class="fr"><label>왼쪽 <input type="range" id="crlef" min="0" max="95" value="0"> <span id="crlv"></span></label>
+    <label>오른쪽 <input type="range" id="crrig" min="5" max="100" value="100"> <span id="crrv"></span></label></div>
   <div class="fr"><button id="crok" class="p">적용</button><button id="crreset">전체 사용</button><button id="crcancel">취소</button></div></dialog>
 <dialog id="pickdlg"><div class="fr"><input type="search" id="pkq" placeholder="악보함에서 곡 찾기" style="flex:1"><select id="pksort"><option value="name">이름순</option><option value="old">오래 안 쓴 순</option><option value="most">많이 쓴 순</option></select><button id="pkclose">닫기</button></div>
   <div id="pickres"></div></dialog>
@@ -911,8 +915,8 @@ async function buildLayout(c,p){
     if(!g.file){warns.push(`'${g.title}': 악보 파일이 선택되지 않았습니다`);continue}
     if(!IMG_OK.test(g.file)){warns.push(`'${g.title}': PDF 악보는 인쇄 레이아웃에 넣을 수 없습니다 (이미지로 변환 필요)`);continue}
     const im=await loadImg(g.file);if(!im){warns.push(`'${g.title}': 악보를 열 수 없습니다 (${g.file})`);continue}
-    const cr=g.crop||{top:0,bottom:1},sy=im.h*cr.top,sh=im.h*(cr.bottom-cr.top);
-    items.push({g,im,sy,sh,sw:im.w,label:g.label||'',place:g.place||'auto',no:items.length+1});
+    const cr=g.crop||{top:0,bottom:1},sy=im.h*cr.top,sh=im.h*(cr.bottom-cr.top),cl=cr.left||0,crr=cr.right==null?1:cr.right;
+    items.push({g,im,sy,sh,sx:im.w*cl,sw:im.w*(crr-cl),label:g.label||'',place:g.place||'auto',no:items.length+1});
   }
   const pw=(fw/per)-2*pad,ph=fh-2*pad,minS=p.minScale/100;
   const hOf=it=>pw*it.sh/it.sw+(it.label?labH:0);
@@ -939,7 +943,7 @@ async function buildLayout(c,p){
     for(const it of its){
       const w=pw*sc,h=(pw*it.sh/it.sw)*sc,x=px+(pw-w)/2;
       if(it.label){out.push({kind:'label',text:it.label,x:px,y,w:pw,h:labH*sc});y+=labH*sc}
-      out.push({kind:'img',im:it.im,sx:0,sy:it.sy,sw:it.sw,sh:it.sh,x,y,w,h});
+      out.push({kind:'img',im:it.im,sx:it.sx,sy:it.sy,sw:it.sw,sh:it.sh,x,y,w,h});
       if(p.numbers&&!it.g.noNum)out.push({kind:'num',text:`(${it.no})`,x:x+0.6*k,y:y+0.6*k});
       y+=h+gap*sc;
     }
@@ -1010,7 +1014,7 @@ function renderPSongs(){
   const box=$('#psongs');box.innerHTML='';
   songsOf(P.c).forEach((g,i)=>{
     const r=document.createElement('div');r.className='pr';
-    const crop=g.crop?`✂ ${Math.round(g.crop.top*100)}–${Math.round(g.crop.bottom*100)}%`:'✂ 자르기';
+    const crop=g.crop?`✂ ${Math.round(g.crop.top*100)}–${Math.round(g.crop.bottom*100)}%`+((g.crop.left||g.crop.right!=null&&g.crop.right<1)?` · ${Math.round((g.crop.left||0)*100)}–${Math.round((g.crop.right==null?1:g.crop.right)*100)}%`:''):'✂ 자르기';
     r.innerHTML=`<label class="t"><input type="checkbox" ${g.print!==false?'checked':''}> ${i+1}. ${esc(g.title)}${g.refrain?' <small>(후렴)</small>':''}</label>
       <span class="fs"></span><button class="cr">${crop}</button><input class="lb" placeholder="빨간 라벨 예: [입례]" value="${esc(g.label||'')}">
       <select class="pl"><option value="auto">칸: 자동</option><option value="new">새 칸에서 시작</option><option value="same">위 곡과 같은 칸</option></select>`;
@@ -1042,16 +1046,19 @@ let CR=null;
 async function openCrop(g){
   if(!g.file||!IMG_OK.test(g.file)){alert('이미지 악보만 자를 수 있습니다.');return}
   const im=await loadImg(g.file);if(!im)return;CR=g;$('#crtitle').textContent=g.title;$('#crimg').src=im.url;
-  const c=g.crop||{top:0,bottom:1};$('#crtop').value=Math.round(c.top*100);$('#crbot').value=Math.round(c.bottom*100);crUpd();
+  const c=g.crop||{top:0,bottom:1};$('#crtop').value=Math.round(c.top*100);$('#crbot').value=Math.round(c.bottom*100);$('#crlef').value=Math.round((c.left||0)*100);$('#crrig').value=Math.round((c.right==null?1:c.right)*100);crUpd();
   $('#crdlg').showModal();
 }
 function crUpd(){
   let t=+$('#crtop').value,b=+$('#crbot').value;if(b-t<5){if(document.activeElement===$('#crtop'))t=b-5;else b=t+5;$('#crtop').value=t;$('#crbot').value=b}
   $('#crsh1').style.height=t+'%';$('#crsh2').style.height=(100-b)+'%';$('#crln1').style.top=t+'%';$('#crln2').style.top=b+'%';
   $('#crtv').textContent=t+'%';$('#crbv').textContent=b+'%';
+  let l=+$('#crlef').value,rr=+$('#crrig').value;if(rr-l<5){if(document.activeElement===$('#crlef'))l=rr-5;else rr=l+5;$('#crlef').value=l;$('#crrig').value=rr}
+  $('#crsh3').style.width=l+'%';$('#crsh4').style.width=(100-rr)+'%';$('#crln3').style.left=l+'%';$('#crln4').style.left=rr+'%';
+  $('#crlv').textContent=l+'%';$('#crrv').textContent=rr+'%';
 }
-$('#crtop').oninput=crUpd;$('#crbot').oninput=crUpd;
-$('#crok').onclick=()=>{const t=+$('#crtop').value/100,b=+$('#crbot').value/100;CR.crop=(t===0&&b===1)?null:{top:t,bottom:b};$('#crdlg').close();renderPSongs();refreshPreview()};
+$('#crtop').oninput=crUpd;$('#crbot').oninput=crUpd;$('#crlef').oninput=crUpd;$('#crrig').oninput=crUpd;
+$('#crok').onclick=()=>{const t=+$('#crtop').value/100,b=+$('#crbot').value/100,l=+$('#crlef').value/100,rr=+$('#crrig').value/100;CR.crop=(t===0&&b===1&&l===0&&rr===1)?null:{top:t,bottom:b,left:l,right:rr};$('#crdlg').close();renderPSongs();refreshPreview()};
 $('#crreset').onclick=()=>{CR.crop=null;$('#crdlg').close();renderPSongs();refreshPreview()};
 $('#crcancel').onclick=()=>$('#crdlg').close();
 
