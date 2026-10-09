@@ -324,7 +324,7 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
     <div id="pset">
       <div class="g">
         <label>용지</label><select id="p-paper"><option value="B4">B4 (257×364mm)</option><option value="A3">A3 (297×420mm)</option><option value="A4">A4 (210×297mm)</option></select>
-        <label>배치</label><select id="p-mode"><option value="2up">가로 · 한 면에 2칸 (양면)</option><option value="1up">세로 · 한 면에 1칸</option></select>
+        <label>배치</label><select id="p-mode"><option value="2up">가로 · 한 면에 2칸 (양면)</option><option value="3up">가로 · 한 면에 3칸 (양면)</option><option value="1up">세로 · 한 면에 1칸</option></select>
         <label>칸 순서</label><select id="p-order"><option value="booklet">앞-왼 → 뒤-왼 → 뒤-오 → 앞-오 (기존 방식)</option><option value="seq">앞-왼 → 앞-오 → 뒤-왼 → 뒤-오</option></select>
         <label>머리글</label><input id="p-header" placeholder="첫 면 위쪽 제목">
         <label>여백(mm)</label><input id="p-margin" type="number" min="0" max="30" step="1">
@@ -750,8 +750,8 @@ const dowOf=d=>DOW[new Date(d+'T00:00:00').getDay()];
 const fmtDate=d=>{const [y,m,dd]=d.split('-');return `${+m}/${+dd}(${dowOf(d)})`};
 const todayStr=()=>{const t=new Date();return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`};
 const songsOf=c=>c.songs||[];
-const PREF_DEF={paper:'B4',mode:'2up',order:'booklet',margin:8,minScale:85,dpi:200,frame:true,numbers:true};
-const prefs=()=>fsx.db.printPrefs=Object.assign({},PREF_DEF,fsx.db.printPrefs||{});
+const PREF_DEF={paper:'A3',mode:'2up',order:'booklet',margin:6,minScale:85,dpi:200,frame:true,numbers:true};
+const prefs=()=>{const o=fsx.db.printPrefs;if(o&&!o.v){o.paper=PREF_DEF.paper;o.mode=PREF_DEF.mode;o.margin=PREF_DEF.margin;o.v=2}return fsx.db.printPrefs=Object.assign({},PREF_DEF,{v:2},o||{})};
 function saveSoon(){clearTimeout(C.timer);C.timer=setTimeout(()=>saveDb(),400)}
 
 /* --- 가져오기: 구간(sections) 형식 → 평평한 songs 배열 --- */
@@ -910,7 +910,7 @@ async function loadImg(id){
 }
 function paperDims(p){const [s,l]={B4:[257,364],A3:[297,420],A4:[210,297]}[p.paper];return p.mode==='1up'?{W:s,H:l}:{W:l,H:s}}
 async function buildLayout(c,p){
-  const {W,H}=paperDims(p),k=Math.max(W,H)/420,m=+p.margin,hdr=9*k,pad=2*k,gap=2*k,labH=6*k,per=p.mode==='1up'?1:2;
+  const {W,H}=paperDims(p),k=Math.max(W,H)/420,m=+p.margin,hdr=9*k,pad=2*k,gap=2*k,labH=6*k,per=p.mode==='1up'?1:p.mode==='3up'?3:2;
   const fx=m,fy=m+hdr,fw=W-2*m,fh=H-fy-m,warns=[],items=[];
   for(const g of songsOf(c)){
     if(g.print===false)continue;
@@ -932,12 +932,13 @@ async function buildLayout(c,p){
     tot=cur.length?tot+gap+h:h;cur.push(it);
   }
   close();
-  const group=p.mode==='1up'?2:4;while(panels.length%group)panels.push([]);
+  const group=p.mode==='1up'?2:p.mode==='3up'?6:4;while(panels.length%group)panels.push([]);
   const pages=[];
   const ensure=i=>pages[i]||(pages[i]={W,H,front:i%2===0,header:'',panels:[],frame:{x:fx,y:fy,w:fw,h:fh},per,k,pad});
   panels.forEach((its,idx)=>{
     let page,side;
     if(p.mode==='1up'){page=idx;side=0}
+    else if(p.mode==='3up'){page=Math.floor(idx/3);side=idx%3}
     else{const sheet=Math.floor(idx/4),q=idx%4;const map=p.order==='seq'?[[0,0],[0,1],[1,0],[1,1]]:[[0,0],[1,0],[1,1],[0,1]];page=sheet*2+map[q][0];side=map[q][1]}
     const pg=ensure(page);
     const px=fx+side*(fw/per)+pad,py=fy+pad;
@@ -966,7 +967,7 @@ function renderPageHTML(pg,p){
   const A=(css,html='')=>{const e=document.createElement('div');e.className='abs';e.style.cssText=css;e.innerHTML=html;d.append(e);return e};
   if(pg.header)A(`left:${pg.frame.x}mm;top:${pg.frame.y-9*pg.k+0.5}mm;font-weight:700;font-size:${5.2*pg.k}mm;line-height:${6*pg.k}mm;white-space:nowrap`,esc(pg.header));
   if(p.frame){A(`left:${pg.frame.x}mm;top:${pg.frame.y}mm;width:${pg.frame.w}mm;height:${pg.frame.h}mm;border:0.3mm solid #000;box-sizing:border-box`);
-    if(pg.per===2)A(`left:${pg.frame.x+pg.frame.w/2}mm;top:${pg.frame.y}mm;height:${pg.frame.h}mm;border-left:0.3mm solid #000`)}
+    for(let i=1;i<pg.per;i++)A(`left:${pg.frame.x+pg.frame.w*i/pg.per}mm;top:${pg.frame.y}mm;height:${pg.frame.h}mm;border-left:0.3mm solid #000`)}
   for(const pn of pg.panels)for(const it of pn.items){
     if(it.kind==='num')A(`left:${it.x}mm;top:${it.y}mm;padding:0 ${0.8*pg.k}mm;background:#fffd;color:#000;font-weight:700;font-size:${4.6*pg.k}mm;line-height:${6*pg.k}mm;white-space:nowrap`,esc(it.text));
     else if(it.kind==='label')A(`left:${it.x}mm;top:${it.y}mm;width:${it.w}mm;height:${it.h}mm;text-align:center;color:#e03131;font-weight:700;font-size:${4.4*pg.k}mm;line-height:${it.h}mm`,esc(it.text));
@@ -983,7 +984,7 @@ function renderPageCanvas(pg,p,dpi){
   const FONT='"Gowun Dodum","Malgun Gothic","Apple SD Gothic Neo","Noto Sans CJK KR",sans-serif';
   if(pg.header){x.fillStyle='#000';x.font=`700 ${5.2*pg.k*px}px ${FONT}`;x.textBaseline='alphabetic';x.fillText(pg.header,pg.frame.x*px,(pg.frame.y-2.2*pg.k)*px)}
   if(p.frame){x.strokeStyle='#000';x.lineWidth=0.3*px;x.strokeRect(pg.frame.x*px,pg.frame.y*px,pg.frame.w*px,pg.frame.h*px);
-    if(pg.per===2){x.beginPath();x.moveTo((pg.frame.x+pg.frame.w/2)*px,pg.frame.y*px);x.lineTo((pg.frame.x+pg.frame.w/2)*px,(pg.frame.y+pg.frame.h)*px);x.stroke()}}
+    for(let i=1;i<pg.per;i++){const lx=(pg.frame.x+pg.frame.w*i/pg.per)*px;x.beginPath();x.moveTo(lx,pg.frame.y*px);x.lineTo(lx,(pg.frame.y+pg.frame.h)*px);x.stroke()}}
   for(const pn of pg.panels)for(const it of pn.items){
     if(it.kind==='num'){x.font=`700 ${4.6*pg.k*px}px ${FONT}`;x.textAlign='left';x.textBaseline='middle';const tw=x.measureText(it.text).width,pd=0.8*pg.k*px,bh=6*pg.k*px;x.fillStyle='rgba(255,255,255,.87)';x.fillRect(it.x*px,it.y*px,tw+2*pd,bh);x.fillStyle='#000';x.fillText(it.text,it.x*px+pd,it.y*px+bh/2)}
     else if(it.kind==='label'){x.fillStyle='#e03131';x.font=`700 ${4.4*pg.k*px}px ${FONT}`;x.textAlign='center';x.textBaseline='middle';x.fillText(it.text,(it.x+it.w/2)*px,(it.y+it.h/2)*px);x.textAlign='left'}
