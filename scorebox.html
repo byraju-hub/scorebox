@@ -95,6 +95,24 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
   #printroot .pg{break-after:page;page-break-after:always;margin:0}
   #printroot .pg:last-child{break-after:auto;page-break-after:auto}
 }
+#dupdlg{position:fixed;inset:0;z-index:90;background:var(--bg);display:none;flex-direction:column}
+#dupdlg.on{display:flex}
+#dupdlg .top{display:flex;gap:10px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+#dupdlg .top label{font-size:12px;color:var(--mut)}
+#dupnote{padding:8px 14px;color:var(--mut);font-size:12px;border-bottom:1px solid var(--line)}
+#dupbody{flex:1;overflow:auto;padding:14px}
+.dg{background:var(--card);border:1px solid var(--line);border-radius:8px;margin-bottom:14px;padding:10px}
+.dg.ign{opacity:.6}
+.dh{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.di{display:flex;gap:12px;flex-wrap:wrap}
+.dc{width:240px;display:flex;flex-direction:column;gap:4px}
+.dth{height:300px;background:#8883;display:flex;align-items:center;justify-content:center;font-size:40px;overflow:hidden;cursor:zoom-in;border-radius:6px}
+.dth img{width:100%;height:100%;object-fit:cover;object-position:top}
+.dn{font-size:12px;word-break:break-all}.dm{color:var(--mut)}
+.da{display:flex;gap:6px;flex-wrap:wrap}.da button{padding:4px 8px}
+#lightbox{position:fixed;inset:0;z-index:100;background:#000d;display:flex;align-items:center;justify-content:center;cursor:zoom-out}
+#lightbox img{max-width:96vw;max-height:96vh;background:#fff}
+#e-tagchips{display:flex;flex-wrap:wrap;margin:-2px 0 4px}
 </style>
 </head>
 <body>
@@ -118,6 +136,8 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
   <button id="rescan">📁 폴더 다시 스캔</button>
   <button id="cfg" style="margin-top:6px">⚙ 빠르기 분류 설정</button>
   <button id="kcfg" style="margin-top:6px">⚙ 코드(Key) 목록 설정</button>
+  <button id="tcfg" style="margin-top:6px">⚙ 주제/태그 설정</button>
+  <button id="dupbtn" style="margin-top:6px">🧩 중복 곡 정리</button>
   <button id="csv" style="margin-top:6px">⬇ 엑셀(CSV) 내보내기</button>
   <button id="chdir" style="margin-top:6px">📂 폴더 바꾸기</button>
   <p style="color:var(--mut);font-size:12px" id="dir"></p>
@@ -163,6 +183,20 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
 </div>
 </main>
 <datalist id="taglist"></datalist>
+<dialog id="tdlg" style="width:min(560px,96vw);height:80vh;padding:16px;overflow:auto"><h2 style="margin-top:0;font-size:16px">주제 / 태그 설정</h2>
+  <p style="color:var(--mut);font-size:12px">주제(태그)를 추가·이름 변경·삭제하고 ▲▼로 순서를 바꿀 수 있습니다. 이름을 바꾸면 그 주제를 쓰던 곡도 같이 바뀌고, 삭제하면 곡에서 그 주제가 빠집니다. "자동 인식 키워드"는 쉼표로 구분하며, 새로 스캔되는 파일명에 포함되면 이 주제가 자동으로 붙습니다 (하위 폴더 이름은 원래대로 주제가 됩니다).</p>
+  <div id="trows" style="display:flex;flex-direction:column;gap:6px"></div>
+  <div style="margin-top:12px;display:flex;gap:6px"><button id="tadd">+ 주제 추가</button><span style="flex:1"></span>
+  <button id="tsave" class="p">저장</button><button id="tclose">취소</button></div></dialog>
+<div id="dupdlg">
+  <div class="top"><b id="duptitle">중복 곡 정리</b><span style="flex:1"></span>
+    <label>정리 방식 <select id="dupmode"><option value="exclude">남기고 나머지는 목록에서 제외 (복원 가능)</option><option value="delete">남기고 나머지는 파일 삭제 (복구 불가)</option></select></label>
+    <label><input type="checkbox" id="dupign"> '중복 아님' 표시한 것도 보기</label>
+    <button id="dupclose">닫기</button></div>
+  <div id="dupnote">제목(숫자 제외)과 코드가 같은 곡을 묶어 보여 줍니다. 악보 이미지의 첫 가사는 읽을 수 없어서 제목과 코드로 찾습니다. 같은 곡의 1쪽·2쪽처럼 중복이 아니면 <b>중복 아님</b>을 눌러 목록에서 빼세요. 정리하면 태그·메모·빠르기는 남기는 곡에 합쳐지고, 콘티에 쓰인 악보도 남기는 곡으로 바뀝니다. 그림을 누르면 크게 볼 수 있습니다.</div>
+  <div id="dupbody"></div>
+</div>
+
 <div id="pdlg">
   <div class="top"><b id="ptitle">인쇄 · JPG</b><span style="flex:1"></span>
     <button id="pprint" class="p">🖨 인쇄</button>
@@ -214,7 +248,7 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
     <label>제목</label><input id="e-title">
     <label>코드</label><select id="e-key"></select>
     <label>빠르기</label><select id="e-tempo"></select>
-    <label>주제 / 태그 (쉼표로 구분)</label><input id="e-tags" list="taglist">
+    <label>주제 / 태그 (쉼표로 구분)</label><input id="e-tags" list="taglist"><div id="e-tagchips"></div>
     <label>메모</label><textarea id="e-note" rows="3"></textarea>
     <div id="e-file" style="font-size:11px;color:var(--mut);word-break:break-all"></div>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -236,7 +270,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const isPdf=id=>id.toLowerCase().endsWith('.pdf');
 const splitTags=v=>String(v).split(/[,，]/);
 
-/* ---------- 데이터 (scorebox_data.json 은 Python 버전과 같은 형식) ---------- */
+/* ---------- 데이터 (scorebox_data.json) ---------- */
 const DATA_NAME='scorebox_data.json';
 const EXTS=new Set(['.jpg','.jpeg','.png','.gif','.webp','.bmp','.pdf']);
 const DEFAULT_TEMPOS=[
@@ -307,7 +341,7 @@ async function scanFs(){
     if(!scores[rel]){
       const g=guess(stemOf(rel),db.tempos,db.keys);
       const parts=rel.split('/').slice(0,-1);
-      scores[rel]={title:g.title,key:g.key,tempo:g.tempo,tags:parts,note:'',reviewed:false,missing:false};
+      scores[rel]={title:g.title,key:g.key,tempo:g.tempo,tags:scanTags(rel,parts),note:'',reviewed:false,missing:false};
     }else scores[rel].missing=false;
   }
   for(const rel in scores)if(!files.has(rel))scores[rel].missing=true;
@@ -399,9 +433,9 @@ function render(){
   const tc=count(st.items.filter(i=>matches(i,'tempo')).map(i=>i.tempo||'-'));
   chips($('#f-tempo'),[...Object.keys(st.tempos),'-'].filter(k=>tc[k]||st.tempo.has(k)).map(k=>[k,tc[k]||0]),st.tempo,v=>st.tempos[v]||'(미지정)');
   const tg=count(st.items.filter(i=>matches(i,'tag')).flatMap(i=>i.tags));
-  chips($('#f-tag'),[...Object.entries(tg),...[...st.tag].filter(t=>!(t in tg)).map(t=>[t,0])].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'ko')),st.tag);
-  const allTags=[...new Set(st.items.flatMap(i=>i.tags))].sort((a,b)=>a.localeCompare(b,'ko'));
-  $('#taglist').innerHTML=allTags.map(t=>`<option value="${esc(t)}">`).join('');
+  const tagOrder=tagList().map(t=>t.name);
+  chips($('#f-tag'),[...tagOrder.filter(t=>tg[t]||st.tag.has(t)).map(t=>[t,tg[t]||0]),...Object.keys(tg).filter(t=>!tagOrder.includes(t)).map(t=>[t,tg[t]])],st.tag);
+  $('#taglist').innerHTML=tagList().map(t=>`<option value="${esc(t.name)}">`).join('');
   const unrev=st.items.filter(i=>!i.reviewed).length;
   $('#n-ex').textContent=st.exCount;$('#f-ex').classList.toggle('on',st.showEx);
   $('#bex').style.display=st.showEx?'none':'';$('#brestore').style.display=st.showEx?'':'none';
@@ -432,7 +466,7 @@ async function openDlg(it){
   st.cur=it;
   $('#view').innerHTML='';
   $('#e-title').value=it.title;$('#e-key').value=it.key;$('#e-tempo').value=it.tempo;
-  $('#e-tags').value=it.tags.join(', ');$('#e-note').value=it.note;$('#e-file').textContent=it.id;$('#e-ex').textContent=st.showEx?'↩ 목록으로 복원':'목록에서 제외';
+  $('#e-tags').value=it.tags.join(', ');renderTagChips();$('#e-note').value=it.note;$('#e-file').textContent=it.id;$('#e-ex').textContent=st.showEx?'↩ 목록으로 복원':'목록에서 제외';
   if(!$('#dlg').open)$('#dlg').showModal();
   const u=await getUrl(it.id);if(st.cur!==it)return;
   $('#view').innerHTML=isPdf(it.id)?`<iframe src="${u}"></iframe>`:`<img src="${u}">`;
@@ -919,6 +953,134 @@ $('#pjpgdl').onclick=async()=>{
   for(const f of files){const a=document.createElement('a');a.href=URL.createObjectURL(f.blob);a.download=f.name;a.click();await new Promise(r=>setTimeout(r,250));URL.revokeObjectURL(a.href)}
 };
 window.ScoreBoxConti={importContis,buildLayout,renderPageCanvas,prefs,contiText,flattenConti};
+</script>
+<script>
+/* ================= 주제/태그 카테고리 ================= */
+function tagList(){
+  const db=fsx.db;
+  if(!db.tagList){
+    const c={};for(const s of Object.values(db.scores))for(const t of s.tags||[])c[t]=(c[t]||0)+1;
+    db.tagList=Object.entries(c).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'ko')).map(([name])=>({name,keywords:[]}));
+  }
+  const have=new Set(db.tagList.map(t=>t.name));  // 곡에 쓰이는데 목록에 없는 태그는 자동으로 추가
+  for(const s of Object.values(db.scores))for(const t of s.tags||[])if(!have.has(t)){db.tagList.push({name:t,keywords:[]});have.add(t)}
+  return db.tagList;
+}
+function scanTags(rel,parts){
+  const stem=stemOf(rel).toLowerCase(),set=new Set(parts);
+  for(const t of tagList())for(const k of t.keywords||[])if(k&&stem.includes(k.toLowerCase()))set.add(t.name);
+  return [...set].sort();
+}
+function renderTagChips(){
+  const box=$('#e-tagchips'),cur=new Set(splitTags($('#e-tags').value).map(t=>t.trim()).filter(Boolean));
+  box.innerHTML=tagList().map(t=>`<span class="chip ${cur.has(t.name)?'on':''}" data-t="${esc(t.name)}">${esc(t.name)}</span>`).join('')||'<small style="color:var(--mut)">⚙ 주제/태그 설정에서 주제를 추가하세요</small>';
+  box.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{
+    const set=new Set(splitTags($('#e-tags').value).map(x=>x.trim()).filter(Boolean));
+    set.has(c.dataset.t)?set.delete(c.dataset.t):set.add(c.dataset.t);$('#e-tags').value=[...set].join(', ');renderTagChips();
+  });
+}
+$('#e-tags').addEventListener('input',renderTagChips);
+const tagUse=()=>{const u={};for(const s of Object.values(fsx.db.scores))if(!s.missing)for(const t of s.tags||[])u[t]=(u[t]||0)+1;return u};
+function trow(t,n){
+  const r=document.createElement('div');r.style.cssText='display:flex;gap:6px;align-items:center';r.dataset.old=t.name||'';
+  r.innerHTML=`<input class="tn" placeholder="주제 이름 (예: 성령)" size="12" value="${esc(t.name||'')}"><input class="tk" placeholder="자동 인식 키워드 (쉼표)" style="flex:1" value="${esc((t.keywords||[]).join(', '))}"><small style="color:var(--mut);white-space:nowrap">${n}곡</small><button class="up">▲</button><button class="dn">▼</button><button class="rm" title="삭제">🗑</button>`;
+  r.querySelector('.up').onclick=()=>r.previousElementSibling&&r.previousElementSibling.before(r);
+  r.querySelector('.dn').onclick=()=>r.nextElementSibling&&r.nextElementSibling.after(r);
+  r.querySelector('.rm').onclick=()=>r.remove();return r;
+}
+$('#tcfg').onclick=()=>{const u=tagUse();$('#trows').replaceChildren(...tagList().map(t=>trow(t,u[t.name]||0)));$('#tdlg').showModal()};
+$('#tadd').onclick=()=>{const r=trow({name:'',keywords:[]},0);$('#trows').append(r);r.querySelector('.tn').focus()};
+$('#tclose').onclick=()=>$('#tdlg').close();
+async function apiTags(rows){
+  const list=[],map={},seen=new Set();
+  for(const r of rows){
+    if(!r.name)continue;if(r.old&&!(r.old in map))map[r.old]=r.name;
+    if(!seen.has(r.name)){seen.add(r.name);list.push({name:r.name,keywords:r.keywords})}
+  }
+  fsx.db.tagList=list;
+  for(const s of Object.values(fsx.db.scores))s.tags=[...new Set((s.tags||[]).map(t=>map[t]).filter(Boolean))].sort();
+  await saveDb();
+}
+$('#tsave').onclick=async()=>{
+  const rows=[...$('#trows').children].map(r=>({old:r.dataset.old,name:r.querySelector('.tn').value.trim(),keywords:splitTags(r.querySelector('.tk').value).map(k=>k.trim()).filter(Boolean)}));
+  const keep=new Set(rows.filter(r=>r.old&&r.name).map(r=>r.old)),u=tagUse();
+  const gone=tagList().filter(t=>!keep.has(t.name)&&u[t.name]>0);
+  if(gone.length&&!confirm(`삭제되는 주제(${gone.map(t=>`${t.name} ${u[t.name]}곡`).join(', ')})는 곡에서도 빠집니다. 계속할까요?`))return;
+  await apiTags(rows);st.tag.clear();$('#tdlg').close();load();
+};
+
+/* ================= 중복 곡 정리 ================= */
+const D={mode:'exclude',showIgn:false,io:null};
+const dupIgnore=()=>fsx.db.dupIgnore=fsx.db.dupIgnore||[];
+function dupGroups(){
+  const m=new Map();
+  for(const it of libItems()){const n=normT(it.title);if(!n)continue;const k=n+'|'+(it.key||'');if(!m.has(k))m.set(k,[]);m.get(k).push(it)}
+  const ign=new Set(dupIgnore());
+  return [...m.entries()].filter(([,a])=>a.length>1)
+    .map(([k,a])=>({k,title:a[0].title,key:a[0].key,items:a.sort((x,y)=>x.id.localeCompare(y.id)),ignored:ign.has(k)}))
+    .filter(g=>D.showIgn||!g.ignored).sort((a,b)=>a.title.localeCompare(b.title,'ko',{numeric:true}));
+}
+function updateDupBadge(){const n=dupGroups().filter(g=>!g.ignored).length;$('#dupbtn').textContent=`🧩 중복 곡 정리${n?` (${n}묶음)`:''}`}
+const _load=load;load=async function(){const r=await _load.apply(this,arguments);updateDupBadge();return r};
+function lightbox(id){
+  getUrl(id).then(u=>{if(!u)return;const d=document.createElement('div');d.id='lightbox';d.innerHTML=`<img src="${u}">`;d.onclick=()=>d.remove();document.body.append(d)});
+}
+async function fillMeta(it,el){
+  try{
+    const fh=fsx.files.get(it.id),f=await fh.getFile(),kb=Math.round(f.size/1024),ext=it.id.split('.').pop().toUpperCase();
+    let dim='';if(IMG_OK.test(it.id)){const im=await loadImg(it.id);if(im)dim=`${im.w}×${im.h} · `}
+    el.textContent=`${dim}${kb.toLocaleString()}KB · ${ext}`;
+  }catch(e){el.textContent='정보를 읽을 수 없음'}
+}
+async function dupResolve(keepId,removeIds){
+  const sc=fsx.db.scores,keep=sc[keepId],failed=[];
+  for(const r of removeIds){
+    const s=sc[r];if(!s)continue;
+    if(D.mode==='delete'){try{await removeFile(r)}catch(e){failed.push(r+' ('+e.message+')');continue}}
+    if(!keep.tempo&&s.tempo)keep.tempo=s.tempo;
+    keep.tags=[...new Set([...(keep.tags||[]),...(s.tags||[])])].sort();
+    if(!keep.note&&s.note)keep.note=s.note;
+    keep.reviewed=keep.reviewed||s.reviewed;
+    for(const c of contis())for(const g of c.songs||[]){if(g.file===r)g.file=keepId;if(g.files)g.files=[...new Set(g.files.map(f=>f===r?keepId:f))]}
+    if(D.mode==='delete')delete sc[r];else s.excluded=true;
+  }
+  await saveDb();st.sel.clear();await load();renderDup();
+  if(failed.length)alert(`삭제하지 못한 파일이 있습니다:\n${failed.slice(0,5).join('\n')}`);
+}
+function dupConfirm(keepId,removeIds){
+  const names=removeIds.map(i=>'· '+i).join('\n');
+  return confirm(D.mode==='delete'
+    ?`다음 파일을 컴퓨터에서 삭제합니다 (휴지통으로 가지 않으며 복구할 수 없습니다).\n\n${names}\n\n남기는 파일: ${keepId}`
+    :`다음 곡을 앱 목록에서 제외합니다 (파일은 그대로 남고, 왼쪽 "제외한 곡"에서 복원할 수 있습니다).\n\n${names}\n\n남기는 곡: ${keepId}`);
+}
+function renderDup(){
+  const gs=dupGroups(),box=$('#dupbody');
+  $('#duptitle').textContent=`중복 곡 정리 — ${gs.filter(g=>!g.ignored).length}개 묶음`;
+  box.innerHTML='';D.io&&D.io.disconnect();
+  D.io=new IntersectionObserver(es=>{for(const e of es)if(e.isIntersecting){D.io.unobserve(e.target);const c=e.target,id=c.dataset.id;
+    const im=c.querySelector('img');if(im)getUrl(id).then(u=>{im.src=u});fillMeta({id},c.querySelector('.dm'))}},{root:box,rootMargin:'300px'});
+  if(!gs.length){box.innerHTML='<p style="color:var(--mut)">정리할 중복 곡이 없습니다. (제목과 코드가 같은 곡이 없거나, 모두 "중복 아님"으로 표시했습니다)</p>';return}
+  for(const g of gs){
+    const card=document.createElement('div');card.className='dg'+(g.ignored?' ign':'');
+    card.innerHTML=`<div class="dh"><b>${esc(g.title)}</b><span class="badge k">${esc(g.key||'코드 미지정')}</span><small>${g.items.length}개${g.ignored?' · 중복 아님으로 표시됨':''}</small><span style="flex:1"></span><button class="ign">${g.ignored?'다시 중복으로 보기':'중복 아님'}</button></div><div class="di"></div>`;
+    card.querySelector('.ign').onclick=async()=>{const a=dupIgnore(),i=a.indexOf(g.k);i>=0?a.splice(i,1):a.push(g.k);await saveDb();updateDupBadge();renderDup()};
+    const row=card.querySelector('.di');
+    for(const it of g.items){
+      const c=document.createElement('div');c.className='dc';c.dataset.id=it.id;
+      c.innerHTML=`<div class="dth">${IMG_OK.test(it.id)?'<img>':'📄'}</div><div class="dn">${esc(it.id)}</div><small class="dm">…</small>
+        <div class="da"><button class="keep p">✓ 이것만 남기기</button><button class="one">이것만 ${D.mode==='delete'?'삭제':'제외'}</button></div>`;
+      c.querySelector('.dth').onclick=()=>lightbox(it.id);
+      c.querySelector('.keep').onclick=async()=>{const rm=g.items.filter(x=>x!==it).map(x=>x.id);if(dupConfirm(it.id,rm))await dupResolve(it.id,rm)};
+      c.querySelector('.one').onclick=async()=>{const keepIt=g.items.find(x=>x!==it);if(dupConfirm(keepIt.id,[it.id]))await dupResolve(keepIt.id,[it.id])};
+      row.append(c);D.io.observe(c);
+    }
+    box.append(card);
+  }
+}
+$('#dupbtn').onclick=()=>{$('#dupdlg').classList.add('on');renderDup()};
+$('#dupclose').onclick=()=>{$('#dupdlg').classList.remove('on');load()};
+$('#dupmode').onchange=e=>{D.mode=e.target.value;renderDup()};
+$('#dupign').onchange=e=>{D.showIgn=e.target.checked;renderDup()};
 </script>
 </body>
 </html>

@@ -10,5 +10,4 @@ echo 최신 버전을 받는 중...
 git pull
 echo.
 echo 완료되었습니다. 이미 실행 중이면 브라우저에서 Ctrl+F5 를 누르세요.
-echo (server.py 가 바뀌었다면 검은 창을 닫고 start.bat 을 다시 실행하세요.)
 pause
