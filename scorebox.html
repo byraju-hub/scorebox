@@ -114,7 +114,13 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
 #lightbox{position:fixed;inset:0;z-index:100;background:#000d;display:flex;align-items:center;justify-content:center;cursor:zoom-out}
 #lightbox img{max-width:96vw;max-height:96vh;background:#fff}
 #e-tagchips{display:flex;flex-wrap:wrap;margin:-2px 0 4px}
-.tools-h{color:var(--fg);font-size:14px;text-transform:none;border-top:1px solid var(--line);padding-top:14px;margin-top:22px}
+.sec{display:flex;align-items:center;gap:8px;color:var(--fg);font-size:14px;font-weight:700;margin:18px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--sc,var(--line))}
+.sec .si{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:16px;background:var(--sb,#8883);flex-shrink:0}
+.sec.key{--sc:#2f5fd0;--sb:#2f5fd02e}.sec.speed{--sc:#ea580c;--sb:#ea580c2e}.sec.tag{--sc:#0d9488;--sb:#0d94882e}
+.tools-h{--sc:#8b5cf6;--sb:#8b5cf62e;margin-top:24px}
+#f-key .chip.on{background:#2f5fd0;border-color:#2f5fd0}
+#f-tempo .chip.on{background:#ea580c;border-color:#ea580c}
+#f-tag .chip.on{background:#0d9488;border-color:#0d9488}
 #toolbox{display:flex;flex-direction:column;gap:8px}
 .tool{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;font-weight:600;text-align:left;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--acc);border-radius:8px;box-shadow:0 1px 2px #0002;transition:background .12s,color .12s,transform .12s}
 .tool .ti{font-size:18px;width:22px;text-align:center;flex-shrink:0}
@@ -140,10 +146,10 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
   <div id="libside">
   <div><span class="chip" id="f-ex" title="앱 목록에서 제외한 곡 (파일은 그대로 있음)">🚫 제외한 곡 <small id="n-ex"></small></span>
   <span class="chip" id="f-unrev">⚠ 확인 필요 <small id="n-unrev"></small></span></div>
-  <h3>코드(Key)</h3><div id="f-key"></div>
-  <h3>빠르기(Speed)</h3><div id="f-tempo"></div>
-  <h3>카테고리(Tag)</h3><div id="f-tag"></div>
-  <h3 class="tools-h">🧰 도구 모음</h3>
+  <h3 class="sec key"><span class="si">🔑</span>코드(Key)</h3><div id="f-key"></div>
+  <h3 class="sec speed"><span class="si">⏱</span>빠르기(Speed)</h3><div id="f-tempo"></div>
+  <h3 class="sec tag"><span class="si">🏷️</span>카테고리(Tag)</h3><div id="f-tag"></div>
+  <h3 class="sec tools-h"><span class="si">🧰</span>도구 모음</h3>
   <div id="toolbox">
     <button class="tool" id="rescan"><span class="ti">📁</span>폴더 다시 스캔</button>
     <button class="tool" id="chdir"><span class="ti">📂</span>폴더 바꾸기</button>
