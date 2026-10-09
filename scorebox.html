@@ -143,6 +143,7 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
     <button id="bex" title="파일은 그대로 두고 앱 목록에서만 숨깁니다 (되돌릴 수 있음)">목록에서 제외</button>
     <button id="brestore" style="display:none">↩ 목록으로 복원</button>
     <button id="bdel" style="background:#c92a2a;color:#fff;border-color:#c92a2a" title="실제 파일을 삭제합니다 (복구 불가)">🗑 파일 삭제</button>
+    <button id="bsel" title="지금 보이는 곡을 모두 선택/해제">☑ 전체 선택</button>
     <button id="bclear">선택 해제</button>
   </div>
   <div id="grid"></div>
@@ -181,7 +182,7 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
         <label>테두리</label><label style="color:inherit"><input id="p-frame" type="checkbox"> 테두리선 그리기</label>
       </div>
       <div id="pwarn" style="color:var(--warn);font-size:12px;margin-bottom:6px"></div>
-      <div style="font-size:12px;color:var(--mut);margin-bottom:4px">곡 구성 (체크한 곡만 인쇄)</div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:4px;display:flex;gap:6px;align-items:center">곡 구성 (체크한 곡만 인쇄)<span style="flex:1"></span><button id="pall" style="padding:2px 8px">☑ 전체 선택</button><button id="pnone" style="padding:2px 8px">☐ 전체 해제</button></div>
       <div id="psongs"></div>
     </div>
     <div id="pprev"></div>
@@ -482,6 +483,7 @@ $('#csv').onclick=exportCsv;
 $('#f-ex').onclick=()=>{st.showEx=!st.showEx;st.sel.clear();load()};
 $('#selall').onclick=()=>{const ids=st.list.map(i=>i.id),all=ids.length&&ids.every(id=>st.sel.has(id));
   ids.forEach(id=>all?st.sel.delete(id):st.sel.add(id));render()};
+$('#bsel').onclick=()=>$('#selall').onclick();
 $('#bex').onclick=async()=>{
   if(!confirm(`${st.sel.size}곡을 앱 목록에서 제외합니다.\n파일은 그대로 남아 있고, 왼쪽 "제외한 곡"에서 복원할 수 있습니다.`))return;
   await apiUpdate([...st.sel],{excluded:true});st.sel.clear();load();
@@ -853,6 +855,8 @@ for(const id of ['paper','mode','order','margin','minscale','dpi','frame','heade
   if(p.paper==='A4'&&!P.touchedMargin&&id==='paper'){p.margin=6;$('#p-margin').value=6}
   if(id==='margin')P.touchedMargin=true;saveSoon();refreshPreview();
 });
+$('#pall').onclick=()=>{songsOf(P.c).forEach(g=>g.print=true);renderPSongs();refreshPreview()};
+$('#pnone').onclick=()=>{songsOf(P.c).forEach(g=>g.print=false);renderPSongs();refreshPreview()};
 function renderPSongs(){
   const box=$('#psongs');box.innerHTML='';
   songsOf(P.c).forEach((g,i)=>{
