@@ -79,7 +79,8 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
 #pprev{flex:1;overflow:auto;padding:16px;background:#8884}
 .pglab{font-size:12px;color:var(--mut);margin:10px 0 4px}
 .pgwrap{background:#fff;box-shadow:0 2px 10px #0006;margin-bottom:6px;width:max-content}
-.pg{position:relative;background:#fff;color:#000;overflow:hidden;font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif}
+@font-face{font-family:"Gowun Dodum";src:url(fonts/GowunDodum.woff2) format("woff2");font-display:block}
+.pg{position:relative;background:#fff;color:#000;overflow:hidden;font-family:"Gowun Dodum","Malgun Gothic","Apple SD Gothic Neo",sans-serif}
 .pg .abs{position:absolute}
 .pg .cr{position:absolute;overflow:hidden}.pg .cr img{position:absolute;max-width:none}
 .pr{display:flex;gap:4px;align-items:center;padding:4px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap;font-size:12px}
@@ -963,7 +964,7 @@ async function buildLayout(c,p){
 function renderPageHTML(pg,p){
   const d=document.createElement('div');d.className='pg';d.style.cssText=`width:${pg.W}mm;height:${pg.H}mm`;
   const A=(css,html='')=>{const e=document.createElement('div');e.className='abs';e.style.cssText=css;e.innerHTML=html;d.append(e);return e};
-  if(pg.header)A(`left:${pg.frame.x}mm;top:${pg.frame.y-9*pg.k+0.5}mm;font-size:${5.2*pg.k}mm;line-height:${6*pg.k}mm;white-space:nowrap`,esc(pg.header));
+  if(pg.header)A(`left:${pg.frame.x}mm;top:${pg.frame.y-9*pg.k+0.5}mm;font-weight:700;font-size:${5.2*pg.k}mm;line-height:${6*pg.k}mm;white-space:nowrap`,esc(pg.header));
   if(p.frame){A(`left:${pg.frame.x}mm;top:${pg.frame.y}mm;width:${pg.frame.w}mm;height:${pg.frame.h}mm;border:0.3mm solid #000;box-sizing:border-box`);
     if(pg.per===2)A(`left:${pg.frame.x+pg.frame.w/2}mm;top:${pg.frame.y}mm;height:${pg.frame.h}mm;border-left:0.3mm solid #000`)}
   for(const pn of pg.panels)for(const it of pn.items){
@@ -979,8 +980,8 @@ function renderPageHTML(pg,p){
 function renderPageCanvas(pg,p,dpi){
   const px=dpi/25.4,cv=document.createElement('canvas');cv.width=Math.round(pg.W*px);cv.height=Math.round(pg.H*px);
   const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.imageSmoothingQuality='high';
-  const FONT='"Malgun Gothic","Apple SD Gothic Neo","Noto Sans CJK KR",sans-serif';
-  if(pg.header){x.fillStyle='#000';x.font=`${5.2*pg.k*px}px ${FONT}`;x.textBaseline='alphabetic';x.fillText(pg.header,pg.frame.x*px,(pg.frame.y-2.2*pg.k)*px)}
+  const FONT='"Gowun Dodum","Malgun Gothic","Apple SD Gothic Neo","Noto Sans CJK KR",sans-serif';
+  if(pg.header){x.fillStyle='#000';x.font=`700 ${5.2*pg.k*px}px ${FONT}`;x.textBaseline='alphabetic';x.fillText(pg.header,pg.frame.x*px,(pg.frame.y-2.2*pg.k)*px)}
   if(p.frame){x.strokeStyle='#000';x.lineWidth=0.3*px;x.strokeRect(pg.frame.x*px,pg.frame.y*px,pg.frame.w*px,pg.frame.h*px);
     if(pg.per===2){x.beginPath();x.moveTo((pg.frame.x+pg.frame.w/2)*px,pg.frame.y*px);x.lineTo((pg.frame.x+pg.frame.w/2)*px,(pg.frame.y+pg.frame.h)*px);x.stroke()}}
   for(const pn of pg.panels)for(const it of pn.items){
@@ -1079,6 +1080,7 @@ $('#pprint').onclick=async()=>{
 const jpgName=(pg)=>`${P.c.date}_${P.c.service.replace(/[\\/:*?"<>|\s]+/g,'')}_${prefs().paper}_${pg.no}면${pg.front?'앞':'뒤'}.jpg`;
 async function exportJpgs(){
   const p=prefs(),lay=P.lay||await buildLayout(P.c,p);if(!lay.pages.length){alert('내보낼 악보가 없습니다.');return null}
+  try{await document.fonts.load('700 20px "Gowun Dodum"','가A')}catch(e){}
   const out=[];for(const pg of lay.pages){const b=await blobOf(renderPageCanvas(pg,p,p.dpi));out.push({name:jpgName(pg),blob:b})}return out;
 }
 $('#pjpg').onclick=async()=>{
