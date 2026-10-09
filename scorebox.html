@@ -346,6 +346,7 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
     <label>아래쪽 <input type="range" id="crbot" min="5" max="100" value="100"> <span id="crbv"></span></label></div>
   <div class="fr"><label>왼쪽 <input type="range" id="crlef" min="0" max="95" value="0"> <span id="crlv"></span></label>
     <label>오른쪽 <input type="range" id="crrig" min="5" max="100" value="100"> <span id="crrv"></span></label></div>
+  <div class="fr"><label>크기 <input type="range" id="crsc" min="30" max="150" step="5" value="100"> <span id="crscv"></span></label><small style="color:var(--mut)">100% = 칸 너비에 맞춤 · 작게는 가운데 정렬, 크게는 가운데 기준으로 좌우가 잘림</small></div>
   <div class="fr"><button id="crok" class="p">적용</button><button id="crreset">전체 사용</button><button id="crcancel">취소</button></div></dialog>
 <dialog id="pickdlg"><div class="fr"><input type="search" id="pkq" placeholder="악보함에서 곡 찾기" style="flex:1"><select id="pksort"><option value="name">이름순</option><option value="old">오래 안 쓴 순</option><option value="most">많이 쓴 순</option></select><button id="pkclose">닫기</button></div>
   <div id="pickres"></div></dialog>
@@ -916,10 +917,12 @@ async function buildLayout(c,p){
     if(!IMG_OK.test(g.file)){warns.push(`'${g.title}': PDF 악보는 인쇄 레이아웃에 넣을 수 없습니다 (이미지로 변환 필요)`);continue}
     const im=await loadImg(g.file);if(!im){warns.push(`'${g.title}': 악보를 열 수 없습니다 (${g.file})`);continue}
     const cr=g.crop||{top:0,bottom:1},sy=im.h*cr.top,sh=im.h*(cr.bottom-cr.top),cl=cr.left||0,crr=cr.right==null?1:cr.right;
-    items.push({g,im,sy,sh,sx:im.w*cl,sw:im.w*(crr-cl),label:g.label||'',place:g.place||'auto',no:items.length+1});
+    let sxx=im.w*cl,sww=im.w*(crr-cl),shr=1;const zs=(cr.scale||100)/100;
+    if(zs>1){const vis=sww/zs;sxx+=(sww-vis)/2;sww=vis}else shr=zs;
+    items.push({g,im,sy,sh,sx:sxx,sw:sww,shr,label:g.label||'',place:g.place||'auto',no:items.length+1});
   }
   const pw=(fw/per)-2*pad,ph=fh-2*pad,minS=p.minScale/100;
-  const hOf=it=>pw*it.sh/it.sw+(it.label?labH:0);
+  const hOf=it=>pw*it.shr*it.sh/it.sw+(it.label?labH:0);
   const panels=[];let cur=[],tot=0;
   const close=()=>{if(cur.length)panels.push(cur);cur=[];tot=0};
   for(const it of items){
@@ -941,7 +944,7 @@ async function buildLayout(c,p){
     if(its.length&&sc<0.75)warns.push(`'${its[0].g.title}' 칸이 ${Math.round(sc*100)}%로 작게 축소됩니다`);
     let y=py;const out=[];
     for(const it of its){
-      const w=pw*sc,h=(pw*it.sh/it.sw)*sc,x=px+(pw-w)/2;
+      const w=pw*sc*it.shr,h=(pw*it.shr*it.sh/it.sw)*sc,x=px+(pw-w)/2;
       if(it.label){out.push({kind:'label',text:it.label,x:px,y,w:pw,h:labH*sc});y+=labH*sc}
       out.push({kind:'img',im:it.im,sx:it.sx,sy:it.sy,sw:it.sw,sh:it.sh,x,y,w,h});
       if(p.numbers&&!it.g.noNum)out.push({kind:'num',text:`(${it.no})`,x:x+0.6*k,y:y+0.6*k});
@@ -1014,7 +1017,7 @@ function renderPSongs(){
   const box=$('#psongs');box.innerHTML='';
   songsOf(P.c).forEach((g,i)=>{
     const r=document.createElement('div');r.className='pr';
-    const crop=g.crop?`✂ ${Math.round(g.crop.top*100)}–${Math.round(g.crop.bottom*100)}%`+((g.crop.left||g.crop.right!=null&&g.crop.right<1)?` · ${Math.round((g.crop.left||0)*100)}–${Math.round((g.crop.right==null?1:g.crop.right)*100)}%`:''):'✂ 자르기';
+    const crop=g.crop?`✂ ${Math.round(g.crop.top*100)}–${Math.round(g.crop.bottom*100)}%`+((g.crop.left||g.crop.right!=null&&g.crop.right<1)?` · ${Math.round((g.crop.left||0)*100)}–${Math.round((g.crop.right==null?1:g.crop.right)*100)}%`:'')+(g.crop.scale&&g.crop.scale!==100?` · ${g.crop.scale}%`:''):'✂ 자르기';
     r.innerHTML=`<label class="t"><input type="checkbox" ${g.print!==false?'checked':''}> ${i+1}. ${esc(g.title)}${g.refrain?' <small>(후렴)</small>':''}</label>
       <span class="fs"></span><button class="cr">${crop}</button><input class="lb" placeholder="빨간 라벨 예: [입례]" value="${esc(g.label||'')}">
       <select class="pl"><option value="auto">칸: 자동</option><option value="new">새 칸에서 시작</option><option value="same">위 곡과 같은 칸</option></select>`;
@@ -1046,7 +1049,7 @@ let CR=null;
 async function openCrop(g){
   if(!g.file||!IMG_OK.test(g.file)){alert('이미지 악보만 자를 수 있습니다.');return}
   const im=await loadImg(g.file);if(!im)return;CR=g;$('#crtitle').textContent=g.title;$('#crimg').src=im.url;
-  const c=g.crop||{top:0,bottom:1};$('#crtop').value=Math.round(c.top*100);$('#crbot').value=Math.round(c.bottom*100);$('#crlef').value=Math.round((c.left||0)*100);$('#crrig').value=Math.round((c.right==null?1:c.right)*100);crUpd();
+  const c=g.crop||{top:0,bottom:1};$('#crtop').value=Math.round(c.top*100);$('#crbot').value=Math.round(c.bottom*100);$('#crlef').value=Math.round((c.left||0)*100);$('#crrig').value=Math.round((c.right==null?1:c.right)*100);$('#crsc').value=c.scale||100;crUpd();
   $('#crdlg').showModal();
 }
 function crUpd(){
@@ -1055,10 +1058,11 @@ function crUpd(){
   $('#crtv').textContent=t+'%';$('#crbv').textContent=b+'%';
   let l=+$('#crlef').value,rr=+$('#crrig').value;if(rr-l<5){if(document.activeElement===$('#crlef'))l=rr-5;else rr=l+5;$('#crlef').value=l;$('#crrig').value=rr}
   $('#crsh3').style.width=l+'%';$('#crsh4').style.width=(100-rr)+'%';$('#crln3').style.left=l+'%';$('#crln4').style.left=rr+'%';
+  $('#crscv').textContent=$('#crsc').value+'%';
   $('#crlv').textContent=l+'%';$('#crrv').textContent=rr+'%';
 }
-$('#crtop').oninput=crUpd;$('#crbot').oninput=crUpd;$('#crlef').oninput=crUpd;$('#crrig').oninput=crUpd;
-$('#crok').onclick=()=>{const t=+$('#crtop').value/100,b=+$('#crbot').value/100,l=+$('#crlef').value/100,rr=+$('#crrig').value/100;CR.crop=(t===0&&b===1&&l===0&&rr===1)?null:{top:t,bottom:b,left:l,right:rr};$('#crdlg').close();renderPSongs();refreshPreview()};
+$('#crtop').oninput=crUpd;$('#crbot').oninput=crUpd;$('#crlef').oninput=crUpd;$('#crrig').oninput=crUpd;$('#crsc').oninput=crUpd;
+$('#crok').onclick=()=>{const t=+$('#crtop').value/100,b=+$('#crbot').value/100,l=+$('#crlef').value/100,rr=+$('#crrig').value/100,sc=+$('#crsc').value;CR.crop=(t===0&&b===1&&l===0&&rr===1&&sc===100)?null:{top:t,bottom:b,left:l,right:rr,scale:sc};$('#crdlg').close();renderPSongs();refreshPreview()};
 $('#crreset').onclick=()=>{CR.crop=null;$('#crdlg').close();renderPSongs();refreshPreview()};
 $('#crcancel').onclick=()=>$('#crdlg').close();
 
