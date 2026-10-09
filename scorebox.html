@@ -847,11 +847,12 @@ $('#cnew').onclick=()=>{
 };
 
 /* --- 콘티 상세/편집 --- */
+const songKey=g=>g.key||((fsx.db&&fsx.db.scores&&fsx.db.scores[g.file])||{}).key||((g.file||'').split('/').pop().match(/^([A-G][#b]?m?)[-_ ]/)||[])[1]||'';
 function contiText(c){
   const [y,m,d]=c.date.split('-');let out=`${+m}/${+d} ${c.service}입니다.\n`,sec=null,i=0;
   for(const g of songsOf(c)){
     if(g.sec&&g.sec!==sec&&/#\d/.test(g.sec)){out+=`${i?'\n':''}[${g.sec.replace(/^\s*/, '')}]\n`;sec=g.sec;i=0}
-    i++;out+=`${i}. ${g.title}${g.key?` (${g.key}${g.refrain?', 후렴':''})`:g.refrain?' (후렴)':''}\n`;
+    i++;out+=`${i}. ${g.title}${(k=>k?` (${k}${g.refrain?', 후렴':''})`:g.refrain?' (후렴)':'')(songKey(g))}\n`;
   }
   return out.trim()+'\n';
 }
