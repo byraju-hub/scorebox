@@ -164,7 +164,7 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
 </aside>
 <main>
   <div id="bar">
-    <input type="search" id="q" placeholder="제목 · 파일명 · 태그 검색">
+    <input type="search" id="q" placeholder="제목 · 파일명 · 카테고리 · 메모 검색">
     <select id="sort"><option value="title">제목순</option><option value="key">코드순</option><option value="tempo">빠르기순</option></select>
     <label style="color:var(--mut);white-space:nowrap">카드 크기 <input type="range" id="zoom" min="130" max="520" step="10" value="170" style="vertical-align:middle;padding:0"></label>
     <button id="selall" title="지금 보이는 곡을 모두 선택/해제">☑ 전체 선택</button>
@@ -182,6 +182,7 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
     <button id="bdel" style="background:#c92a2a;color:#fff;border-color:#c92a2a" title="실제 파일을 삭제합니다 (복구 불가)">🗑 파일 삭제</button>
     <button id="brev" title="선택한 곡을 확인 완료로 표시합니다">✓ 확인 완료</button>
     <button id="bunrev" title="선택한 곡을 다시 확인 필요로 되돌립니다">↺ 확인 필요로</button>
+    <button id="bnote" title="선택한 곡의 메모를 모두 지웁니다">🧹 메모 지우기</button>
     <button id="bsel" title="지금 보이는 곡을 모두 선택/해제">☑ 전체 선택</button>
     <button id="bclear">선택 해제</button>
   </div>
@@ -438,7 +439,7 @@ function chips(el,entries,set,label){
 const count=(arr)=>{const m={};arr.forEach(v=>m[v]=(m[v]||0)+1);return m};
 function matches(i,ign){
   const q=$('#q').value.trim().toLowerCase();
-  if(q&&!(i.title+' '+i.id+' '+i.tags.join(' ')).toLowerCase().includes(q))return false;
+  if(q&&!(i.title+' '+i.id+' '+i.tags.join(' ')+' '+(i.note||'')).toLowerCase().includes(q))return false;
   if(ign!=='key'&&st.key.size&&!st.key.has(i.key||'(미지정)'))return false;
   if(ign!=='tempo'&&st.tempo.size&&!st.tempo.has(i.tempo||'-'))return false;
   if(ign!=='tag'&&st.tag.size&&![...st.tag].every(t=>i.tags.includes(t)))return false;
@@ -529,6 +530,12 @@ $('#f-ex').onclick=()=>{st.showEx=!st.showEx;st.sel.clear();load()};
 $('#selall').onclick=()=>{const ids=st.list.map(i=>i.id),all=ids.length&&ids.every(id=>st.sel.has(id));
   ids.forEach(id=>all?st.sel.delete(id):st.sel.add(id));render()};
 $('#bsel').onclick=()=>$('#selall').onclick();
+$('#bnote').onclick=async()=>{
+  const ids=[...st.sel],withNote=ids.filter(id=>(fsx.db.scores[id]||{}).note);
+  if(!withNote.length){alert('선택한 곡 중 메모가 있는 곡이 없습니다.');return}
+  if(!confirm(`선택한 ${ids.length}곡 중 메모가 있는 ${withNote.length}곡의 메모를 모두 지웁니다.\n(메모만 지워지고 코드·빠르기·카테고리는 그대로입니다)`))return;
+  await apiUpdate(ids,{note:''});st.sel.clear();load();
+};
 $('#brev').onclick=async()=>{await apiUpdate([...st.sel],{reviewed:true});st.sel.clear();load()};
 $('#bunrev').onclick=async()=>{await apiUpdate([...st.sel],{reviewed:false});st.sel.clear();load()};
 $('#allrev').onclick=async()=>{
