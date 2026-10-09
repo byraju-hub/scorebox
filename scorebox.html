@@ -16,7 +16,7 @@ aside{width:250px;border-right:1px solid var(--line);flex-shrink:0;display:flex;
 #copy{flex-shrink:0;padding:10px 12px;font-size:11px;line-height:1.5;color:var(--mut);text-align:center;text-wrap:balance;border-top:1px solid var(--line);background:var(--bg)}
 main{flex:1;display:flex;flex-direction:column;min-width:0}
 h1{font-size:18px;margin:0 0 10px}
-aside h1{text-align:center}#dir{text-align:center;word-break:break-all}
+aside h1{box-sizing:border-box;height:55px;margin:-14px -14px 14px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--line)}#dir{text-align:center;word-break:break-all}
 h3{font-size:13px;font-weight:700;color:var(--mut);margin:16px 0 6px;text-transform:none}
 #statuschips .chip{flex:1 1 0;min-width:0;text-align:center;white-space:nowrap;margin:0;padding:3px 4px}
 .chip{display:inline-block;padding:3px 9px;margin:2px;border:1px solid var(--line);border-radius:14px;background:var(--card);cursor:pointer;user-select:none}
@@ -49,7 +49,7 @@ dialog::backdrop{background:#0008}
 .form label{font-size:12px;color:var(--mut)}
 #cnt{color:var(--mut)}
 @media(max-width:700px){aside{display:none}.dl{flex-direction:column}.form{width:auto}}
-#tabs{display:flex;gap:6px;margin-bottom:10px}#tabs button{flex:1;padding:7px 4px}
+#tabs{display:flex;gap:6px;margin-bottom:10px}#tabs button{flex:1;padding:0 4px;height:34px}
 body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:none!important}
 #contiview{display:none;flex:1;min-height:0}body.conti #contiview{display:flex}
 #cl{width:330px;border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
