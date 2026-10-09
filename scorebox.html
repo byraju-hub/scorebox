@@ -317,8 +317,7 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
 <div id="pdlg">
   <div class="top"><b id="ptitle">인쇄 · JPG</b><span style="flex:1"></span>
     <button id="pprint" class="p">🖨 인쇄</button>
-    <button id="pjpg">💾 JPG로 저장</button>
-    <button id="pjpgdl" title="브라우저 다운로드 폴더로 받습니다">⬇ JPG 다운로드</button>
+    <button id="pjpg" title="악보 폴더의 콘티출력 폴더에 A4 크기 JPG로 저장합니다 (예: 261009-1.jpg 앞면, 261009-2.jpg 뒷면)">💾 JPG로 저장</button>
     <button id="pclose">닫기</button></div>
   <div class="body">
     <div id="pset">
@@ -834,10 +833,10 @@ $('#cnew').onclick=()=>{
 
 /* --- 콘티 상세/편집 --- */
 function contiText(c){
-  const [y,m,d]=c.date.split('-');let out=`${+m}/${+d} ${c.service}${c.theme?' - 주제: '+c.theme:c.subtitle?' - '+c.subtitle:''}\n`,sec=null,i=0;
+  const [y,m,d]=c.date.split('-');let out=`${+m}/${+d} ${c.service}${c.theme?' - 주제: '+c.theme:c.subtitle?' - '+c.subtitle:''}입니다.\n`,sec=null,i=0;
   for(const g of songsOf(c)){
     if(g.sec&&g.sec!==sec&&/#\d/.test(g.sec)){out+=`${i?'\n':''}[${g.sec.replace(/^\s*/, '')}]\n`;sec=g.sec;i=0}
-    i++;out+=`${i}. ${g.title}${g.key?`(${g.key}${g.refrain?', 후렴':''})`:g.refrain?'(후렴)':''}\n`;
+    i++;out+=`${i}. ${g.title}${g.key?` (${g.key}${g.refrain?', 후렴':''})`:g.refrain?' (후렴)':''}\n`;
   }
   return out.trim()+'\n';
 }
@@ -1078,11 +1077,14 @@ $('#pprint').onclick=async()=>{
   await Promise.all([...root.querySelectorAll('img')].map(i=>i.decode().catch(()=>{})));
   window.addEventListener('afterprint',()=>{root.innerHTML=''},{once:true});window.print();
 };
-const jpgName=(pg)=>`${P.c.date}_${P.c.service.replace(/[\\/:*?"<>|\s]+/g,'')}_${prefs().paper}_${pg.no}면${pg.front?'앞':'뒤'}.jpg`;
+const jpgBase=()=>P.c.date.replace(/-/g,'').slice(2);
 async function exportJpgs(){
   const p=prefs(),lay=P.lay||await buildLayout(P.c,p);if(!lay.pages.length){alert('내보낼 악보가 없습니다.');return null}
   try{await document.fonts.load('700 20px "Gowun Dodum"','가A')}catch(e){}
-  const out=[];for(const pg of lay.pages){const b=await blobOf(renderPageCanvas(pg,p,p.dpi));out.push({name:jpgName(pg),blob:b})}return out;
+  const out=[];let sheet=0;
+  for(const pg of lay.pages){if(pg.front)sheet++;const n=Math.max(sheet-1,0)*2+(pg.front?1:2);
+    const b=await blobOf(renderPageCanvas(pg,p,p.dpi*297/Math.max(pg.W,pg.H)));out.push({name:`${jpgBase()}-${n}.jpg`,blob:b})}
+  return out;
 }
 $('#pjpg').onclick=async()=>{
   const files=await exportJpgs();if(!files)return;
@@ -1090,11 +1092,7 @@ $('#pjpg').onclick=async()=>{
     const dir=await fsx.root.getDirectoryHandle('콘티출력',{create:true});
     for(const f of files){const h=await dir.getFileHandle(f.name,{create:true});const w=await h.createWritable();await w.write(f.blob);await w.close()}
     alert(`JPG ${files.length}장을 악보 폴더의 '콘티출력' 폴더에 저장했습니다.\n\n${files.map(f=>f.name).join('\n')}`);
-  }catch(e){alert('폴더에 저장하지 못했습니다: '+e.message+'\n"JPG 다운로드"를 사용하세요.')}
-};
-$('#pjpgdl').onclick=async()=>{
-  const files=await exportJpgs();if(!files)return;
-  for(const f of files){const a=document.createElement('a');a.href=URL.createObjectURL(f.blob);a.download=f.name;a.click();await new Promise(r=>setTimeout(r,250));URL.revokeObjectURL(a.href)}
+  }catch(e){alert('폴더에 저장하지 못했습니다: '+e.message+'')}
 };
 window.ScoreBoxConti={importContis,buildLayout,renderPageCanvas,prefs,contiText,flattenConti};
 </script>
