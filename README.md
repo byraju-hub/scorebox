@@ -1,4 +1,4 @@
-# ScoreBox 악보함
+# Raju's ScoreBox
 
 악보 이미지/PDF를 **코드(Key) · 빠르기(Speed) · 카테고리(Tag)** 로 정리하고, **찬양 콘티**를 만들어 B4/A3/A4로 인쇄하거나 JPG로 저장하는 로컬 웹 앱입니다.
 설치가 필요 없고 서버도 없습니다. **Chrome(또는 Edge)에서 `scorebox.html` 을 열면 됩니다.**
