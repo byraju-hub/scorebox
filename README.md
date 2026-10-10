@@ -3,6 +3,31 @@
 악보 이미지/PDF를 **코드(Key) · 빠르기(Speed) · 카테고리(Tag)** 로 정리하고, **찬양 콘티**를 만들어 B4/A3/A4로 인쇄하거나 JPG로 저장하는 로컬 웹 앱입니다.
 설치가 필요 없고 서버도 없습니다. **Chrome(또는 Edge)에서 `scorebox.html` 을 열면 됩니다.**
 
+## 설치
+설치 프로그램이나 서버는 필요 없습니다. 파일만 내려받아 `scorebox.html` 을 열면 됩니다. **Windows + Chrome(또는 Edge)** 기준입니다.
+
+### 방법 1. ZIP으로 받기 (가장 간단)
+1. https://github.com/byraju-hub/scorebox 에서 초록색 **Code** 버튼 → **Download ZIP** 을 누릅니다.
+2. 받은 ZIP 의 압축을 풉니다 (예: `C:\Users\내이름\Projects\ScoreBox`). 압축을 푼 폴더는 지우거나 옮기지 마세요.
+3. 폴더 안의 `scorebox.html` 을 **Chrome 또는 Edge** 로 엽니다 (더블클릭 또는 브라우저로 끌어놓기).
+4. 아래 **시작하기**대로 악보 폴더를 선택합니다.
+- 업데이트: 새 버전이 나오면 ZIP 을 다시 받아 같은 폴더에 덮어씁니다. 분류 정보는 악보 폴더의 `scorebox_data.json` 에 있으므로 지워지지 않습니다.
+
+### 방법 2. Git으로 받기 (업데이트가 쉬움)
+1. [Git for Windows](https://git-scm.com/download/win) 를 설치합니다.
+2. 원하는 위치에서 PowerShell 을 열고 아래 명령으로 받습니다.
+   ```
+   git clone https://github.com/byraju-hub/scorebox.git
+   ```
+3. 받은 `ScoreBox` 폴더의 `scorebox.html` 을 Chrome 또는 Edge 로 엽니다.
+4. 업데이트는 폴더의 `update.bat` 을 더블클릭하면 됩니다 (아래 **업데이트** 참고).
+
+### 확인할 점
+- **Chrome / Edge 만 지원**합니다 (폴더 접근 기능이 필요합니다). Firefox, Safari 는 안 됩니다.
+- 악보 이미지와 분류 데이터는 **각자 PC 의 악보 폴더에만** 저장되고, GitHub 나 인터넷으로 올라가지 않습니다.
+- 악보 파일은 수정하지 않고 읽기만 합니다 (콘티 JPG 는 악보 폴더 안 `콘티출력` 폴더에 저장).
+- 폴더 접근 허용 창이 뜨면 **"이 사이트를 방문할 때마다 허용"** 을 고르면 다음부터 폴더가 자동으로 열립니다.
+
 ## 시작하기
 1. Chrome에서 `scorebox.html` 을 열고 **악보 폴더 선택**을 누릅니다 (예: `Pictures`). 하위 폴더까지 읽고, 원본 파일은 수정하지 않습니다.
 2. 접근 허용 창이 뜨면 허용합니다. 다음에 열 때는 **폴더 열기** 버튼을 한 번 눌러 접근을 허용하세요.
@@ -10,7 +35,7 @@
 - Chrome 이 막는 폴더(Documents, Downloads 자체 등)는 그 안의 하위 폴더를 선택하세요.
 
 ## 업데이트
-`update.bat` 더블클릭 (git 으로 받은 폴더에서만 동작). 앱이 열려 있으면 Chrome 에서 Ctrl+F5 를 누르세요. `scorebox_data.json` 은 건드리지 않습니다.
+`update.bat` 더블클릭 (**방법 2 로 받은 폴더에서만** 동작하며 Git 설치가 필요합니다. ZIP 으로 받았다면 ZIP 을 다시 받아 덮어쓰세요). 앱이 열려 있으면 Chrome 에서 Ctrl+F5 를 누르세요. `scorebox_data.json` 은 건드리지 않습니다.
 
 ## 악보함
 - 처음 스캔하면 파일명에서 코드를 추정하고(`G_은혜.png`, `Am 주님.jpg`), 하위 폴더 이름은 카테고리(Tag)가 됩니다. 추정된 곡은 **⚠ 확인 필요** 로 표시됩니다.
