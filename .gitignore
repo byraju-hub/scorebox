@@ -1,3 +1,7 @@
 scorebox_data.json
 *.tmp
 __pycache__/
+backup/
+node_modules/
+tests/output/
+tests/node_modules

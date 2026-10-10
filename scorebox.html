@@ -29,7 +29,9 @@ button{cursor:pointer}button.p{background:var(--acc);color:#fff;border-color:var
 #grid{flex:1;overflow:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--cw,170px),1fr));gap:12px;align-content:start;grid-auto-rows:max-content}
 .card{background:var(--card);border:2px solid var(--line);border-radius:8px;overflow:hidden;cursor:pointer;position:relative}
 .card.sel{border-color:var(--acc)}
-.card.inb{border-color:#f08c00;box-shadow:0 0 0 2px #f08c0055}.card .bkb{position:absolute;right:6px;bottom:6px;width:24px;height:24px;padding:0;border-radius:50%;border:1.5px solid #f08c00;background:var(--card);color:#f08c00;display:flex;align-items:center;justify-content:center}.card .bkb:hover{background:#f08c0026}.card .bkb.on{background:#f08c00;color:#fff}.card .meta{padding-right:34px}
+.card.inb{border-color:#f08c00;box-shadow:0 0 0 2px #f08c0055}.badge.ru{background:#0ea5e922;color:#0369a1;border:1px solid #0ea5e966}.badge.ru.up{background:#7c3aed1f;color:#6d28d9;border-color:#7c3aed55}
+@media(prefers-color-scheme:dark){.badge.ru{color:#7dd3fc}.badge.ru.up{color:#c4b5fd}}
+.card .bkb{position:absolute;right:6px;bottom:6px;width:24px;height:24px;padding:0;border-radius:50%;border:1.5px solid #f08c00;background:var(--card);color:#f08c00;display:flex;align-items:center;justify-content:center}.card .bkb:hover{background:#f08c0026}.card .bkb.on{background:#f08c00;color:#fff}.card .meta{padding-right:34px}
 button.obtn{background:#f08c00;color:#fff;border-color:#f08c00}button.obtn.off{background:var(--card);color:#d9730d}
 #basketbox{margin-top:14px}#basketbox .bhd{display:flex;align-items:center;gap:6px;font-weight:700;color:#d9730d;margin-bottom:6px}#basketbox .bhd span.n{background:#f08c00;color:#fff;border-radius:10px;padding:0 8px;font-size:12px}
 #bklist{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}.bki{display:flex;align-items:center;gap:4px;padding:4px 6px;border:1px solid #f08c0088;border-left:4px solid #f08c00;border-radius:6px;background:var(--card);font-size:12px}.bki .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bki button{padding:0 5px;line-height:18px;font-size:11px}
@@ -171,7 +173,7 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
 #cnew.tool{border-left-color:#2563eb}#cnew.tool:hover{background:#2563eb;color:#fff}
 #statbtn.tool{border-left-color:#e11d48}#statbtn.tool:hover{background:#e11d48;color:#fff}
 #cimp.tool{border-left-color:#8b5cf6}#cimp.tool:hover{background:#8b5cf6;color:#fff}
-#ctrash.tool{border-left-color:#64748b}#ctrash.tool:hover{background:#64748b;color:#fff}
+#ctrash.tool{border-left-color:#64748b}#bkupbtn.tool{border-left-color:#475569}#bkupbtn.tool:hover{background:#475569;color:#fff}#ctrash.tool:hover{background:#64748b;color:#fff}
 .tool .bdg{margin-left:auto;background:var(--warn);color:#000;border-radius:10px;padding:0 8px;font-size:12px}
 :root{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100}
 @media(prefers-color-scheme:dark){:root{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500}}
@@ -236,7 +238,8 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
   <p style="color:var(--mut);max-width:480px">악보(이미지·PDF)가 들어 있는 폴더를 선택하세요. 분류 정보는 그 폴더의 <b>scorebox_data.json</b> 에 저장되며, 악보 파일은 수정하지 않습니다.</p>
   <button id="btn-resume" class="p" style="display:none"></button>
   <button id="btn-pick">📁 악보 폴더 선택…</button>
-  <div id="smsg" style="color:var(--warn);max-width:520px"></div>
+  <div id="smsg" style="color:var(--warn);max-width:520px;white-space:pre-wrap"></div>
+  <button id="btn-restore" style="display:none">🗂 백업에서 복원…</button>
 </div>
 <aside>
   <div id="sidemain">
@@ -267,6 +270,7 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
     <button class="tool set" id="cfg"><span class="ti">⚙</span>빠르기(Speed) 설정</button>
     <button class="tool set" id="tcfg"><span class="ti">⚙</span>카테고리(Tag) 설정</button>
     <button class="tool out" id="csv"><span class="ti">⬇</span>엑셀(CSV) 내보내기</button>
+    <button class="tool" id="bkupbtn"><span class="ti">🗂</span>백업 · 복원</button>
     <button class="tool warn" id="dupbtn"><span class="ti">🧩</span>중복 곡 정리</button>
     <button class="tool hym" id="hymnbtn"><span class="ti">🎼</span>찬송가/CCM 분류</button>
   </div>
@@ -296,7 +300,7 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
     <button id="bbasket" class="obtn" title="선택한 곡을 콘티 바구니에 담습니다">🧺 바구니에 담기</button>
     <button id="bex" title="파일은 그대로 두고 앱 목록에서만 숨깁니다 (되돌릴 수 있음)">목록에서 제외</button>
     <button id="brestore" style="display:none">↩ 목록으로 복원</button>
-    <button id="bdel" style="background:#c92a2a;color:#fff;border-color:#c92a2a" title="실제 파일을 삭제합니다 (복구 불가)">🗑 파일 삭제</button>
+    <button id="bdel" style="background:#c92a2a;color:#fff;border-color:#c92a2a" title="파일을 악보 폴더의 _삭제된악보 폴더로 옮깁니다">🗑 파일 삭제</button>
     <button id="brev" title="선택한 곡을 확인 완료로 표시합니다">✓ 확인 완료</button>
     <button id="bunrev" title="선택한 곡을 다시 확인 필요로 되돌립니다">↺ 확인 필요로</button>
     <button id="bnote" title="선택한 곡의 메모를 모두 지웁니다">🧹 메모 지우기</button>
@@ -329,6 +333,14 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
     <button id="statclose">닫기</button></div>
   <div id="statbody"></div>
 </div>
+<dialog id="bkdlg" style="width:min(640px,96vw);height:auto;max-height:90vh;padding:16px;overflow:auto"><h2 style="margin-top:0;font-size:16px">🗂 백업 · 복원</h2>
+  <p style="color:var(--mut);font-size:12px;margin:0 0 8px">분류·메모·콘티·바구니·휴지통이 모두 들어 있는 <b>scorebox_data.json</b> 을 백업 폴더에 하루에 한 번 자동으로 복사해 둡니다(최근 30개 보관). 백업 폴더는 ScoreBox 프로그램 폴더(예: <code>C:\Users\내이름\Projects\ScoreBox</code>)를 고르면 그 안에 <code>backup</code> 폴더가 만들어집니다.</p>
+  <div class="fr"><b>백업 폴더:</b> <span id="bk-dir" style="color:var(--mut)"></span></div>
+  <div class="fr" style="margin:8px 0"><button id="bk-pick" class="p">📂 백업 폴더 지정…</button><button id="bk-now">💾 지금 백업</button><button id="bk-close">닫기</button></div>
+  <div id="bk-msg" style="font-size:12px;color:var(--mut);margin:4px 0;white-space:pre-wrap"></div>
+  <h3 style="font-size:14px;margin:12px 0 6px">백업 목록 <small style="color:var(--mut);font-weight:400">— 복원하면 지금 데이터는 먼저 백업해 둔 뒤 바뀝니다</small></h3>
+  <div id="bk-list"></div>
+</dialog>
 <dialog id="recdlg"><h2 style="margin-top:0;font-size:16px">🕊 찬양 추천</h2>
   <p style="color:var(--mut);font-size:12px;margin:0 0 6px">성경 본문을 고르면 Claude(Haiku)가 어울리는 찬양을 추천합니다. 악보함에 있는 곡은 바로 담거나 열 수 있고, 없는 곡은 제목과 검색 링크로 보여 줍니다.</p>
   <div id="rc-warn" style="display:none;color:#e03131;font-size:13px;margin:6px 0;white-space:pre-wrap"></div>
@@ -433,7 +445,7 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button id="e-basket" class="obtn" style="flex:1"></button></div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;padding-top:10px;border-top:1px solid var(--line)">
       <button id="e-ex" title="파일은 그대로 두고 앱 목록에서만 숨깁니다 (되돌릴 수 있음)">목록에서 제외</button>
-      <button id="e-del" style="background:#c92a2a;color:#fff;border-color:#c92a2a" title="실제 파일을 삭제합니다 (복구 불가)">🗑 파일 삭제</button>
+      <button id="e-del" style="background:#c92a2a;color:#fff;border-color:#c92a2a" title="파일을 악보 폴더의 _삭제된악보 폴더로 옮깁니다">🗑 파일 삭제</button>
     </div>
   </div>
 </div></dialog>
@@ -447,6 +459,8 @@ const splitTags=v=>String(v).split(/[,，]/);
 
 /* ---------- 데이터 (scorebox_data.json) ---------- */
 const DATA_NAME='scorebox_data.json';
+// 악보 폴더 안의 특별한 폴더 (스캔에서 제외). 테스트에서는 바꿔 쓸 수 있도록 한곳에 모음
+const DIRS={out:'콘티출력',trash:'_삭제된악보'};
 const EXTS=new Set(['.jpg','.jpeg','.png','.gif','.webp','.bmp','.pdf']);
 const DEFAULT_TEMPOS=[
   {id:'fast',label:'빠른',keywords:['빠른','fast','경쾌','신나는']},
@@ -503,20 +517,46 @@ const stemOf=rel=>{const n=rel.split('/').pop();const i=n.lastIndexOf('.');retur
 
 async function walk(dir,prefix,out){
   for await(const [name,h] of dir.entries()){
-    if(h.kind==='directory'){if(prefix===''&&name==='콘티출력')continue;await walk(h,prefix+name+'/',out)}
+    if(h.kind==='directory'){if(prefix===''&&(name===DIRS.out||name===DIRS.trash))continue;await walk(h,prefix+name+'/',out)}
     else{const i=name.lastIndexOf('.');if(i>=0&&EXTS.has(name.slice(i).toLowerCase()))out.set(prefix+name,h)}
   }
+}
+/* 이름이 바뀌거나 다른 폴더로 옮겨진 파일 찾기: 사라진 파일과 새 파일의 크기·확장자가 같으면 같은 악보로 봄 */
+function renameDetect(files,sizes){
+  const sc=fsx.db.scores,ext=r=>(r.match(/\.[^.\/]+$/)||[''])[0].toLowerCase();
+  const gone=Object.keys(sc).filter(r=>!files.has(r)&&sc[r].size);
+  const fresh=[...files.keys()].filter(r=>!sc[r]&&sizes.has(r));
+  if(!gone.length||!fresh.length)return;
+  const pairs=[];
+  for(const n of fresh){
+    const c=gone.filter(o=>sc[o].size===sizes.get(n)&&ext(o)===ext(n));
+    if(c.length!==1)continue;
+    if(fresh.filter(m=>sizes.get(m)===sizes.get(n)&&ext(m)===ext(n)).length!==1)continue;
+    pairs.push([c[0],n]);
+  }
+  if(!pairs.length)return;
+  const list=pairs.slice(0,10).map(([o,n])=>`· ${o}\n   → ${n}`).join('\n')+(pairs.length>10?`\n… 외 ${pairs.length-10}개`:'');
+  if(!confirm(`이름이 바뀌었거나 다른 폴더로 옮겨진 것으로 보이는 악보 ${pairs.length}개를 찾았습니다.\n\n${list}\n\n기존 분류(코드·빠르기·카테고리·메모)와 콘티·바구니 연결을 새 파일로 이어 갈까요?\n(취소하면 새 악보로 따로 추가됩니다)`))return;
+  for(const [o,n] of pairs)renameMove(o,n);
+}
+function renameMove(o,n){
+  const sc=fsx.db.scores;sc[n]={...sc[o],missing:false};delete sc[o];
+  const fix=g=>{if(g.file===o)g.file=n;if(g.files)g.files=g.files.map(f=>f===o?n:f)};
+  for(const c of [...(fsx.db.contis||[]),...(fsx.db.contisTrash||[])]){for(const g of c.songs||[])fix(g);for(const sec of c.sections||[])for(const g of sec.songs||[])fix(g)}
+  if(Array.isArray(fsx.db.basket))fsx.db.basket=fsx.db.basket.map(f=>f===o?n:f);
 }
 async function scanFs(){
   const files=new Map();await walk(fsx.root,'',files);
   fsx.files=files;
   for(const u of fsx.urls.values())URL.revokeObjectURL(u);fsx.urls.clear();
-  const db=fsx.db,scores=db.scores;
-  for(const rel of [...files.keys()].sort()){
+  const db=fsx.db,scores=db.scores,sizes=new Map();
+  for(const [rel,h] of files){try{sizes.set(rel,(await h.getFile()).size)}catch(e){}}
+  renameDetect(files,sizes);
+  for(const rel of [...files.keys()].sort()){if(scores[rel]&&sizes.has(rel))scores[rel].size=sizes.get(rel);
     if(!scores[rel]){
       const g=guess(stemOf(rel),db.tempos,db.keys);
       const parts=rel.split('/').slice(0,-1);
-      scores[rel]={title:g.title,key:g.key,tempo:g.tempo,tags:scanTags(rel,parts),note:'',reviewed:false,missing:false};
+      scores[rel]={title:g.title,key:g.key,tempo:g.tempo,tags:scanTags(rel,parts),note:'',reviewed:false,missing:false,size:sizes.get(rel)};
     }else scores[rel].missing=false;
   }
   for(const rel in scores)if(!files.has(rel))scores[rel].missing=true;
@@ -624,6 +664,7 @@ function render(){
     return ko(a.title,b.title)});
   $('#cnt').textContent=`${st.list.length} / ${st.items.length}곡`;
   $('#allrev').style.display=(st.unrev&&st.list.length&&!st.showEx)?'':'none';$('#allrev').textContent=`✓ 보이는 ${st.list.length}곡 모두 확인 완료`;
+  const RU=recentUse();
   $('#grid').innerHTML=st.list.map((i,n)=>`<div class="card ${st.sel.has(i.id)?'sel':''} ${inBasket(i.id)?'inb':''}" data-n="${n}">
     <input type="checkbox" class="ck" ${st.sel.has(i.id)?'checked':''}>
     ${i.reviewed?'':'<span class="rv">확인 필요</span>'}
@@ -631,7 +672,7 @@ function render(){
     <button class="bkb ${inBasket(i.id)?'on':''}" title="${inBasket(i.id)?'콘티 바구니에서 빼기':'콘티 바구니에 담기'}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18l-2 10H5L3 9z"/><path d="M8 9l4-5 4 5"/></svg></button>
     <div class="meta"><div class="t" title="${esc(i.title)}">${esc(i.title)}</div>
     ${i.key?`<span class="badge k">${esc(i.key)}</span>`:''}${i.tempo?`<span class="badge ${esc(i.tempo)}">${esc(st.tempos[i.tempo]||'')}</span>`:''}
-    ${i.tags.map(t=>`<span class="badge">${esc(t)}</span>`).join('')}</div></div>`).join('');
+    ${i.tags.map(t=>`<span class="badge">${esc(t)}</span>`).join('')}${recentBadge(RU,i.title)}</div></div>`).join('');
   document.querySelectorAll('#grid img[data-id]:not([src])').forEach(im=>io.observe(im));
   document.querySelectorAll('.card').forEach(c=>{
     const it=st.list[c.dataset.n];
@@ -667,7 +708,7 @@ $('#e-ex').onclick=async()=>{
 };
 $('#e-del').onclick=async()=>{
   const it=st.cur,idx=st.list.indexOf(it);
-  if(!confirm(`이 파일을 컴퓨터에서 삭제합니다.\n\n· ${it.id}\n\n⚠ 휴지통으로 가지 않으며 되돌릴 수 없습니다.\n(파일은 두고 목록에서만 숨기려면 "목록에서 제외"를 사용하세요)`))return;
+  if(!confirm(`이 파일을 삭제합니다.\n\n· ${it.id}\n\n파일은 악보 폴더의 '_삭제된악보' 폴더로 옮겨집니다. 되살리려면 그 폴더에서 원래 위치로 옮긴 뒤 '폴더 다시 스캔'을 누르세요.\n(파일은 두고 목록에서만 숨기려면 "목록에서 제외"를 사용하세요)`))return;
   try{await removeFile(it.id);delete fsx.db.scores[it.id];await saveDb()}
   catch(e){alert('삭제하지 못했습니다: '+e.message);return}
   await afterRemove(idx);
@@ -709,15 +750,23 @@ $('#bex').onclick=async()=>{
   await apiUpdate([...st.sel],{excluded:true});st.sel.clear();load();
 };
 $('#brestore').onclick=async()=>{await apiUpdate([...st.sel],{excluded:false});st.sel.clear();load()};
-async function removeFile(rel){
+async function removeFile(rel){  // 실제로 지우지 않고 악보 폴더의 _삭제된악보 폴더로 옮김 (같은 하위 폴더 구조 유지)
   const parts=rel.split('/');let dir=fsx.root;
-  try{for(const p of parts.slice(0,-1))dir=await dir.getDirectoryHandle(p);await dir.removeEntry(parts[parts.length-1])}
-  catch(e){if(e.name!=='NotFoundError')throw e}
+  try{
+    for(const p of parts.slice(0,-1))dir=await dir.getDirectoryHandle(p);
+    const name=parts[parts.length-1],file=await (await dir.getFileHandle(name)).getFile();
+    let td=await fsx.root.getDirectoryHandle(DIRS.trash,{create:true});
+    for(const p of parts.slice(0,-1))td=await td.getDirectoryHandle(p,{create:true});
+    const dot=name.lastIndexOf('.'),base=dot>0?name.slice(0,dot):name,ext=dot>0?name.slice(dot):'';
+    let nm=name;for(let i=2;;i++){try{await td.getFileHandle(nm);nm=`${base} (${i})${ext}`}catch(e){if(e.name==='NotFoundError')break;throw e}}
+    const w=await (await td.getFileHandle(nm,{create:true})).createWritable();await w.write(file);await w.close();
+    await dir.removeEntry(name);
+  }catch(e){if(e.name!=='NotFoundError')throw e}
   fsx.files.delete(rel);const u=fsx.urls.get(rel);if(u){URL.revokeObjectURL(u);fsx.urls.delete(rel)}
 }
 $('#bdel').onclick=async()=>{
   const ids=[...st.sel],names=ids.slice(0,5).map(i=>'· '+i).join('\n')+(ids.length>5?`\n… 외 ${ids.length-5}개`:'');
-  if(!confirm(`선택한 ${ids.length}곡의 파일을 컴퓨터에서 삭제합니다.\n\n${names}\n\n⚠ 휴지통으로 가지 않으며 되돌릴 수 없습니다.\n(파일은 두고 목록에서만 숨기려면 "목록에서 제외"를 사용하세요)`))return;
+  if(!confirm(`선택한 ${ids.length}곡의 파일을 삭제합니다.\n\n${names}\n\n파일은 악보 폴더의 '_삭제된악보' 폴더로 옮겨집니다 (되살리려면 원래 위치로 옮긴 뒤 폴더 다시 스캔).\n(파일은 두고 목록에서만 숨기려면 "목록에서 제외"를 사용하세요)`))return;
   const failed=[];
   for(const id of ids){try{await removeFile(id);delete fsx.db.scores[id]}catch(e){failed.push(id+' ('+e.message+')')}}
   await saveDb();st.sel.clear();await load();
@@ -765,8 +814,8 @@ const msg=t=>{const e=$('#smsg');e.textContent=t||'';e.style.color='var(--warn)'
 async function openRoot(handle){
   msg('폴더를 읽는 중…');
   fsx.root=handle;
-  try{await loadDb();const r=await scanFs();await load();$('#start').style.display='none'}
-  catch(e){msg('폴더를 열지 못했습니다: '+e.message)}
+  try{await loadDb();const r=await scanFs();await load();$('#start').style.display='none';if(typeof backupAuto==='function')backupAuto()}
+  catch(e){if(e instanceof SyntaxError){msg('scorebox_data.json 파일이 손상되어 읽을 수 없습니다.\n백업 폴더를 지정해 두었다면 아래 버튼으로 최근 백업을 복원할 수 있습니다.');$('#btn-restore').style.display=''}else msg('폴더를 열지 못했습니다: '+e.message)}
 }
 async function pick(){
   try{
@@ -776,7 +825,7 @@ async function pick(){
 }
 async function resume(h){
   try{
-    if(await h.requestPermission({mode:'readwrite'})==='granted')await openRoot(h);
+    if(await h.requestPermission({mode:'readwrite'})==='granted'){try{const b=await kvGet('backupDir');if(b&&await b.queryPermission({mode:'readwrite'})!=='granted')await b.requestPermission({mode:'readwrite'})}catch(e){}await openRoot(h)}
     else msg('폴더 접근을 허용해야 사용할 수 있습니다.');
   }catch(e){msg('폴더를 열 수 없습니다: '+e.message)}
 }
@@ -835,6 +884,21 @@ function usageMap(){
     if(g.special)continue;const k=g.canon||normT(g.title);const u=m.get(k)||{n:0,last:''};u.n++;if(c.date>u.last)u.last=c.date;m.set(k,u);
   }
   return m;
+}
+/* 최근에 쓴 곡 / 앞으로 쓸 곡 표시용: 제목(숫자·공백 제외) 기준, 최근 28일 안의 사용과 오늘 이후 예정 */
+const RECENT_DAYS=28;
+function recentUse(){
+  const m=new Map(),t=todayStr();if(!fsx.db||!Array.isArray(fsx.db.contis))return m;
+  for(const c of fsx.db.contis)for(const g of songsOf(c)){
+    if(g.special)continue;const k=g.canon||normT(g.title),u=m.get(k)||{past:'',next:''};
+    if(c.date<=t){if(c.date>u.past)u.past=c.date}else if(!u.next||c.date<u.next)u.next=c.date;m.set(k,u)}
+  return m;
+}
+function recentBadge(m,title){
+  const u=m.get(normT(title));if(!u)return '';
+  if(u.next){const [,mm,dd]=u.next.split('-');return `<span class="badge ru up" title="${esc(u.next)} 콘티에 들어 있습니다">📅 ${+mm}/${+dd} 예정</span>`}
+  if(u.past){const d=daysAgo(u.past);if(d<=RECENT_DAYS)return `<span class="badge ru" title="마지막 사용: ${esc(u.past)}">🕘 ${d===0?'오늘':d+'일 전'}</span>`}
+  return '';
 }
 function daysAgo(d){return Math.round((new Date(todayStr()+'T00:00:00')-new Date(d+'T00:00:00'))/86400000)}
 function usageText(u){return u?`${u.n}회 · 마지막 ${u.last}${daysAgo(u.last)>=0?` (${daysAgo(u.last)}일 전)`:''}`:'사용 기록 없음'}
@@ -1181,7 +1245,7 @@ $('#pprint').onclick=async()=>{
   await Promise.all([...root.querySelectorAll('img')].map(i=>i.decode().catch(()=>{})));
   window.addEventListener('afterprint',()=>{root.innerHTML=''},{once:true});window.print();
 };
-const jpgBase=()=>P.c.date.replace(/-/g,'').slice(2);
+const jpgBase=()=>{const d=P.c.date.replace(/-/g,'').slice(2),same=contis().filter(c=>c.date===P.c.date);return same.length>1?d+'abcdefghijklmnopqrstuvwxyz'[Math.max(0,same.indexOf(P.c))]:d};
 async function exportJpgs(){
   const p=prefs(),lay=P.lay||await buildLayout(P.c,p);if(!lay.pages.length){alert('내보낼 악보가 없습니다.');return null}
   try{await document.fonts.load('700 20px "Gowun Dodum"','가A')}catch(e){}
@@ -1193,7 +1257,7 @@ async function exportJpgs(){
 $('#pjpg').onclick=async()=>{
   const files=await exportJpgs();if(!files)return;
   try{
-    const dir=await fsx.root.getDirectoryHandle('콘티출력',{create:true});
+    const dir=await fsx.root.getDirectoryHandle(DIRS.out,{create:true});
     for(const f of files){const h=await dir.getFileHandle(f.name,{create:true});const w=await h.createWritable();await w.write(f.blob);await w.close()}
     alert(`JPG ${files.length}장을 악보 폴더의 '콘티출력' 폴더에 저장했습니다.\n\n${files.map(f=>f.name).join('\n')}`);
   }catch(e){alert('폴더에 저장하지 못했습니다: '+e.message+'')}
@@ -1329,6 +1393,56 @@ function recRender(sel,out){
 $('#rc-go').onclick=recAsk;
 </script>
 <script>
+/* ================= 백업 · 복원 (scorebox_data.json → 백업 폴더) ================= */
+const BK={handle:null,keep:30};
+const bkStamp=(withTime)=>{const t=new Date(),p=n=>String(n).padStart(2,'0');return `${t.getFullYear()}-${p(t.getMonth()+1)}-${p(t.getDate())}`+(withTime?`_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}`:'')};
+async function bkDir(ask){
+  const h=BK.handle||(BK.handle=await kvGet('backupDir'));if(!h)return null;
+  try{let ok=await h.queryPermission({mode:'readwrite'})==='granted';if(!ok&&ask)ok=await h.requestPermission({mode:'readwrite'})==='granted';return ok?h:null}catch(e){return null}
+}
+async function bkList(dir){const out=[];for await(const [n,h] of dir.entries())if(h.kind==='file'&&/^scorebox_data_.*\.json$/.test(n))out.push(n);return out.sort().reverse()}
+async function bkWrite(dir,name,text){const w=await (await dir.getFileHandle(name,{create:true})).createWritable();await w.write(text);await w.close()}
+async function bkPrune(dir){const auto=(await bkList(dir)).filter(n=>/^scorebox_data_\d{4}-\d\d-\d\d(_\d{6})?\.json$/.test(n));for(const n of auto.slice(BK.keep))try{await dir.removeEntry(n)}catch(e){}}
+async function backupAuto(){  // 앱을 열 때 하루 한 번
+  try{const dir=await bkDir(false);if(!dir||!fsx.db)return;const name=`scorebox_data_${bkStamp(false)}.json`;
+    try{await dir.getFileHandle(name);return}catch(e){if(e.name!=='NotFoundError')return}
+    await bkWrite(dir,name,JSON.stringify(fsx.db,null,1));await bkPrune(dir)}catch(e){}
+}
+async function backupNow(){const dir=await bkDir(true);if(!dir)throw new Error('백업 폴더를 먼저 지정하세요');const name=`scorebox_data_${bkStamp(true)}.json`;await bkWrite(dir,name,JSON.stringify(fsx.db,null,1));await bkPrune(dir);return name}
+async function bkRestore(dir,name){
+  const data=JSON.parse(await (await (await dir.getFileHandle(name)).getFile()).text());
+  if(!data||typeof data!=='object'||!data.scores)throw new Error('ScoreBox 데이터 파일이 아닙니다');
+  if(fsx.db)await bkWrite(dir,`scorebox_data_${bkStamp(true)}_before_restore.json`,JSON.stringify(fsx.db,null,1));
+  fsx.db=data;await saveDb();
+}
+async function bkRender(){
+  const h=BK.handle||(BK.handle=await kvGet('backupDir')),dir=await bkDir(false);
+  $('#bk-dir').textContent=h?(dir?h.name:`${h.name} (접근 허용 필요 — "지금 백업"을 누르면 허용 창이 뜹니다)`):'지정 안 됨';
+  const box=$('#bk-list');if(!dir){box.innerHTML='<p style="color:var(--mut);font-size:12px">백업 폴더를 지정하면 목록이 보입니다.</p>';return}
+  const names=await bkList(dir);
+  box.innerHTML=names.map(n=>`<div class="tri"><span class="t">${esc(n)}</span><button data-n="${esc(n)}">이 백업으로 복원</button></div>`).join('')||'<p style="color:var(--mut);font-size:12px">아직 백업이 없습니다.</p>';
+  box.querySelectorAll('button[data-n]').forEach(b=>b.onclick=async()=>{
+    if(!confirm(`${b.dataset.n} 으로 복원합니다.\n지금 데이터는 '…_before_restore.json' 으로 먼저 백업됩니다. 계속할까요?`))return;
+    try{await bkRestore(dir,b.dataset.n);await load();$('#bk-msg').textContent='복원했습니다: '+b.dataset.n;bkRender()}catch(e){alert('복원하지 못했습니다: '+e.message)}});
+}
+$('#bkupbtn').onclick=()=>{$('#bk-msg').textContent='';$('#bkdlg').showModal();bkRender()};
+$('#bk-close').onclick=()=>$('#bkdlg').close();
+$('#bk-pick').onclick=async()=>{
+  try{let h=await showDirectoryPicker({id:'scorebox-backup',mode:'readwrite',startIn:'documents'});
+    if(h.name.toLowerCase()!=='backup')h=await h.getDirectoryHandle('backup',{create:true});
+    BK.handle=h;await kvSet('backupDir',h);$('#bk-msg').textContent=`백업 폴더: ${h.name}`;await backupAuto();bkRender()}
+  catch(e){if(e.name!=='AbortError')alert('폴더를 지정하지 못했습니다: '+e.message)}};
+$('#bk-now').onclick=async()=>{try{const n=await backupNow();$('#bk-msg').textContent='백업했습니다: '+n;bkRender()}catch(e){alert(e.message)}};
+/* 시작 화면: 데이터 파일이 망가졌을 때 최근 백업으로 복원 */
+$('#btn-restore').onclick=async()=>{
+  const dir=await bkDir(true);if(!dir){alert('백업 폴더가 지정되어 있지 않거나 접근이 허용되지 않았습니다.');return}
+  const names=(await bkList(dir));if(!names.length){alert('백업 파일이 없습니다.');return}
+  if(!confirm(`가장 최근 백업(${names[0]})으로 복원할까요?`))return;
+  try{const data=JSON.parse(await (await (await dir.getFileHandle(names[0])).getFile()).text());fsx.db=data;await saveDb();$('#btn-restore').style.display='none';
+    const r=await scanFs();await load();$('#start').style.display='none'}catch(e){alert('복원하지 못했습니다: '+e.message)}
+};
+</script>
+<script>
 /* ================= 주제/태그 카테고리 ================= */
 function tagList(){
   const db=fsx.db;
@@ -1424,7 +1538,7 @@ async function dupResolve(keepId,removeIds){
 function dupConfirm(keepId,removeIds){
   const names=removeIds.map(i=>'· '+i).join('\n');
   return confirm(D.mode==='delete'
-    ?`다음 파일을 컴퓨터에서 삭제합니다 (휴지통으로 가지 않으며 복구할 수 없습니다).\n\n${names}\n\n남기는 파일: ${keepId}`
+    ?`다음 파일을 삭제합니다 (악보 폴더의 '_삭제된악보' 폴더로 옮겨지며, 원래 위치로 옮기면 되살릴 수 있습니다).\n\n${names}\n\n남기는 파일: ${keepId}`
     :`다음 곡을 앱 목록에서 제외합니다 (파일은 그대로 남고, 왼쪽 "제외한 곡"에서 복원할 수 있습니다).\n\n${names}\n\n남기는 곡: ${keepId}`);
 }
 function renderDup(){
