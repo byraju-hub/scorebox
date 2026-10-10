@@ -1287,7 +1287,7 @@ async function recAsk(){
   const key=REC.key;if(!key){$('#rc-status').textContent='claude_api_key.txt 파일이 필요합니다.';return}
   const sel=recSel();if(!sel||!sel.verses.length){$('#rc-status').textContent='성경 본문을 선택하세요.';return}
   const nlib=8,nout=5,titles=recLibTitles();
-  const body={model:'claude-haiku-5-5',max_tokens:3000,system:'당신은 한국 교회 찬양 인도자를 돕는 어시스턴트입니다. 성경 본문의 주제와 정서에 맞는 찬양을 신중하게 추천합니다.',messages:[{role:'user',content:recPrompt(sel,nlib,nout,titles)}]};
+  const body={model:'claude-haiku-5-5',max_tokens:8000,output_config:{effort:'low'},system:'당신은 한국 교회 찬양 인도자를 돕는 어시스턴트입니다. 성경 본문의 주제와 정서에 맞는 찬양을 신중하게 추천합니다.',messages:[{role:'user',content:recPrompt(sel,nlib,nout,titles)}]};
   $('#rc-go').disabled=true;$('#rc-status').textContent='Claude에게 물어보는 중… (수십 초 걸릴 수 있습니다)';$('#rc-res').innerHTML='';
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});
