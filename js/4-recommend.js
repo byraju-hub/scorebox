@@ -57,7 +57,18 @@ async function recLoad(){
   }catch(e){w.textContent=(e.name==='NotFoundError'?'악보 폴더에 bible.json 파일이 없습니다.\n악보 폴더(예: Pictures)에 bible.json 을 넣은 뒤 다시 열어 주세요.':'bible.json 을 읽지 못했습니다: '+e.message);w.style.display='block'}
   try{const kh=await fsx.root.getFileHandle('claude_api_key.txt');REC.key=(await (await kh.getFile()).text()).trim()}catch(e){REC.key='';w.textContent+=(w.textContent?'\n\n':'')+'악보 폴더에 claude_api_key.txt 파일(안에 API 키 한 줄)이 없습니다.\n이 파일을 악보 폴더에 넣어 주세요.';w.style.display='block'}
 }
-$('#recbtn').onclick=async()=>{recFillBooks();$('#rc-status').textContent='';$('#rc-res').innerHTML='';$('#recdlg').showModal();await recLoad();recFillBooks()};
+function recPick(book,ch,v1,v2){const bi=REC.books.findIndex(b=>b.name===book);if(bi<0)return false;
+  $('#rc-book').value=bi;recFillCh();$('#rc-ch').value=ch;recFillV();$('#rc-v1').value=v1;$('#rc-v2').value=v2;recText();return true}
+$('#recbtn').onclick=async()=>{
+  const first=!$('#recdlg').dataset.opened;
+  const keepSel=first||!recBook()?null:{book:recBook().name,ch:$('#rc-ch').value,v1:$('#rc-v1').value,v2:$('#rc-v2').value};  // 닫았다 다시 열면 고른 본문 유지
+  $('#rc-status').textContent='';$('#recdlg').showModal();await recLoad();
+  recFillBooks();
+  const saved=REC.last&&REC.last.saved||(fsx.db&&fsx.db.recLast);  // 마지막 추천 결과가 있으면 그대로 다시 보여 줌 (앱을 껐다 켜도 유지)
+  if(first&&saved&&saved.out){if(recPick(saved.book,saved.ch,saved.v1,saved.v2)){REC.last={saved};recRender({ref:saved.ref},saved.out,saved.at)}}
+  else if(keepSel&&keepSel.book)recPick(keepSel.book,keepSel.ch,keepSel.v1,keepSel.v2);
+  $('#recdlg').dataset.opened='1';
+};
 $('#rc-close').onclick=()=>$('#recdlg').close();
 function recLibTitles(){const seen=new Map();for(const it of libItems()){const k=normT(it.title);if(k&&!seen.has(k))seen.set(k,it.title)}return [...seen.values()]}
 const recFindLib=t=>{const n=normT(t);return libItems().filter(i=>i.title===t||normT(i.title)===n)};
@@ -76,20 +87,20 @@ async function recAsk(){
     const text=(j.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
     const a=text.indexOf('{'),z=text.lastIndexOf('}');let out;
     try{out=JSON.parse(text.slice(a,z+1))}catch(e){throw new Error('답변을 해석하지 못했습니다:\n'+text.slice(0,600))}
-    REC.last={sel,out};recRender(sel,out);$('#rc-status').textContent='';
+    const b=recBook(),saved={ref:sel.ref,book:b.name,ch:+$('#rc-ch').value,v1:+$('#rc-v1').value,v2:+$('#rc-v2').value,out,at:new Date().toISOString().slice(0,16).replace('T',' ')};REC.last={sel,saved};fsx.db.recLast=saved;saveSoon();recRender(sel,out,saved.at);$('#rc-status').textContent='';
   }catch(e){$('#rc-status').textContent='';$('#rc-res').innerHTML=`<p style="color:#e03131;white-space:pre-wrap">추천을 받지 못했습니다: ${esc(e.message)}</p>`}
   $('#rc-go').disabled=false;
 }
-function recRender(sel,out){
+function recRender(sel,out,at){
   const lib=[],outside=[...(out.outside||[])];
   for(const x of out.library||[]){const items=recFindLib(x.title||'');if(items.length)lib.push({x,items});else outside.push({title:x.title,artist:'',reason:x.reason})}
   const q=t=>encodeURIComponent(t);
-  $('#rc-res').innerHTML=`<p><b>${esc(sel.ref)}</b> — ${esc(out.summary||'')}</p>
+  $('#rc-res').innerHTML=`<p><b>${esc(sel.ref)}</b> — ${esc(out.summary||'')}${at?` <small style="color:var(--mut)">(${esc(at)} 추천 · 다시 받으려면 위의 추천받기)</small>`:''}</p>
   <h3>📚 악보함에 있는 찬양 (${lib.length})</h3>${lib.map(({x,items},i)=>`<div class="rci" data-i="${i}"><span class="t"><b>${esc(items[0].title)}</b> ${items.map(it=>it.key?`<span class="badge k">${esc(it.key)}</span>`:'').join('')}<small>${esc(x.reason||'')}</small></span><button class="obtn off bk">🧺 담기</button><button class="op">악보 보기</button></div>`).join('')||'<p style="color:var(--mut)">악보함에서 고른 곡이 없습니다.</p>'}
   <h3>🌐 악보함에 없는 찬양 (${outside.length})</h3>${outside.map(x=>`<div class="rci out"><span class="t"><b>${esc(x.title||'')}</b>${x.artist?` <small style="display:inline">· ${esc(x.artist)}</small>`:''}<small>${esc(x.reason||'')}</small></span><a target="_blank" rel="noopener" href="https://www.google.com/search?q=${q((x.title||'')+' '+(x.artist||'')+' 악보')}">악보 검색</a><a target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${q((x.title||'')+' '+(x.artist||''))}">YouTube</a></div>`).join('')||'<p style="color:var(--mut)">없음</p>'}`;
   $('#rc-res').querySelectorAll('.rci[data-i]').forEach(row=>{const {items}=lib[+row.dataset.i],bk=row.querySelector('.bk');
     const upd=()=>{const on=items.some(it=>inBasket(it.id));bk.textContent=on?'🧺 빼기':'🧺 담기';bk.classList.toggle('off',on)};upd();
     bk.onclick=()=>{const on=items.some(it=>inBasket(it.id));if(on)basketSet(items.map(i=>i.id),false);else basketSet([items[0].id],true);upd()};
-    row.querySelector('.op').onclick=()=>{$('#recdlg').close();openDlg(items[0])}});
+    row.querySelector('.op').onclick=()=>openDlg(items[0])});
 }
 $('#rc-go').onclick=recAsk;

@@ -245,6 +245,42 @@ await test('찬양 추천: 악보 폴더의 bible.json · API 키로 Haiku 에 �
   await ctx.close();
 });
 
+await test('찬양 추천: 악보 보기 후에도 추천 창·결과가 유지되고, 앱을 다시 열어도 마지막 결과가 보임', async () => {
+  const { ctx, page, errors } = await setup({ 'G-gamsa.png': {} });
+  await page.route('https://api.anthropic.com/**', async route => {
+    if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' } });
+    await route.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' },
+      body: JSON.stringify({ content: [{ type: 'text', text: JSON.stringify({ summary: '요약문', library: [{ title: '감사', reason: '이유1' }], outside: [] }) }] }) });
+  });
+  await page.evaluate(async () => {
+    fsx.db.scores['G-gamsa.png'].title = '감사'; await load();
+    const root = await navigator.storage.getDirectory();
+    const put = async (n, t) => { const w = await (await root.getFileHandle(n, { create: true })).createWritable(); await w.write(t); await w.close(); };
+    await put('claude_api_key.txt', 'sk-ant-TEST');
+    await put('bible.json', JSON.stringify({ books: [{ name: 'john', short: 'j', verses: [{ chapter: 3, verse: '16', v1: 16, v2: 16, text: 'for god so loved' }, { chapter: 3, verse: '17', v1: 17, v2: 17, text: 'x' }] }] }));
+  });
+  await page.click('#recbtn'); await page.waitForFunction(() => REC.books.length && REC.key);
+  await page.selectOption('#rc-v1', '17'); await page.selectOption('#rc-v2', '17');
+  await page.click('#rc-go'); await page.waitForSelector('#rc-res .rci');
+  await page.locator('#rc-res .op').first().click(); await page.waitForTimeout(300);
+  let st = await page.evaluate(() => [$('#recdlg').open, $('#dlg').open]);
+  ok(st[0] && st[1], `악보 보기 후 창 상태 ${st}`);
+  await page.click('#e-close');
+  st = await page.evaluate(() => [$('#recdlg').open, $('#dlg').open, $('#rc-res').textContent.includes('요약문')]);
+  ok(st[0] && !st[1] && st[2], `악보 닫은 뒤 ${st}`);
+  await page.click('#rc-close'); await page.click('#recbtn'); await page.waitForTimeout(400);
+  const again = await page.evaluate(() => ({ txt: $('#rc-res').textContent, v: $('#rc-v1').value }));
+  ok(again.txt.includes('요약문') && again.v === '17', `다시 열었을 때 ${JSON.stringify(again)}`);
+  // 앱을 껐다 켠 것처럼: 페이지를 새로 읽고 같은 폴더를 다시 연다
+  await page.reload();
+  await page.evaluate(async () => { const root = await navigator.storage.getDirectory(); await window.ScoreBox.open(root); });
+  await page.click('#recbtn'); await page.waitForFunction(() => REC.books.length); await page.waitForTimeout(300);
+  const reopened = await page.evaluate(() => ({ txt: $('#rc-res').textContent, v: $('#rc-v1').value }));
+  ok(reopened.txt.includes('요약문') && reopened.v === '17', `앱을 다시 연 뒤 ${JSON.stringify(reopened)}`);
+  ok(!errors.length, errors.join());
+  await ctx.close();
+});
+
 await test('화면 캡처 (라이트/다크) — tests/output 에 저장', async () => {
   for (const scheme of ['light', 'dark']) {
     const { ctx, page, errors } = await setup({ 'G-gamsa.png': {}, 'A-gippeum.png': { w: 401 } }, { scheme });
