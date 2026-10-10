@@ -35,7 +35,7 @@ button.obtn{background:#f08c00;color:#fff;border-color:#f08c00}button.obtn.off{b
 #bklist{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}.bki{display:flex;align-items:center;gap:4px;padding:4px 6px;border:1px solid #f08c0088;border-left:4px solid #f08c00;border-radius:6px;background:var(--card);font-size:12px}.bki .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bki button{padding:0 5px;line-height:18px;font-size:11px}
 .pk.inbk{border-left:4px solid #f08c00;background:#f08c0014}.pk button.inbk{background:#f08c00;color:#fff;border-color:#f08c00}
 .thumb{height:calc(var(--cw,170px)*1.25);background:#8883;display:flex;align-items:center;justify-content:center;font-size:40px}
-.thumb img{width:100%;height:100%;object-fit:cover;object-position:top}
+.thumb img{width:100%;height:100%;object-fit:cover;object-position:top;background:#fff}
 .meta{padding:7px 9px}
 .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .badge{font-size:11px;padding:1px 6px;border-radius:4px;background:#8883;margin-right:3px}
@@ -49,7 +49,7 @@ dialog::backdrop{background:#0008}
 #start{position:fixed;inset:0;z-index:99;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;text-align:center;padding:20px}
 #start button{font-size:16px;padding:10px 18px}
 .dl{display:flex;height:100%}
-.view{flex:1;background:#555;min-width:0}.view img,.view iframe{width:100%;height:100%;border:0;object-fit:contain}
+.view{flex:1;background:#555;min-width:0}.view img,.view iframe{width:100%;height:100%;border:0;object-fit:contain}.view img{background:#fff}
 .form{width:290px;padding:14px;overflow:auto;display:flex;flex-direction:column;gap:8px}
 .form label{font-size:12px;color:var(--mut)}
 #cnt{color:var(--mut)}
@@ -224,7 +224,7 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
   <h1><img class="logo" alt="">Raju's ScoreBox</h1>
   <div id="tabs"><button id="tab-lib" class="p">🎼 악보함</button><button id="tab-conti">📋 콘티</button></div>
   <div id="contiside">
-    <h3 class="sec conti-h"><span class="si">📊</span>콘티 도구</h3>
+    <h3 class="sec conti-h"><span class="si">📊</span>콘티 도구 모음</h3>
     <div id="toolbox2" style="display:flex;flex-direction:column;gap:8px">
       <button class="tool new" id="cnew"><span class="ti">＋</span>새 콘티</button>
       <button class="tool all" id="statbtn"><span class="ti">📊</span>콘티 통계</button>
@@ -239,7 +239,7 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
   <h3 class="sec key"><span class="si"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2" fill="#fff" stroke="#222" stroke-width="1.1"/><path d="M6 14.5V20M10 14.5V20M14 4v16M18 14.5V20" stroke="#222" stroke-width=".8"/><g fill="#222"><rect x="4.7" y="4" width="2.6" height="10.5" rx=".6"/><rect x="8.7" y="4" width="2.6" height="10.5" rx=".6"/><rect x="16.7" y="4" width="2.6" height="10.5" rx=".6"/></g></svg></span>코드(Key)</h3><div id="f-key"></div>
   <h3 class="sec speed"><span class="si">⏱</span>빠르기(Speed)</h3><div id="f-tempo"></div>
   <h3 class="sec tag"><span class="si">🏷️</span>카테고리(Tag)</h3><div id="f-tag"></div>
-  <h3 class="sec tools-h"><span class="si">🧰</span>도구 모음</h3>
+  <h3 class="sec tools-h"><span class="si">🧰</span>악보함 도구 모음</h3>
   <div id="toolbox">
     <button class="tool" id="rescan"><span class="ti">📁</span>폴더 다시 스캔</button>
     <button class="tool" id="chdir"><span class="ti">📂</span>폴더 바꾸기</button>
