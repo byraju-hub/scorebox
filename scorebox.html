@@ -316,17 +316,10 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
   <div id="statbody"></div>
 </div>
 <dialog id="recdlg"><h2 style="margin-top:0;font-size:16px">🕊 찬양 추천</h2>
-  <p style="color:var(--mut);font-size:12px;margin:0 0 6px">성경 본문(bible.json)을 고르면 Claude가 어울리는 찬양을 추천합니다. 악보함에 있는 곡은 바로 담거나 열 수 있고, 없는 곡은 제목과 검색 링크로 보여 줍니다.</p>
-  <details id="rc-set" style="margin:6px 0"><summary style="cursor:pointer;font-weight:600">⚙ 설정 (API 키 · bible.json)</summary>
-    <div class="rw"><label class="f" style="flex:1;min-width:260px">Anthropic API 키<input type="password" id="rc-key" placeholder="sk-ant-..." autocomplete="off"></label>
-      <label class="f">모델<select id="rc-model"><option value="claude-sonnet-5-5">Sonnet 5.5 (추천)</option><option value="claude-haiku-5-5">Haiku 5.5 (저렴)</option><option value="claude-opus-5-5">Opus 5.5 (고성능)</option></select></label></div>
-    <p style="color:var(--mut);font-size:11px;margin:0">키는 <b>이 브라우저에만</b> 저장되고 scorebox_data.json·GitHub·OneDrive로 올라가지 않습니다. 호출 비용은 본인 Anthropic 계정에 청구됩니다. 악보함 곡 제목 목록과 선택한 말씀이 Anthropic으로 전송됩니다.</p>
-    <div class="rw"><button id="rc-bfile">📖 bible.json 선택…</button><span id="rc-binfo" style="color:var(--mut);font-size:12px"></span></div><input type="file" id="rc-bfilei" accept=".json,application/json" style="display:none"></details>
-  <div class="rw"><label class="f" style="flex:1;min-width:220px">직접 입력 (예: 창세기 1:1-10)<input id="rc-ref" placeholder="창세기 1:1-10"></label></div>
-  <div class="rw"><label class="f">책<select id="rc-book"></select></label><label class="f">장<select id="rc-ch"></select></label><label class="f">절 (시작)<select id="rc-v1"></select></label><label class="f">절 (끝)<select id="rc-v2"></select></label>
-    <label class="f">악보함 추천 수<input type="number" id="rc-nlib" value="8" min="1" max="20" style="width:70px"></label><label class="f">악보함 밖 추천 수<input type="number" id="rc-nout" value="5" min="0" max="10" style="width:70px"></label></div>
+  <p style="color:var(--mut);font-size:12px;margin:0 0 6px">성경 본문을 고르면 Claude(Haiku)가 어울리는 찬양을 추천합니다. 악보함에 있는 곡은 바로 담거나 열 수 있고, 없는 곡은 제목과 검색 링크로 보여 줍니다.</p>
+  <div id="rc-warn" style="display:none;color:#e03131;font-size:13px;margin:6px 0;white-space:pre-wrap"></div>
+  <div class="rw"><label class="f">책<select id="rc-book"></select></label><label class="f">장<select id="rc-ch"></select></label><label class="f">절 (시작)<select id="rc-v1"></select></label><label class="f">절 (끝)<select id="rc-v2"></select></label></div>
   <div id="rc-text"></div>
-  <label class="opt" style="display:flex;gap:6px;align-items:center;margin:8px 0;font-size:13px"><input type="checkbox" id="rc-web"> 웹 검색을 써서 악보함 밖 찬양을 찾기 <small style="color:var(--mut)">(Anthropic 계정에서 웹 검색이 켜져 있어야 하고 추가 비용이 듭니다)</small></label>
   <div class="rw"><button id="rc-go" class="p">🕊 찬양 추천받기</button><button id="rc-close">닫기</button><span id="rc-status" style="color:var(--mut);font-size:12px"></span></div>
   <div id="rc-res"></div>
 </dialog>
@@ -1227,7 +1220,7 @@ $('#bknew').onclick=()=>{
 </script>
 <script>
 /* ================= 찬양 추천 (성경 본문 → Claude) ================= */
-const REC={books:[],last:null};
+const REC={books:[],last:null,key:''};
 function parseBible(j){
   const books=new Map();
   const txt=v=>typeof v==='string'?v:(v&&typeof v==='object'?(v.text||v.content||v.body||v.verse||v['본문']||v['내용']||''):'');
@@ -1265,8 +1258,7 @@ function parseBible(j){
   walk(j);
   return [...books.values()];
 }
-function recCounts(){const n=REC.books.length;return n?`${n}권 · ${REC.books.reduce((a,b)=>a+Object.values(b.ch).reduce((x,c)=>x+Object.keys(c).length,0),0).toLocaleString()}절 단위`:''}
-function recFillBooks(){const sel=$('#rc-book');sel.innerHTML=REC.books.map((b,i)=>`<option value="${i}">${esc(b.name)}</option>`).join('');$('#rc-binfo').textContent=recCounts()||'bible.json을 선택하세요';recFillCh()}
+function recFillBooks(){const sel=$('#rc-book');sel.innerHTML=REC.books.map((b,i)=>`<option value="${i}">${esc(b.name)}</option>`).join('');recFillCh()}
 const recBook=()=>REC.books[+$('#rc-book').value];
 function recFillCh(){const b=recBook();$('#rc-ch').innerHTML=b?Object.keys(b.ch).map(Number).sort((x,y)=>x-y).map(c=>`<option>${c}</option>`).join(''):'';recFillV()}
 function recFillV(){const b=recBook();if(!b){$('#rc-v1').innerHTML=$('#rc-v2').innerHTML='';$('#rc-text').textContent='';return}
@@ -1276,34 +1268,26 @@ function recFillV(){const b=recBook();if(!b){$('#rc-v1').innerHTML=$('#rc-v2').i
 function recSel(){const b=recBook(),c=+$('#rc-ch').value,v1=+$('#rc-v1').value,v2=Math.max(v1,+$('#rc-v2').value);if(!b)return null;
   const arr=[];for(const k of Object.keys(b.ch[c]||{}).map(Number).sort((x,y)=>x-y)){const z=(b.e[c]||{})[k]||k;if(z>=v1&&k<=v2)arr.push([z>k?k+'-'+z:k,b.ch[c][k]])}
   return {ref:`${b.name} ${c}:${v1===v2?v1:v1+'-'+v2}`,verses:arr}}
-function recText(){const s=recSel();$('#rc-text').innerHTML=s?s.verses.map(([v,t])=>`<sup>${v}</sup>${esc(t)}`).join(' '):'';if(s)$('#rc-ref').value=s.ref}
-function recParseRef(str){
-  const m=String(str).trim().match(/^(.+?)\s*(\d+)\s*[:장.]\s*(\d+)(?:\s*[-~–]\s*(\d+))?\s*절?$/);if(!m)return false;
-  const name=m[1].trim().replace(/\s+/g,''),hit=f=>REC.books.findIndex(f),bi=[hit(b=>b.name===name),hit(b=>(b.al||[]).includes(name)),hit(b=>b.name.startsWith(name)||name.startsWith(b.name))].find(i=>i>=0)??-1;
-  if(bi<0)return false;$('#rc-book').value=bi;recFillCh();$('#rc-ch').value=m[2];recFillV();$('#rc-v1').value=m[3];$('#rc-v2').value=m[4]||m[3];recText();return true}
+function recText(){const s=recSel();$('#rc-text').innerHTML=s?s.verses.map(([v,t])=>`<sup>${v}</sup>${esc(t)}`).join(' '):'';}
 $('#rc-book').onchange=recFillCh;$('#rc-ch').onchange=recFillV;$('#rc-v1').onchange=()=>{if(+$('#rc-v2').value<+$('#rc-v1').value)$('#rc-v2').value=$('#rc-v1').value;recText()};$('#rc-v2').onchange=()=>{if(+$('#rc-v2').value<+$('#rc-v1').value)$('#rc-v1').value=$('#rc-v2').value;recText()};
-$('#rc-ref').onchange=e=>{if(!recParseRef(e.target.value))$('#rc-status').textContent='본문을 찾지 못했습니다. 예: 창세기 1:1-10'};
-$('#recbtn').onclick=async()=>{
-  try{$('#rc-key').value=localStorage.getItem('scorebox.apikey')||'';$('#rc-model').value=localStorage.getItem('scorebox.model')||'claude-sonnet-5-5'}catch(e){}
-  const b=await kvGet('bible');if(b&&b.length){REC.books=b}
-  recFillBooks();$('#rc-set').open=!($('#rc-key').value&&REC.books.length);$('#rc-status').textContent='';$('#recdlg').showModal()};
+async function recLoad(){
+  const w=$('#rc-warn');w.style.display='none';w.textContent='';
+  try{
+    if(!REC.books.length){const fh=await fsx.root.getFileHandle('bible.json');const bk=parseBible(JSON.parse(await (await fh.getFile()).text()));if(!bk.length)throw new Error('bible.json 에서 책·장·절을 찾지 못했습니다');REC.books=bk}
+  }catch(e){w.textContent=(e.name==='NotFoundError'?'악보 폴더에 bible.json 파일이 없습니다.\n악보 폴더(예: Pictures)에 bible.json 을 넣은 뒤 다시 열어 주세요.':'bible.json 을 읽지 못했습니다: '+e.message);w.style.display='block'}
+  try{const kh=await fsx.root.getFileHandle('claude_api_key.txt');REC.key=(await (await kh.getFile()).text()).trim()}catch(e){REC.key='';w.textContent+=(w.textContent?'\n\n':'')+'악보 폴더에 claude_api_key.txt 파일(안에 API 키 한 줄)이 없습니다.\n이 파일을 악보 폴더에 넣어 주세요.';w.style.display='block'}
+}
+$('#recbtn').onclick=async()=>{recFillBooks();$('#rc-status').textContent='';$('#rc-res').innerHTML='';$('#recdlg').showModal();await recLoad();recFillBooks()};
 $('#rc-close').onclick=()=>$('#recdlg').close();
-$('#rc-key').onchange=e=>{try{localStorage.setItem('scorebox.apikey',e.target.value.trim())}catch(err){}};
-$('#rc-model').onchange=e=>{try{localStorage.setItem('scorebox.model',e.target.value)}catch(err){}};
-$('#rc-bfile').onclick=()=>$('#rc-bfilei').click();
-$('#rc-bfilei').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
-  try{const bk=parseBible(JSON.parse(await f.text()));if(!bk.length)throw new Error('책·장·절 구조를 찾지 못했습니다');REC.books=bk;await kvSet('bible',bk);recFillBooks()}
-  catch(err){$('#rc-binfo').textContent='읽을 수 없습니다: '+err.message}};
 function recLibTitles(){const seen=new Map();for(const it of libItems()){const k=normT(it.title);if(k&&!seen.has(k))seen.set(k,it.title)}return [...seen.values()]}
 const recFindLib=t=>{const n=normT(t);return libItems().filter(i=>i.title===t||normT(i.title)===n)};
 function recPrompt(sel,nlib,nout,titles){
   return `성경 본문: ${sel.ref}\n\n본문 내용:\n${sel.verses.map(([v,t])=>v+'. '+t).join('\n')}\n\n[악보함 곡 제목 목록]\n${titles.join('\n')}\n\n요청:\n1) 이 본문의 주제·정서에 어울리는 찬양을 악보함 목록에서 ${nlib}곡 고르세요. 제목은 목록에 있는 것을 글자 그대로 쓰세요.\n2) 악보함 목록에 없는 어울리는 찬양(찬송가·CCM 등)을 ${nout}곡 추천하세요. 가능하면 작곡가·가수도 적으세요.\n각 곡마다 본문과 어떻게 어울리는지 한두 문장으로 이유를 쓰세요.\n\n반드시 아래 JSON만 출력하세요(코드블록·설명 금지):\n{"summary":"본문 주제 요약 한 문장","library":[{"title":"","reason":""}],"outside":[{"title":"","artist":"","reason":""}]}`}
 async function recAsk(){
-  const key=$('#rc-key').value.trim();if(!key){$('#rc-set').open=true;$('#rc-status').textContent='API 키를 입력하세요.';return}
+  const key=REC.key;if(!key){$('#rc-status').textContent='claude_api_key.txt 파일이 필요합니다.';return}
   const sel=recSel();if(!sel||!sel.verses.length){$('#rc-status').textContent='성경 본문을 선택하세요.';return}
-  const nlib=+$('#rc-nlib').value||8,nout=+$('#rc-nout').value||0,titles=recLibTitles();
-  const body={model:$('#rc-model').value,max_tokens:3000,system:'당신은 한국 교회 찬양 인도자를 돕는 어시스턴트입니다. 성경 본문의 주제와 정서에 맞는 찬양을 신중하게 추천합니다.',messages:[{role:'user',content:recPrompt(sel,nlib,nout,titles)}]};
-  if($('#rc-web').checked)body.tools=[{type:'web_search_20250305',name:'web_search',max_uses:3}];
+  const nlib=8,nout=5,titles=recLibTitles();
+  const body={model:'claude-haiku-5-5',max_tokens:3000,system:'당신은 한국 교회 찬양 인도자를 돕는 어시스턴트입니다. 성경 본문의 주제와 정서에 맞는 찬양을 신중하게 추천합니다.',messages:[{role:'user',content:recPrompt(sel,nlib,nout,titles)}]};
   $('#rc-go').disabled=true;$('#rc-status').textContent='Claude에게 물어보는 중… (수십 초 걸릴 수 있습니다)';$('#rc-res').innerHTML='';
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});
