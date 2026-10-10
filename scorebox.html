@@ -708,7 +708,7 @@ $('#ksave').onclick=async()=>{
 })();
 
 /* ---------- 시작: 폴더 선택 / 권한 ---------- */
-const msg=t=>{$('#smsg').textContent=t||''};
+const msg=t=>{const e=$('#smsg');e.textContent=t||'';e.style.color='var(--warn)'};
 async function openRoot(handle){
   msg('폴더를 읽는 중…');
   fsx.root=handle;
@@ -739,6 +739,7 @@ window.ScoreBox={open:openRoot};  // (테스트용)
   if(!h)return;
   $('#btn-resume').textContent=`📂 “${h.name}” 폴더 열기`;$('#btn-resume').style.display='';
   $('#btn-resume').onclick=()=>resume(h);
+  msg('Chrome 권한 창이 뜨면 “이 사이트를 방문할 때마다 허용”을 선택하세요. 다음부터는 폴더가 자동으로 열립니다.');$('#smsg').style.color='var(--mut)';$('#btn-resume').focus();
   try{if(await h.queryPermission({mode:'readwrite'})==='granted')await openRoot(h)}catch(e){}
 })();
 </script>
