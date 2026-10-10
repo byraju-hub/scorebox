@@ -105,6 +105,8 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
 #crbox .lnv{position:absolute;top:0;bottom:0;border-left:2px solid #e03131}
 #pickdlg{width:min(720px,96vw);height:80vh;padding:14px;flex-direction:column}
 #pickdlg[open]{display:flex}
+#trdlg{width:min(680px,96vw);height:70vh;padding:14px;flex-direction:column}#trdlg[open]{display:flex}#trres{overflow:auto;flex:1;margin-top:8px}
+.tri{display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px solid var(--line);flex-wrap:wrap}.tri .t{flex:1;min-width:200px}.tri small{color:var(--mut);display:block}
 #pickres{overflow:auto;flex:1;margin-top:8px}
 .pk{display:flex;gap:8px;align-items:center;padding:6px 2px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .pk .t{flex:1;min-width:160px}.pk small{color:var(--mut)}
@@ -284,7 +286,7 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
       <div class="row"><select id="ctype"><option value="">모든 예배</option><option>주일</option><option>금요기도회</option><option>은혜로기도회</option><option>특별</option></select>
         <select id="cyear"><option value="">모든 연도</option></select>
         <span id="ccnt" style="color:var(--mut);align-self:center"></span></div>
-      <div class="row"><button id="cnew" class="p">＋ 새 콘티</button><button id="cimp" title="contis.json 같은 콘티 파일을 불러옵니다">📥 콘티 가져오기</button></div>
+      <div class="row"><button id="cnew" class="p">＋ 새 콘티</button><button id="cimp" title="contis.json 같은 콘티 파일을 불러옵니다">📥 콘티 가져오기</button><button id="ctrash" title="삭제한 콘티는 30일 동안 휴지통에 보관됩니다">🗑 휴지통 <small id="ctn"></small></button></div>
       <input type="file" id="cimpf" accept=".json" style="display:none">
     </div>
     <div id="clist"></div>
@@ -366,6 +368,8 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
   <div class="fr"><label>크기 <input type="range" id="crsc" min="30" max="150" step="5" value="100"> <span id="crscv"></span></label><small style="color:var(--mut)">100% = 칸 너비에 맞춤 · 작게는 가운데 정렬, 크게는 가운데 기준으로 좌우가 잘림</small></div>
   <div class="fr"><button id="crok" class="p">적용</button><button id="crreset">전체 사용</button><button id="crcancel">취소</button></div>
   </div><div id="crright"><div style="font-size:12px;color:var(--mut);margin-bottom:4px">인쇄 미리보기 (칸 1개)</div><div id="crprev"></div><div id="crinfo"></div></div></div></dialog>
+<dialog id="trdlg"><div class="fr"><b style="flex:1">🗑 휴지통 <small style="color:var(--mut);font-weight:400">삭제한 콘티는 30일 동안 보관된 뒤 자동으로 완전히 삭제됩니다</small></b><button id="trempty">휴지통 비우기</button><button id="trclose">닫기</button></div>
+  <div id="trres"></div></dialog>
 <dialog id="pickdlg"><div class="fr"><input type="search" id="pkq" placeholder="악보함에서 곡 찾기" style="flex:1"><select id="pksort"><option value="name">이름순</option><option value="old">오래 안 쓴 순</option><option value="most">많이 쓴 순</option></select><button id="pkclose">닫기</button></div>
   <div id="pickres"></div></dialog>
 
@@ -829,7 +833,23 @@ function contiMatches(c){
   const q=C.q.trim().toLowerCase();if(!q)return true;
   return (c.date+' '+fmtDate(c.date)+' '+c.service+' '+c.subtitle+' '+c.theme+' '+songsOf(c).map(g=>g.title).join(' ')).toLowerCase().includes(q);
 }
+const TRASH_DAYS=30;
+const trash=()=>fsx.db.contisTrash=Array.isArray(fsx.db.contisTrash)?fsx.db.contisTrash:[];
+function trashPurge(){const t=trash(),lim=Date.now()-TRASH_DAYS*86400000,keep=t.filter(c=>new Date(c.deletedAt).getTime()>lim);if(keep.length!==t.length){fsx.db.contisTrash=keep;saveSoon()}}
+function trashRender(){
+  trashPurge();const t=trash().slice().sort((a,b)=>b.deletedAt.localeCompare(a.deletedAt));
+  $('#trres').innerHTML=t.map(c=>{const left=Math.max(0,Math.ceil((new Date(c.deletedAt).getTime()+TRASH_DAYS*86400000-Date.now())/86400000));
+    return `<div class="tri" data-id="${esc(c.id)}"><span class="t"><b>${esc(c.date)} (${dowOf(c.date)})</b> ${esc(c.service)}<small>${songsOf(c).length}곡 · 삭제 ${esc(c.deletedAt.slice(0,10))} · ${left}일 후 자동 삭제</small></span><button class="p" data-a="re">복원</button><button data-a="del">완전 삭제</button></div>`}).join('')||'<p style="color:var(--mut)">휴지통이 비어 있습니다.</p>';
+  $('#trres').querySelectorAll('.tri').forEach(row=>row.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    const id=row.dataset.id,c=trash().find(x=>x.id===id);if(!c)return;
+    if(b.dataset.a==='re'){const {deletedAt,...rest}=c;fsx.db.contisTrash=trash().filter(x=>x!==c);contis().push(rest);C.sel=rest;C.jump=true;saveSoon();$('#trdlg').close();renderContiList();renderContiDetail()}
+    else if(confirm('이 콘티를 완전히 삭제할까요? (복원할 수 없습니다)')){fsx.db.contisTrash=trash().filter(x=>x!==c);saveSoon();trashRender();renderContiList()}}));
+}
+$('#ctrash').onclick=()=>{trashRender();$('#trdlg').showModal()};
+$('#trclose').onclick=()=>$('#trdlg').close();
+$('#trempty').onclick=()=>{if(!trash().length||!confirm('휴지통의 콘티를 모두 완전히 삭제할까요? (복원할 수 없습니다)'))return;fsx.db.contisTrash=[];saveSoon();trashRender();renderContiList()};
 function renderContiList(){
+  trashPurge();$('#ctn').textContent=trash().length?`(${trash().length})`:'';
   if(typeof basketRender==='function')basketRender();
   const all=contis().slice().sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
   const years=[...new Set(all.map(c=>c.date.slice(0,4)))];
@@ -911,7 +931,7 @@ function renderContiDetail(){
   $('#d-add').onclick=openPicker;$('#d-print').onclick=()=>openPrint(c);
   $('#d-copy').onclick=async()=>{try{await navigator.clipboard.writeText(contiText(c));alert('콘티 텍스트를 복사했습니다.')}catch(e){prompt('복사하세요',contiText(c))}};
   $('#d-dup').onclick=()=>{const n=JSON.parse(JSON.stringify(c));n.id='n'+Date.now();n.date=todayStr();contis().push(n);C.sel=n;C.jump=true;saveSoon();renderContiList();renderContiDetail()};
-  $('#d-del').onclick=()=>{if(!confirm(`${c.date} ${c.service} 콘티를 삭제할까요?`))return;fsx.db.contis=contis().filter(x=>x!==c);C.sel=null;saveSoon();renderContiList();renderContiDetail()};
+  $('#d-del').onclick=()=>{if(!confirm(`${c.date} ${c.service} 콘티를 삭제할까요?\n(휴지통에 30일 동안 보관되며 복원할 수 있습니다)`))return;trash().push(Object.assign({},c,{deletedAt:new Date().toISOString()}));fsx.db.contis=contis().filter(x=>x!==c);C.sel=null;saveSoon();renderContiList();renderContiDetail()};
 }
 
 /* --- 곡 추가 (악보함에서) --- */
