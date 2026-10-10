@@ -29,6 +29,11 @@ button{cursor:pointer}button.p{background:var(--acc);color:#fff;border-color:var
 #grid{flex:1;overflow:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--cw,170px),1fr));gap:12px;align-content:start;grid-auto-rows:max-content}
 .card{background:var(--card);border:2px solid var(--line);border-radius:8px;overflow:hidden;cursor:pointer;position:relative}
 .card.sel{border-color:var(--acc)}
+.card.inb{border-color:#f08c00;box-shadow:0 0 0 2px #f08c0055}.card .bkb{position:absolute;right:6px;bottom:6px;width:30px;height:30px;padding:0;border-radius:50%;border:2px solid #f08c00;background:var(--card);font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center}.card .bkb:hover{background:#f08c0033}.card .bkb.on{background:#f08c00;box-shadow:0 1px 4px #f08c0088}.card .meta{padding-right:42px}
+button.obtn{background:#f08c00;color:#fff;border-color:#f08c00}button.obtn.off{background:var(--card);color:#d9730d}
+#basketbox{margin-top:14px}#basketbox .bhd{display:flex;align-items:center;gap:6px;font-weight:700;color:#d9730d;margin-bottom:6px}#basketbox .bhd span.n{background:#f08c00;color:#fff;border-radius:10px;padding:0 8px;font-size:12px}
+#bklist{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}.bki{display:flex;align-items:center;gap:4px;padding:4px 6px;border:1px solid #f08c0088;border-left:4px solid #f08c00;border-radius:6px;background:var(--card);font-size:12px}.bki .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bki button{padding:0 5px;line-height:18px;font-size:11px}
+.pk.inbk{border-left:4px solid #f08c00;background:#f08c0014}.pk button.inbk{background:#f08c00;color:#fff;border-color:#f08c00}
 .thumb{height:calc(var(--cw,170px)*1.25);background:#8883;display:flex;align-items:center;justify-content:center;font-size:40px}
 .thumb img{width:100%;height:100%;object-fit:cover;object-position:top}
 .meta{padding:7px 9px}
@@ -218,6 +223,9 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
   <div id="contiside">
     <h3 class="sec conti-h"><span class="si">📊</span>콘티 도구</h3>
     <div id="toolbox2" style="display:flex;flex-direction:column;gap:8px"><button class="tool all" id="statbtn"><span class="ti">📊</span>콘티 통계</button></div>
+    <div id="basketbox"><div class="bhd">🧺 콘티 바구니 <span class="n" id="bkn">0</span></div><div id="bklist"></div>
+      <div style="display:flex;flex-direction:column;gap:6px"><button class="obtn" id="bknew">＋ 바구니로 새 콘티 만들기</button><button id="bkclear">바구니 비우기</button></div>
+      <p style="color:var(--mut);font-size:11px;margin:6px 0 0">악보함에서 악보를 열고 “🧺 콘티 바구니에 담기”를 누르세요. 콘티에서 곡을 추가할 때 바구니의 곡이 먼저 나옵니다.</p></div>
   </div>
   <div id="libside">
   <button class="tool all" id="showall"><span class="ti">📚</span>전체 악보 보기</button>
@@ -257,6 +265,7 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
     <select id="bt"><option value="">빠르기…</option></select>
     <input id="bat" placeholder="카테고리 추가" list="taglist" size="10">
     <button id="bapply" class="p">적용</button>
+    <button id="bbasket" class="obtn" title="선택한 곡을 콘티 바구니에 담습니다">🧺 바구니에 담기</button>
     <button id="bex" title="파일은 그대로 두고 앱 목록에서만 숨깁니다 (되돌릴 수 있음)">목록에서 제외</button>
     <button id="brestore" style="display:none">↩ 목록으로 복원</button>
     <button id="bdel" style="background:#c92a2a;color:#fff;border-color:#c92a2a" title="실제 파일을 삭제합니다 (복구 불가)">🗑 파일 삭제</button>
@@ -384,6 +393,7 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
       <button id="e-next">저장 후 다음 ▶</button>
       <button id="e-close">닫기</button>
     </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button id="e-basket" class="obtn" style="flex:1"></button></div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;padding-top:10px;border-top:1px solid var(--line)">
       <button id="e-ex" title="파일은 그대로 두고 앱 목록에서만 숨깁니다 (되돌릴 수 있음)">목록에서 제외</button>
       <button id="e-del" style="background:#c92a2a;color:#fff;border-color:#c92a2a" title="실제 파일을 삭제합니다 (복구 불가)">🗑 파일 삭제</button>
@@ -577,17 +587,18 @@ function render(){
     return ko(a.title,b.title)});
   $('#cnt').textContent=`${st.list.length} / ${st.items.length}곡`;
   $('#allrev').style.display=(st.unrev&&st.list.length&&!st.showEx)?'':'none';$('#allrev').textContent=`✓ 보이는 ${st.list.length}곡 모두 확인 완료`;
-  $('#grid').innerHTML=st.list.map((i,n)=>`<div class="card ${st.sel.has(i.id)?'sel':''}" data-n="${n}">
+  $('#grid').innerHTML=st.list.map((i,n)=>`<div class="card ${st.sel.has(i.id)?'sel':''} ${inBasket(i.id)?'inb':''}" data-n="${n}">
     <input type="checkbox" class="ck" ${st.sel.has(i.id)?'checked':''}>
     ${i.reviewed?'':'<span class="rv">확인 필요</span>'}
     <div class="thumb">${isPdf(i.id)?'📄':`<img data-id="${esc(i.id)}" ${fsx.urls.has(i.id)?`src="${fsx.urls.get(i.id)}"`:''}>`}</div>
+    <button class="bkb ${inBasket(i.id)?'on':''}" title="${inBasket(i.id)?'콘티 바구니에서 빼기':'콘티 바구니에 담기'}">🧺</button>
     <div class="meta"><div class="t" title="${esc(i.title)}">${esc(i.title)}</div>
     ${i.key?`<span class="badge k">${esc(i.key)}</span>`:''}${i.tempo?`<span class="badge ${esc(i.tempo)}">${esc(st.tempos[i.tempo]||'')}</span>`:''}
     ${i.tags.map(t=>`<span class="badge">${esc(t)}</span>`).join('')}</div></div>`).join('');
   document.querySelectorAll('#grid img[data-id]:not([src])').forEach(im=>io.observe(im));
   document.querySelectorAll('.card').forEach(c=>{
     const it=st.list[c.dataset.n];
-    c.onclick=e=>{if(e.target.classList.contains('ck')){st.sel.has(it.id)?st.sel.delete(it.id):st.sel.add(it.id);render()}else openDlg(it)};
+    c.onclick=e=>{if(e.target.closest('.bkb')){e.stopPropagation();basketSet([it.id],!inBasket(it.id));return}if(e.target.classList.contains('ck')){st.sel.has(it.id)?st.sel.delete(it.id):st.sel.add(it.id);render()}else openDlg(it)};
   });
   $('#bulk').style.display=st.sel.size?'flex':'none';$('#bn').textContent=st.sel.size+'곡 선택';
 }
@@ -595,7 +606,7 @@ async function openDlg(it){
   st.cur=it;
   $('#view').innerHTML='';
   $('#e-title').value=it.title;$('#e-key').value=it.key;$('#e-tempo').value=it.tempo;
-  $('#e-tags').value=it.tags.join(', ');renderTagChips();$('#e-note').value=it.note;$('#e-file').textContent=it.id;$('#e-ex').textContent=st.showEx?'↩ 목록으로 복원':'목록에서 제외';
+  $('#e-tags').value=it.tags.join(', ');renderTagChips();$('#e-note').value=it.note;$('#e-file').textContent=it.id;$('#e-ex').textContent=st.showEx?'↩ 목록으로 복원':'목록에서 제외';basketBtn();
   if(!$('#dlg').open)$('#dlg').showModal();
   const u=await getUrl(it.id);if(st.cur!==it)return;
   $('#view').innerHTML=isPdf(it.id)?`<iframe src="${u}"></iframe>`:`<img src="${u}">`;
@@ -818,6 +829,7 @@ function contiMatches(c){
   return (c.date+' '+fmtDate(c.date)+' '+c.service+' '+c.subtitle+' '+c.theme+' '+songsOf(c).map(g=>g.title).join(' ')).toLowerCase().includes(q);
 }
 function renderContiList(){
+  if(typeof basketRender==='function')basketRender();
   const all=contis().slice().sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
   const years=[...new Set(all.map(c=>c.date.slice(0,4)))];
   const ys=$('#cyear');if(ys.options.length!==years.length+1){const v=ys.value;ys.innerHTML='<option value="">모든 연도</option>'+years.map(y=>`<option>${y}</option>`).join('');ys.value=v}
@@ -913,7 +925,8 @@ function renderPick(){
   if(s==='old')arr.sort((a,b)=>(u(a)?u(a).last:'0').localeCompare(u(b)?u(b).last:'0')||a.title.localeCompare(b.title,'ko'));
   else if(s==='most')arr.sort((a,b)=>(u(b)?u(b).n:0)-(u(a)?u(a).n:0)||a.title.localeCompare(b.title,'ko'));
   else arr.sort((a,b)=>a.title.localeCompare(b.title,'ko',{numeric:true}));
-  $('#pickres').innerHTML=arr.slice(0,200).map((g,i)=>`<div class="pk" data-i="${i}"><span class="t">${esc(g.title)}</span><small>${esc(usageText(u(g)))}</small>${g.items.sort((a,b)=>(st.keys.indexOf(a.key)+99)%99-(st.keys.indexOf(b.key)+99)%99).map(it=>`<button data-id="${esc(it.id)}">＋ ${esc(it.key||'?')}</button>`).join('')}</div>`).join('')||'<p style="color:var(--mut)">검색 결과가 없습니다.</p>';
+  const inbk=g=>g.items.some(x=>inBasket(x.id));arr=[...arr.filter(inbk),...arr.filter(g=>!inbk(g))];
+  $('#pickres').innerHTML=arr.slice(0,200).map((g,i)=>`<div class="pk ${inbk(g)?'inbk':''}" data-i="${i}"><span class="t">${inbk(g)?'🧺 ':''}${esc(g.title)}</span><small>${esc(usageText(u(g)))}</small>${g.items.sort((a,b)=>(st.keys.indexOf(a.key)+99)%99-(st.keys.indexOf(b.key)+99)%99).map(it=>`<button data-id="${esc(it.id)}" class="${inBasket(it.id)?'inbk':''}">＋ ${esc(it.key||'?')}</button>`).join('')}</div>`).join('')||'<p style="color:var(--mut)">검색 결과가 없습니다.</p>';
   $('#pickres').querySelectorAll('.pk').forEach(row=>{const g=arr[row.dataset.i];row.querySelectorAll('button').forEach(b=>b.onclick=()=>{
     const it=g.items.find(x=>x.id===b.dataset.id);
     C.sel.songs.push({title:g.title,canon:g.canon,key:it.key||'',refrain:false,note:'',special:false,sec:'',files:g.items.map(x=>x.id),file:it.id,print:true});
@@ -1133,6 +1146,37 @@ $('#pjpg').onclick=async()=>{
   }catch(e){alert('폴더에 저장하지 못했습니다: '+e.message+'')}
 };
 window.ScoreBoxConti={importContis,buildLayout,renderPageCanvas,prefs,contiText,flattenConti};
+</script>
+<script>
+/* ================= 콘티 바구니 ================= */
+const basket=()=>fsx.db.basket=Array.isArray(fsx.db.basket)?fsx.db.basket:[];
+const inBasket=id=>!!(fsx.db&&Array.isArray(fsx.db.basket)&&fsx.db.basket.includes(id));
+function basketPrune(){const b=basket(),ok=b.filter(id=>fsx.db.scores[id]&&!fsx.db.scores[id].missing);if(ok.length!==b.length)fsx.db.basket=ok}
+function basketSet(ids,on){const b=basket();for(const id of ids){const i=b.indexOf(id);if(on&&i<0)b.push(id);if(!on&&i>=0)b.splice(i,1)}saveSoon();basketRender();render()}
+function basketBtn(){const b=$('#e-basket');if(!st.cur){return}const on=inBasket(st.cur.id);b.textContent=on?'🧺 바구니에서 빼기':'🧺 콘티 바구니에 담기';b.classList.toggle('off',on)}
+$('#e-basket').onclick=()=>{if(!st.cur)return;basketSet([st.cur.id],!inBasket(st.cur.id));basketBtn()};
+$('#bbasket').onclick=()=>{if(!st.sel.size)return;const n=st.sel.size;basketSet([...st.sel],true);st.sel.clear();render();alert(`${n}곡을 콘티 바구니에 담았습니다.`)};
+function songFromItem(it){
+  const k=normT(it.title),files=libItems().filter(x=>normT(x.title)===k).map(x=>x.id);
+  return {title:it.title,canon:k,key:it.key||'',refrain:false,note:'',special:false,sec:'',files:files.includes(it.id)?files:[it.id,...files],file:it.id,print:true};
+}
+function basketRender(){
+  if(!fsx.db)return;basketPrune();const b=basket();$('#bkn').textContent=b.length;
+  $('#bklist').innerHTML=b.map((id,i)=>{const s=fsx.db.scores[id];return `<div class="bki" data-i="${i}"><span class="t" title="${esc(id)}">${esc(s.title)}${s.key?` (${esc(s.key)})`:''}</span><button data-a="up" ${i?'':'disabled'}>▲</button><button data-a="dn" ${i<b.length-1?'':'disabled'}>▼</button><button data-a="rm">✕</button></div>`}).join('')||'<p style="color:var(--mut);font-size:12px;margin:0">비어 있습니다.</p>';
+  $('#bklist').querySelectorAll('.bki').forEach(row=>row.querySelectorAll('button').forEach(bt=>bt.onclick=()=>{
+    const i=+row.dataset.i,a=bt.dataset.a;
+    if(a==='rm')b.splice(i,1);else{const j=a==='up'?i-1:i+1;[b[i],b[j]]=[b[j],b[i]]}
+    saveSoon();basketRender();render()}));
+  $('#bknew').disabled=!b.length;$('#bkclear').disabled=!b.length;
+}
+$('#bkclear').onclick=()=>{if(!basket().length||!confirm('콘티 바구니를 비울까요?'))return;fsx.db.basket=[];saveSoon();basketRender();render()};
+$('#bknew').onclick=()=>{
+  const b=basket();if(!b.length)return;
+  const c={id:'n'+Date.now(),date:todayStr(),type:'금요기도회',service:'금요기도회 찬양',subtitle:'',theme:'',songs:b.map(id=>songFromItem({id,...fsx.db.scores[id]})),notes:''};
+  contis().push(c);C.sel=c;C.jump=true;
+  if(confirm(`바구니의 ${b.length}곡으로 새 콘티를 만들었습니다.\n바구니를 비울까요?`))fsx.db.basket=[];
+  saveSoon();basketRender();render();renderContiList();renderContiDetail();
+};
 </script>
 <script>
 /* ================= 주제/태그 카테고리 ================= */
