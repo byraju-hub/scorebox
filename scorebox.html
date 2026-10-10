@@ -88,7 +88,10 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
 .pr{display:flex;gap:4px;align-items:center;padding:4px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap;font-size:12px}
 .pr .t{flex:1 1 100%;font-weight:600}.pr input.lb{width:120px}.pr select{max-width:150px}
 #printroot{display:none}
-#crdlg{width:min(720px,96vw);height:auto;max-height:94vh;padding:14px}
+#crdlg{width:min(1040px,96vw);height:auto;max-height:94vh;padding:14px}
+#crwrap{display:flex;gap:18px;align-items:flex-start}#crleft{flex:1;min-width:0}#crright{width:260px;flex-shrink:0}
+#crprev{position:relative;background:#fff;border:1px solid var(--line);box-shadow:0 2px 8px #0004;overflow:hidden}#crprev .cr{position:absolute;overflow:hidden}#crprev .cr img{position:absolute;max-width:none}
+#crinfo{font-size:12px;color:var(--mut);margin-top:6px;line-height:1.5}@media(max-width:800px){#crwrap{flex-direction:column}#crright{width:100%}}
 #crbox{position:relative;display:inline-block;max-width:100%;line-height:0;background:#fff}
 #crbox img{max-width:100%;max-height:60vh}
 #crbox .sh{position:absolute;left:0;right:0;background:#0009}
@@ -344,13 +347,15 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
 </div>
 <div id="printroot"></div>
 <dialog id="crdlg"><h3 style="margin:0 0 8px;font-size:15px">악보 자르기 <small id="crtitle" style="color:var(--mut)"></small></h3>
+  <div id="crwrap"><div id="crleft">
   <div id="crbox"><img id="crimg"><div class="sh" id="crsh1" style="top:0"></div><div class="sh" id="crsh2" style="bottom:0"></div><div class="ln" id="crln1"></div><div class="ln" id="crln2"></div><div class="shv" id="crsh3" style="left:0"></div><div class="shv" id="crsh4" style="right:0"></div><div class="lnv" id="crln3"></div><div class="lnv" id="crln4"></div></div>
   <div class="fr" style="margin-top:8px"><label>위쪽 <input type="range" id="crtop" min="0" max="95" value="0"> <span id="crtv"></span></label>
     <label>아래쪽 <input type="range" id="crbot" min="5" max="100" value="100"> <span id="crbv"></span></label></div>
   <div class="fr"><label>왼쪽 <input type="range" id="crlef" min="0" max="95" value="0"> <span id="crlv"></span></label>
     <label>오른쪽 <input type="range" id="crrig" min="5" max="100" value="100"> <span id="crrv"></span></label></div>
   <div class="fr"><label>크기 <input type="range" id="crsc" min="30" max="150" step="5" value="100"> <span id="crscv"></span></label><small style="color:var(--mut)">100% = 칸 너비에 맞춤 · 작게는 가운데 정렬, 크게는 가운데 기준으로 좌우가 잘림</small></div>
-  <div class="fr"><button id="crok" class="p">적용</button><button id="crreset">전체 사용</button><button id="crcancel">취소</button></div></dialog>
+  <div class="fr"><button id="crok" class="p">적용</button><button id="crreset">전체 사용</button><button id="crcancel">취소</button></div>
+  </div><div id="crright"><div style="font-size:12px;color:var(--mut);margin-bottom:4px">인쇄 미리보기 (칸 1개)</div><div id="crprev"></div><div id="crinfo"></div></div></div></dialog>
 <dialog id="pickdlg"><div class="fr"><input type="search" id="pkq" placeholder="악보함에서 곡 찾기" style="flex:1"><select id="pksort"><option value="name">이름순</option><option value="old">오래 안 쓴 순</option><option value="most">많이 쓴 순</option></select><button id="pkclose">닫기</button></div>
   <div id="pickres"></div></dialog>
 
@@ -1064,11 +1069,25 @@ function refreshPreview(){clearTimeout(P.timer);P.timer=setTimeout(async()=>{
 
 /* --- 자르기 --- */
 let CR=null;
+let CRIM=null;
 async function openCrop(g){
   if(!g.file||!IMG_OK.test(g.file)){alert('이미지 악보만 자를 수 있습니다.');return}
-  const im=await loadImg(g.file);if(!im)return;CR=g;$('#crtitle').textContent=g.title;$('#crimg').src=im.url;
+  const im=await loadImg(g.file);if(!im)return;CR=g;CRIM=im;$('#crtitle').textContent=g.title;$('#crimg').src=im.url;
   const c=g.crop||{top:0,bottom:1};$('#crtop').value=Math.round(c.top*100);$('#crbot').value=Math.round(c.bottom*100);$('#crlef').value=Math.round((c.left||0)*100);$('#crrig').value=Math.round((c.right==null?1:c.right)*100);$('#crsc').value=c.scale||100;crUpd();
   $('#crdlg').showModal();
+}
+function crPrev(){
+  const box=$('#crprev');if(!CR||!CRIM){return}
+  const p=prefs(),{W,H}=paperDims(p),k=Math.max(W,H)/420,m=+p.margin,per=p.mode==='1up'?1:p.mode==='3up'?3:2;
+  const pw=(W-2*m)/per-4*k,ph=H-2*m-9*k-4*k,PX=250;
+  const t=+$('#crtop').value/100,b=+$('#crbot').value/100,l=+$('#crlef').value/100,rr=+$('#crrig').value/100,zs=+$('#crsc').value/100;
+  const im=CRIM;let sx=im.w*l,sw=im.w*(rr-l),sy=im.h*t,sh=im.h*(b-t),shr=1;
+  if(zs>1){const vis=sw/zs;sx+=(sw-vis)/2;sw=vis}else shr=zs;
+  let dw=pw*shr,dh=pw*shr*sh/sw;const f=Math.min(1,ph/dh);dw*=f;dh*=f;
+  const S=PX/pw;box.style.width=PX+'px';box.style.height=(ph*S)+'px';box.innerHTML='';
+  const e=document.createElement('div');e.className='cr';e.style.cssText=`left:${(pw-dw)/2*S}px;top:0;width:${dw*S}px;height:${dh*S}px`;
+  const g=document.createElement('img');g.src=im.url;g.style.cssText=`width:${im.w/sw*dw*S}px;height:${im.h/sh*dh*S}px;left:${-sx/sw*dw*S}px;top:${-sy/sh*dh*S}px`;e.append(g);box.append(e);
+  $('#crinfo').innerHTML=`칸 너비의 <b>${Math.round(dw/pw*100)}%</b> · 칸 높이의 <b>${Math.round(dh/ph*100)}%</b> 차지`+(f<1?'<br>칸 높이를 넘어 자동으로 줄어든 크기입니다.':'')+`<br>(${p.paper} · ${p.mode==='1up'?'1칸':p.mode==='3up'?'3칸':'2칸'} 기준, 다른 곡이 함께 들어가면 더 작아질 수 있어요)`;
 }
 function crUpd(){
   let t=+$('#crtop').value,b=+$('#crbot').value;if(b-t<5){if(document.activeElement===$('#crtop'))t=b-5;else b=t+5;$('#crtop').value=t;$('#crbot').value=b}
@@ -1078,6 +1097,7 @@ function crUpd(){
   $('#crsh3').style.width=l+'%';$('#crsh4').style.width=(100-rr)+'%';$('#crln3').style.left=l+'%';$('#crln4').style.left=rr+'%';
   $('#crscv').textContent=$('#crsc').value+'%';
   $('#crlv').textContent=l+'%';$('#crrv').textContent=rr+'%';
+  crPrev();
 }
 $('#crtop').oninput=crUpd;$('#crbot').oninput=crUpd;$('#crlef').oninput=crUpd;$('#crrig').oninput=crUpd;$('#crsc').oninput=crUpd;
 $('#crok').onclick=()=>{const t=+$('#crtop').value/100,b=+$('#crbot').value/100,l=+$('#crlef').value/100,rr=+$('#crrig').value/100,sc=+$('#crsc').value;CR.crop=(t===0&&b===1&&l===0&&rr===1&&sc===100)?null:{top:t,bottom:b,left:l,right:rr,scale:sc};$('#crdlg').close();renderPSongs();refreshPreview()};
