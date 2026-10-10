@@ -29,6 +29,11 @@ button{cursor:pointer}button.p{background:var(--acc);color:#fff;border-color:var
 #grid{flex:1;overflow:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--cw,170px),1fr));gap:12px;align-content:start;grid-auto-rows:max-content}
 .card{background:var(--card);border:2px solid var(--line);border-radius:8px;overflow:hidden;cursor:pointer;position:relative}
 .card.sel{border-color:var(--acc)}
+.card.inb{border-color:#f08c00;box-shadow:0 0 0 2px #f08c0055}.card .bkb{position:absolute;right:6px;bottom:6px;width:30px;height:30px;padding:0;border-radius:50%;border:2px solid #f08c00;background:var(--card);font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center}.card .bkb:hover{background:#f08c0033}.card .bkb.on{background:#f08c00;box-shadow:0 1px 4px #f08c0088}.card .meta{padding-right:42px}
+button.obtn{background:#f08c00;color:#fff;border-color:#f08c00}button.obtn.off{background:var(--card);color:#d9730d}
+#basketbox{margin-top:14px}#basketbox .bhd{display:flex;align-items:center;gap:6px;font-weight:700;color:#d9730d;margin-bottom:6px}#basketbox .bhd span.n{background:#f08c00;color:#fff;border-radius:10px;padding:0 8px;font-size:12px}
+#bklist{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}.bki{display:flex;align-items:center;gap:4px;padding:4px 6px;border:1px solid #f08c0088;border-left:4px solid #f08c00;border-radius:6px;background:var(--card);font-size:12px}.bki .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bki button{padding:0 5px;line-height:18px;font-size:11px}
+.pk.inbk{border-left:4px solid #f08c00;background:#f08c0014}.pk button.inbk{background:#f08c00;color:#fff;border-color:#f08c00}
 .thumb{height:calc(var(--cw,170px)*1.25);background:#8883;display:flex;align-items:center;justify-content:center;font-size:40px}
 .thumb img{width:100%;height:100%;object-fit:cover;object-position:top}
 .meta{padding:7px 9px}
@@ -88,7 +93,10 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
 .pr{display:flex;gap:4px;align-items:center;padding:4px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap;font-size:12px}
 .pr .t{flex:1 1 100%;font-weight:600}.pr input.lb{width:120px}.pr select{max-width:150px}
 #printroot{display:none}
-#crdlg{width:min(720px,96vw);height:auto;max-height:94vh;padding:14px}
+#crdlg{width:min(1040px,96vw);height:auto;max-height:94vh;padding:14px}
+#crwrap{display:flex;gap:18px;align-items:flex-start}#crleft{flex:1;min-width:0}#crright{width:260px;flex-shrink:0}
+#crprev{position:relative;background:#fff;border:1px solid var(--line);box-shadow:0 2px 8px #0004;overflow:hidden}#crprev .cr{position:absolute;overflow:hidden}#crprev .cr img{position:absolute;max-width:none}
+#crinfo{font-size:12px;color:var(--mut);margin-top:6px;line-height:1.5}@media(max-width:800px){#crwrap{flex-direction:column}#crright{width:100%}}
 #crbox{position:relative;display:inline-block;max-width:100%;line-height:0;background:#fff}
 #crbox img{max-width:100%;max-height:60vh}
 #crbox .sh{position:absolute;left:0;right:0;background:#0009}
@@ -215,6 +223,9 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
   <div id="contiside">
     <h3 class="sec conti-h"><span class="si">📊</span>콘티 도구</h3>
     <div id="toolbox2" style="display:flex;flex-direction:column;gap:8px"><button class="tool all" id="statbtn"><span class="ti">📊</span>콘티 통계</button></div>
+    <div id="basketbox"><div class="bhd">🧺 콘티 바구니 <span class="n" id="bkn">0</span></div><div id="bklist"></div>
+      <div style="display:flex;flex-direction:column;gap:6px"><button class="obtn" id="bknew">＋ 바구니로 새 콘티 만들기</button><button id="bkclear">바구니 비우기</button></div>
+      <p style="color:var(--mut);font-size:11px;margin:6px 0 0">악보함에서 악보를 열고 “🧺 콘티 바구니에 담기”를 누르세요. 콘티에서 곡을 추가할 때 바구니의 곡이 먼저 나옵니다.</p></div>
   </div>
   <div id="libside">
   <button class="tool all" id="showall"><span class="ti">📚</span>전체 악보 보기</button>
@@ -246,6 +257,7 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
     <label style="color:var(--mut);white-space:nowrap">카드 크기 <input type="range" id="zoom" min="130" max="520" step="10" value="170" style="vertical-align:middle;padding:0"></label>
     <button id="selall" title="지금 보이는 곡을 모두 선택/해제">☑ 전체 선택</button>
     <button id="allrev" class="p" style="display:none" title="확인 필요 목록의 곡을 한 번에 확인 완료로 표시합니다"></button>
+    <button id="bkclear2" class="obtn off" style="display:none" title="콘티 바구니의 곡을 한 번에 모두 비웁니다"></button>
     <span id="cnt"></span>
   </div>
   <div id="bulk">
@@ -254,6 +266,7 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
     <select id="bt"><option value="">빠르기…</option></select>
     <input id="bat" placeholder="카테고리 추가" list="taglist" size="10">
     <button id="bapply" class="p">적용</button>
+    <button id="bbasket" class="obtn" title="선택한 곡을 콘티 바구니에 담습니다">🧺 바구니에 담기</button>
     <button id="bex" title="파일은 그대로 두고 앱 목록에서만 숨깁니다 (되돌릴 수 있음)">목록에서 제외</button>
     <button id="brestore" style="display:none">↩ 목록으로 복원</button>
     <button id="bdel" style="background:#c92a2a;color:#fff;border-color:#c92a2a" title="실제 파일을 삭제합니다 (복구 불가)">🗑 파일 삭제</button>
@@ -344,13 +357,15 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
 </div>
 <div id="printroot"></div>
 <dialog id="crdlg"><h3 style="margin:0 0 8px;font-size:15px">악보 자르기 <small id="crtitle" style="color:var(--mut)"></small></h3>
+  <div id="crwrap"><div id="crleft">
   <div id="crbox"><img id="crimg"><div class="sh" id="crsh1" style="top:0"></div><div class="sh" id="crsh2" style="bottom:0"></div><div class="ln" id="crln1"></div><div class="ln" id="crln2"></div><div class="shv" id="crsh3" style="left:0"></div><div class="shv" id="crsh4" style="right:0"></div><div class="lnv" id="crln3"></div><div class="lnv" id="crln4"></div></div>
   <div class="fr" style="margin-top:8px"><label>위쪽 <input type="range" id="crtop" min="0" max="95" value="0"> <span id="crtv"></span></label>
     <label>아래쪽 <input type="range" id="crbot" min="5" max="100" value="100"> <span id="crbv"></span></label></div>
   <div class="fr"><label>왼쪽 <input type="range" id="crlef" min="0" max="95" value="0"> <span id="crlv"></span></label>
     <label>오른쪽 <input type="range" id="crrig" min="5" max="100" value="100"> <span id="crrv"></span></label></div>
   <div class="fr"><label>크기 <input type="range" id="crsc" min="30" max="150" step="5" value="100"> <span id="crscv"></span></label><small style="color:var(--mut)">100% = 칸 너비에 맞춤 · 작게는 가운데 정렬, 크게는 가운데 기준으로 좌우가 잘림</small></div>
-  <div class="fr"><button id="crok" class="p">적용</button><button id="crreset">전체 사용</button><button id="crcancel">취소</button></div></dialog>
+  <div class="fr"><button id="crok" class="p">적용</button><button id="crreset">전체 사용</button><button id="crcancel">취소</button></div>
+  </div><div id="crright"><div style="font-size:12px;color:var(--mut);margin-bottom:4px">인쇄 미리보기 (칸 1개)</div><div id="crprev"></div><div id="crinfo"></div></div></div></dialog>
 <dialog id="pickdlg"><div class="fr"><input type="search" id="pkq" placeholder="악보함에서 곡 찾기" style="flex:1"><select id="pksort"><option value="name">이름순</option><option value="old">오래 안 쓴 순</option><option value="most">많이 쓴 순</option></select><button id="pkclose">닫기</button></div>
   <div id="pickres"></div></dialog>
 
@@ -379,6 +394,7 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
       <button id="e-next">저장 후 다음 ▶</button>
       <button id="e-close">닫기</button>
     </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button id="e-basket" class="obtn" style="flex:1"></button></div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;padding-top:10px;border-top:1px solid var(--line)">
       <button id="e-ex" title="파일은 그대로 두고 앱 목록에서만 숨깁니다 (되돌릴 수 있음)">목록에서 제외</button>
       <button id="e-del" style="background:#c92a2a;color:#fff;border-color:#c92a2a" title="실제 파일을 삭제합니다 (복구 불가)">🗑 파일 삭제</button>
@@ -572,17 +588,18 @@ function render(){
     return ko(a.title,b.title)});
   $('#cnt').textContent=`${st.list.length} / ${st.items.length}곡`;
   $('#allrev').style.display=(st.unrev&&st.list.length&&!st.showEx)?'':'none';$('#allrev').textContent=`✓ 보이는 ${st.list.length}곡 모두 확인 완료`;
-  $('#grid').innerHTML=st.list.map((i,n)=>`<div class="card ${st.sel.has(i.id)?'sel':''}" data-n="${n}">
+  $('#grid').innerHTML=st.list.map((i,n)=>`<div class="card ${st.sel.has(i.id)?'sel':''} ${inBasket(i.id)?'inb':''}" data-n="${n}">
     <input type="checkbox" class="ck" ${st.sel.has(i.id)?'checked':''}>
     ${i.reviewed?'':'<span class="rv">확인 필요</span>'}
     <div class="thumb">${isPdf(i.id)?'📄':`<img data-id="${esc(i.id)}" ${fsx.urls.has(i.id)?`src="${fsx.urls.get(i.id)}"`:''}>`}</div>
+    <button class="bkb ${inBasket(i.id)?'on':''}" title="${inBasket(i.id)?'콘티 바구니에서 빼기':'콘티 바구니에 담기'}">🧺</button>
     <div class="meta"><div class="t" title="${esc(i.title)}">${esc(i.title)}</div>
     ${i.key?`<span class="badge k">${esc(i.key)}</span>`:''}${i.tempo?`<span class="badge ${esc(i.tempo)}">${esc(st.tempos[i.tempo]||'')}</span>`:''}
     ${i.tags.map(t=>`<span class="badge">${esc(t)}</span>`).join('')}</div></div>`).join('');
   document.querySelectorAll('#grid img[data-id]:not([src])').forEach(im=>io.observe(im));
   document.querySelectorAll('.card').forEach(c=>{
     const it=st.list[c.dataset.n];
-    c.onclick=e=>{if(e.target.classList.contains('ck')){st.sel.has(it.id)?st.sel.delete(it.id):st.sel.add(it.id);render()}else openDlg(it)};
+    c.onclick=e=>{if(e.target.closest('.bkb')){e.stopPropagation();basketSet([it.id],!inBasket(it.id));return}if(e.target.classList.contains('ck')){st.sel.has(it.id)?st.sel.delete(it.id):st.sel.add(it.id);render()}else openDlg(it)};
   });
   $('#bulk').style.display=st.sel.size?'flex':'none';$('#bn').textContent=st.sel.size+'곡 선택';
 }
@@ -590,7 +607,7 @@ async function openDlg(it){
   st.cur=it;
   $('#view').innerHTML='';
   $('#e-title').value=it.title;$('#e-key').value=it.key;$('#e-tempo').value=it.tempo;
-  $('#e-tags').value=it.tags.join(', ');renderTagChips();$('#e-note').value=it.note;$('#e-file').textContent=it.id;$('#e-ex').textContent=st.showEx?'↩ 목록으로 복원':'목록에서 제외';
+  $('#e-tags').value=it.tags.join(', ');renderTagChips();$('#e-note').value=it.note;$('#e-file').textContent=it.id;$('#e-ex').textContent=st.showEx?'↩ 목록으로 복원':'목록에서 제외';basketBtn();
   if(!$('#dlg').open)$('#dlg').showModal();
   const u=await getUrl(it.id);if(st.cur!==it)return;
   $('#view').innerHTML=isPdf(it.id)?`<iframe src="${u}"></iframe>`:`<img src="${u}">`;
@@ -708,7 +725,7 @@ $('#ksave').onclick=async()=>{
 })();
 
 /* ---------- 시작: 폴더 선택 / 권한 ---------- */
-const msg=t=>{$('#smsg').textContent=t||''};
+const msg=t=>{const e=$('#smsg');e.textContent=t||'';e.style.color='var(--warn)'};
 async function openRoot(handle){
   msg('폴더를 읽는 중…');
   fsx.root=handle;
@@ -739,6 +756,7 @@ window.ScoreBox={open:openRoot};  // (테스트용)
   if(!h)return;
   $('#btn-resume').textContent=`📂 “${h.name}” 폴더 열기`;$('#btn-resume').style.display='';
   $('#btn-resume').onclick=()=>resume(h);
+  msg('Chrome 권한 창이 뜨면 “이 사이트를 방문할 때마다 허용”을 선택하세요. 다음부터는 폴더가 자동으로 열립니다.');$('#smsg').style.color='var(--mut)';$('#btn-resume').focus();
   try{if(await h.queryPermission({mode:'readwrite'})==='granted')await openRoot(h)}catch(e){}
 })();
 </script>
@@ -812,6 +830,7 @@ function contiMatches(c){
   return (c.date+' '+fmtDate(c.date)+' '+c.service+' '+c.subtitle+' '+c.theme+' '+songsOf(c).map(g=>g.title).join(' ')).toLowerCase().includes(q);
 }
 function renderContiList(){
+  if(typeof basketRender==='function')basketRender();
   const all=contis().slice().sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
   const years=[...new Set(all.map(c=>c.date.slice(0,4)))];
   const ys=$('#cyear');if(ys.options.length!==years.length+1){const v=ys.value;ys.innerHTML='<option value="">모든 연도</option>'+years.map(y=>`<option>${y}</option>`).join('');ys.value=v}
@@ -907,7 +926,8 @@ function renderPick(){
   if(s==='old')arr.sort((a,b)=>(u(a)?u(a).last:'0').localeCompare(u(b)?u(b).last:'0')||a.title.localeCompare(b.title,'ko'));
   else if(s==='most')arr.sort((a,b)=>(u(b)?u(b).n:0)-(u(a)?u(a).n:0)||a.title.localeCompare(b.title,'ko'));
   else arr.sort((a,b)=>a.title.localeCompare(b.title,'ko',{numeric:true}));
-  $('#pickres').innerHTML=arr.slice(0,200).map((g,i)=>`<div class="pk" data-i="${i}"><span class="t">${esc(g.title)}</span><small>${esc(usageText(u(g)))}</small>${g.items.sort((a,b)=>(st.keys.indexOf(a.key)+99)%99-(st.keys.indexOf(b.key)+99)%99).map(it=>`<button data-id="${esc(it.id)}">＋ ${esc(it.key||'?')}</button>`).join('')}</div>`).join('')||'<p style="color:var(--mut)">검색 결과가 없습니다.</p>';
+  const inbk=g=>g.items.some(x=>inBasket(x.id));arr=[...arr.filter(inbk),...arr.filter(g=>!inbk(g))];
+  $('#pickres').innerHTML=arr.slice(0,200).map((g,i)=>`<div class="pk ${inbk(g)?'inbk':''}" data-i="${i}"><span class="t">${inbk(g)?'🧺 ':''}${esc(g.title)}</span><small>${esc(usageText(u(g)))}</small>${g.items.sort((a,b)=>(st.keys.indexOf(a.key)+99)%99-(st.keys.indexOf(b.key)+99)%99).map(it=>`<button data-id="${esc(it.id)}" class="${inBasket(it.id)?'inbk':''}">＋ ${esc(it.key||'?')}</button>`).join('')}</div>`).join('')||'<p style="color:var(--mut)">검색 결과가 없습니다.</p>';
   $('#pickres').querySelectorAll('.pk').forEach(row=>{const g=arr[row.dataset.i];row.querySelectorAll('button').forEach(b=>b.onclick=()=>{
     const it=g.items.find(x=>x.id===b.dataset.id);
     C.sel.songs.push({title:g.title,canon:g.canon,key:it.key||'',refrain:false,note:'',special:false,sec:'',files:g.items.map(x=>x.id),file:it.id,print:true});
@@ -939,14 +959,15 @@ async function buildLayout(c,p){
   }
   const pw=(fw/per)-2*pad,ph=fh-2*pad,minS=p.minScale/100;
   const hOf=it=>pw*it.shr*it.sh/it.sw+(it.label?labH:0);
-  const panels=[];let cur=[],tot=0;
-  const close=()=>{if(cur.length)panels.push(cur);cur=[];tot=0};
+  const panels=[],tots=[];let cur=-1;
+  const put=(ix,it)=>{while(panels.length<=ix){panels.push([]);tots.push(0)}const h=hOf(it);tots[ix]=panels[ix].length?tots[ix]+gap+h:h;panels[ix].push(it);cur=ix};
   for(const it of items){
-    const h=hOf(it),t=cur.length?tot+gap+h:h;
-    if(cur.length&&(it.place==='new'||(it.place!=='same'&&ph/t<minS)))close();
-    tot=cur.length?tot+gap+h:h;cur.push(it);
+    const n=/^[1-9]\d?$/.test(String(it.place))?+it.place:0;
+    if(n){put(n-1,it);continue}
+    const h=hOf(it);
+    if(cur>=0&&it.place!=='new'&&(it.place==='same'||ph/(tots[cur]+gap+h)>=minS)){put(cur,it);continue}
+    let ix=cur+1;while(panels[ix]&&panels[ix].length)ix++;put(ix,it);
   }
-  close();
   const group=p.mode==='1up'?2:p.mode==='3up'?6:4;while(panels.length%group)panels.push([]);
   const pages=[];
   const ensure=i=>pages[i]||(pages[i]={W,H,front:i%2===0,header:'',panels:[],frame:{x:fx,y:fy,w:fw,h:fh},per,k,pad});
@@ -1037,7 +1058,7 @@ function renderPSongs(){
     const crop=g.crop?`✂ ${Math.round(g.crop.top*100)}–${Math.round(g.crop.bottom*100)}%`+((g.crop.left||g.crop.right!=null&&g.crop.right<1)?` · ${Math.round((g.crop.left||0)*100)}–${Math.round((g.crop.right==null?1:g.crop.right)*100)}%`:'')+(g.crop.scale&&g.crop.scale!==100?` · ${g.crop.scale}%`:''):'✂ 자르기';
     r.innerHTML=`<label class="t"><input type="checkbox" ${g.print!==false?'checked':''}> ${i+1}. ${esc(g.title)}${g.refrain?' <small>(후렴)</small>':''}</label>
       <span class="fs"></span><button class="cr">${crop}</button><input class="lb" placeholder="빨간 라벨 예: [입례]" value="${esc(g.label||'')}">
-      <select class="pl"><option value="auto">칸: 자동</option><option value="new">새 칸에서 시작</option><option value="same">위 곡과 같은 칸</option></select>`;
+      <select class="pl"><option value="auto">칸: 자동</option><option value="new">새 칸에서 시작</option><option value="same">위 곡과 같은 칸</option>${[1,2,3,4,5,6].map(n=>`<option value="${n}">${n}번 칸에 넣기</option>`).join('')}</select>`;
     r.querySelector('.fs').append(fileSelect(g,()=>{refreshPreview()}));
     r.querySelector('input[type=checkbox]').onchange=e=>{g.print=e.target.checked;refreshPreview()};
     r.querySelector('.lb').oninput=e=>{g.label=e.target.value;refreshPreview()};
@@ -1063,11 +1084,25 @@ function refreshPreview(){clearTimeout(P.timer);P.timer=setTimeout(async()=>{
 
 /* --- 자르기 --- */
 let CR=null;
+let CRIM=null;
 async function openCrop(g){
   if(!g.file||!IMG_OK.test(g.file)){alert('이미지 악보만 자를 수 있습니다.');return}
-  const im=await loadImg(g.file);if(!im)return;CR=g;$('#crtitle').textContent=g.title;$('#crimg').src=im.url;
+  const im=await loadImg(g.file);if(!im)return;CR=g;CRIM=im;$('#crtitle').textContent=g.title;$('#crimg').src=im.url;
   const c=g.crop||{top:0,bottom:1};$('#crtop').value=Math.round(c.top*100);$('#crbot').value=Math.round(c.bottom*100);$('#crlef').value=Math.round((c.left||0)*100);$('#crrig').value=Math.round((c.right==null?1:c.right)*100);$('#crsc').value=c.scale||100;crUpd();
   $('#crdlg').showModal();
+}
+function crPrev(){
+  const box=$('#crprev');if(!CR||!CRIM){return}
+  const p=prefs(),{W,H}=paperDims(p),k=Math.max(W,H)/420,m=+p.margin,per=p.mode==='1up'?1:p.mode==='3up'?3:2;
+  const pw=(W-2*m)/per-4*k,ph=H-2*m-9*k-4*k,PX=250;
+  const t=+$('#crtop').value/100,b=+$('#crbot').value/100,l=+$('#crlef').value/100,rr=+$('#crrig').value/100,zs=+$('#crsc').value/100;
+  const im=CRIM;let sx=im.w*l,sw=im.w*(rr-l),sy=im.h*t,sh=im.h*(b-t),shr=1;
+  if(zs>1){const vis=sw/zs;sx+=(sw-vis)/2;sw=vis}else shr=zs;
+  let dw=pw*shr,dh=pw*shr*sh/sw;const f=Math.min(1,ph/dh);dw*=f;dh*=f;
+  const S=PX/pw;box.style.width=PX+'px';box.style.height=(ph*S)+'px';box.innerHTML='';
+  const e=document.createElement('div');e.className='cr';e.style.cssText=`left:${(pw-dw)/2*S}px;top:0;width:${dw*S}px;height:${dh*S}px`;
+  const g=document.createElement('img');g.src=im.url;g.style.cssText=`width:${im.w/sw*dw*S}px;height:${im.h/sh*dh*S}px;left:${-sx/sw*dw*S}px;top:${-sy/sh*dh*S}px`;e.append(g);box.append(e);
+  $('#crinfo').innerHTML=`칸 너비의 <b>${Math.round(dw/pw*100)}%</b> · 칸 높이의 <b>${Math.round(dh/ph*100)}%</b> 차지`+(f<1?'<br>칸 높이를 넘어 자동으로 줄어든 크기입니다.':'')+`<br>(${p.paper} · ${p.mode==='1up'?'1칸':p.mode==='3up'?'3칸':'2칸'} 기준, 다른 곡이 함께 들어가면 더 작아질 수 있어요)`;
 }
 function crUpd(){
   let t=+$('#crtop').value,b=+$('#crbot').value;if(b-t<5){if(document.activeElement===$('#crtop'))t=b-5;else b=t+5;$('#crtop').value=t;$('#crbot').value=b}
@@ -1077,6 +1112,7 @@ function crUpd(){
   $('#crsh3').style.width=l+'%';$('#crsh4').style.width=(100-rr)+'%';$('#crln3').style.left=l+'%';$('#crln4').style.left=rr+'%';
   $('#crscv').textContent=$('#crsc').value+'%';
   $('#crlv').textContent=l+'%';$('#crrv').textContent=rr+'%';
+  crPrev();
 }
 $('#crtop').oninput=crUpd;$('#crbot').oninput=crUpd;$('#crlef').oninput=crUpd;$('#crrig').oninput=crUpd;$('#crsc').oninput=crUpd;
 $('#crok').onclick=()=>{const t=+$('#crtop').value/100,b=+$('#crbot').value/100,l=+$('#crlef').value/100,rr=+$('#crrig').value/100,sc=+$('#crsc').value;CR.crop=(t===0&&b===1&&l===0&&rr===1&&sc===100)?null:{top:t,bottom:b,left:l,right:rr,scale:sc};$('#crdlg').close();renderPSongs();refreshPreview()};
@@ -1111,6 +1147,38 @@ $('#pjpg').onclick=async()=>{
   }catch(e){alert('폴더에 저장하지 못했습니다: '+e.message+'')}
 };
 window.ScoreBoxConti={importContis,buildLayout,renderPageCanvas,prefs,contiText,flattenConti};
+</script>
+<script>
+/* ================= 콘티 바구니 ================= */
+const basket=()=>fsx.db.basket=Array.isArray(fsx.db.basket)?fsx.db.basket:[];
+const inBasket=id=>!!(fsx.db&&Array.isArray(fsx.db.basket)&&fsx.db.basket.includes(id));
+function basketPrune(){const b=basket(),ok=b.filter(id=>fsx.db.scores[id]&&!fsx.db.scores[id].missing);if(ok.length!==b.length)fsx.db.basket=ok}
+function basketSet(ids,on){const b=basket();for(const id of ids){const i=b.indexOf(id);if(on&&i<0)b.push(id);if(!on&&i>=0)b.splice(i,1)}saveSoon();basketRender();render()}
+function basketBtn(){const b=$('#e-basket');if(!st.cur){return}const on=inBasket(st.cur.id);b.textContent=on?'🧺 바구니에서 빼기':'🧺 콘티 바구니에 담기';b.classList.toggle('off',on)}
+$('#e-basket').onclick=()=>{if(!st.cur)return;basketSet([st.cur.id],!inBasket(st.cur.id));basketBtn()};
+$('#bbasket').onclick=()=>{if(!st.sel.size)return;const n=st.sel.size;basketSet([...st.sel],true);st.sel.clear();render();alert(`${n}곡을 콘티 바구니에 담았습니다.`)};
+function songFromItem(it){
+  const k=normT(it.title),files=libItems().filter(x=>normT(x.title)===k).map(x=>x.id);
+  return {title:it.title,canon:k,key:it.key||'',refrain:false,note:'',special:false,sec:'',files:files.includes(it.id)?files:[it.id,...files],file:it.id,print:true};
+}
+function basketRender(){
+  if(!fsx.db)return;basketPrune();const b=basket();$('#bkn').textContent=b.length;
+  $('#bklist').innerHTML=b.map((id,i)=>{const s=fsx.db.scores[id];return `<div class="bki" data-i="${i}"><span class="t" title="${esc(id)}">${esc(s.title)}${s.key?` (${esc(s.key)})`:''}</span><button data-a="up" ${i?'':'disabled'}>▲</button><button data-a="dn" ${i<b.length-1?'':'disabled'}>▼</button><button data-a="rm">✕</button></div>`}).join('')||'<p style="color:var(--mut);font-size:12px;margin:0">비어 있습니다.</p>';
+  $('#bklist').querySelectorAll('.bki').forEach(row=>row.querySelectorAll('button').forEach(bt=>bt.onclick=()=>{
+    const i=+row.dataset.i,a=bt.dataset.a;
+    if(a==='rm')b.splice(i,1);else{const j=a==='up'?i-1:i+1;[b[i],b[j]]=[b[j],b[i]]}
+    saveSoon();basketRender();render()}));
+  $('#bknew').disabled=!b.length;$('#bkclear').disabled=!b.length;
+  const c2=$('#bkclear2');c2.style.display=b.length?'':'none';c2.textContent=`🧺 바구니 비우기 (${b.length})`;
+}
+$('#bkclear2').onclick=$('#bkclear').onclick=()=>{if(!basket().length||!confirm('콘티 바구니를 비울까요?'))return;fsx.db.basket=[];saveSoon();basketRender();render()};
+$('#bknew').onclick=()=>{
+  const b=basket();if(!b.length)return;
+  const c={id:'n'+Date.now(),date:todayStr(),type:'금요기도회',service:'금요기도회 찬양',subtitle:'',theme:'',songs:b.map(id=>songFromItem({id,...fsx.db.scores[id]})),notes:''};
+  contis().push(c);C.sel=c;C.jump=true;
+  if(confirm(`바구니의 ${b.length}곡으로 새 콘티를 만들었습니다.\n바구니를 비울까요?`))fsx.db.basket=[];
+  saveSoon();basketRender();render();renderContiList();renderContiDetail();
+};
 </script>
 <script>
 /* ================= 주제/태그 카테고리 ================= */
