@@ -945,14 +945,15 @@ async function buildLayout(c,p){
   }
   const pw=(fw/per)-2*pad,ph=fh-2*pad,minS=p.minScale/100;
   const hOf=it=>pw*it.shr*it.sh/it.sw+(it.label?labH:0);
-  const panels=[];let cur=[],tot=0;
-  const close=()=>{if(cur.length)panels.push(cur);cur=[];tot=0};
+  const panels=[],tots=[];let cur=-1;
+  const put=(ix,it)=>{while(panels.length<=ix){panels.push([]);tots.push(0)}const h=hOf(it);tots[ix]=panels[ix].length?tots[ix]+gap+h:h;panels[ix].push(it);cur=ix};
   for(const it of items){
-    const h=hOf(it),t=cur.length?tot+gap+h:h;
-    if(cur.length&&(it.place==='new'||(it.place!=='same'&&ph/t<minS)))close();
-    tot=cur.length?tot+gap+h:h;cur.push(it);
+    const n=/^[1-9]\d?$/.test(String(it.place))?+it.place:0;
+    if(n){put(n-1,it);continue}
+    const h=hOf(it);
+    if(cur>=0&&it.place!=='new'&&(it.place==='same'||ph/(tots[cur]+gap+h)>=minS)){put(cur,it);continue}
+    let ix=cur+1;while(panels[ix]&&panels[ix].length)ix++;put(ix,it);
   }
-  close();
   const group=p.mode==='1up'?2:p.mode==='3up'?6:4;while(panels.length%group)panels.push([]);
   const pages=[];
   const ensure=i=>pages[i]||(pages[i]={W,H,front:i%2===0,header:'',panels:[],frame:{x:fx,y:fy,w:fw,h:fh},per,k,pad});
@@ -1043,7 +1044,7 @@ function renderPSongs(){
     const crop=g.crop?`✂ ${Math.round(g.crop.top*100)}–${Math.round(g.crop.bottom*100)}%`+((g.crop.left||g.crop.right!=null&&g.crop.right<1)?` · ${Math.round((g.crop.left||0)*100)}–${Math.round((g.crop.right==null?1:g.crop.right)*100)}%`:'')+(g.crop.scale&&g.crop.scale!==100?` · ${g.crop.scale}%`:''):'✂ 자르기';
     r.innerHTML=`<label class="t"><input type="checkbox" ${g.print!==false?'checked':''}> ${i+1}. ${esc(g.title)}${g.refrain?' <small>(후렴)</small>':''}</label>
       <span class="fs"></span><button class="cr">${crop}</button><input class="lb" placeholder="빨간 라벨 예: [입례]" value="${esc(g.label||'')}">
-      <select class="pl"><option value="auto">칸: 자동</option><option value="new">새 칸에서 시작</option><option value="same">위 곡과 같은 칸</option></select>`;
+      <select class="pl"><option value="auto">칸: 자동</option><option value="new">새 칸에서 시작</option><option value="same">위 곡과 같은 칸</option>${[1,2,3,4,5,6].map(n=>`<option value="${n}">${n}번 칸에 넣기</option>`).join('')}</select>`;
     r.querySelector('.fs').append(fileSelect(g,()=>{refreshPreview()}));
     r.querySelector('input[type=checkbox]').onchange=e=>{g.print=e.target.checked;refreshPreview()};
     r.querySelector('.lb').oninput=e=>{g.label=e.target.value;refreshPreview()};
