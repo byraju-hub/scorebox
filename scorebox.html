@@ -1231,7 +1231,7 @@ const REC={books:[],last:null};
 function parseBible(j){
   const books=new Map();
   const txt=v=>typeof v==='string'?v:(v&&typeof v==='object'?(v.text||v.content||v.body||v.verse||v['본문']||v['내용']||''):'');
-  const add=(b,c,v,t)=>{b=String(b).trim();c=+c;v=+v;t=String(t||'').trim();if(!b||!c||!v||!t)return;let o=books.get(b);if(!o){o={name:b,ch:{}};books.set(b,o)}(o.ch[c]=o.ch[c]||{})[v]=t};
+  const add=(b,c,v,t,end,meta)=>{b=String(b).trim();c=+c;v=+v;t=String(t||'').trim();if(!b||!c||!v||!t)return;let o=books.get(b);if(!o){o={name:b,ch:{},e:{},al:[]};books.set(b,o)}if(meta&&meta.length)o.al=meta;(o.ch[c]=o.ch[c]||{})[v]=t;if(end&&+end>v)(o.e[c]=o.e[c]||{})[v]=+end};
   const pick=(o,ks)=>{for(const k of ks)if(o[k]!==undefined)return o[k]};
   const BK=['book','bookName','book_name','bname','name','책','성경','title'],CK=['chapter','chap','장','c','cn'],VK=['verse','절','v','vn','verse_no'],TK=['text','content','body','본문','내용','verse_text','t'];
   const fromChapters=(bn,chs)=>{
@@ -1244,6 +1244,10 @@ function parseBible(j){
       else if(vs&&typeof vs==='object')for(const [vn,t] of Object.entries(vs))add(bn,cn,vn,txt(t))}
   };
   const walk=x=>{
+    if(x&&!Array.isArray(x)&&typeof x==='object'&&Array.isArray(x.books)&&x.books.some(b=>b&&Array.isArray(b.verses))){
+      for(const b of x.books){if(!b||!Array.isArray(b.verses))continue;const al=[b.short,...(b.aliases||[])].filter(Boolean);
+        for(const v of b.verses){const m=String(v.verse||'').match(/^(\d+)(?:\s*[-~]\s*(\d+))?/),s1=v.v1||(m&&+m[1]),s2=v.v2||(m&&m[2]&&+m[2])||s1;add(b.name,v.chapter,s1,v.text,s2,al)}}
+      return}
     if(Array.isArray(x)){
       for(const el of x){
         if(!el||typeof el!=='object')continue;
@@ -1261,20 +1265,21 @@ function parseBible(j){
   walk(j);
   return [...books.values()];
 }
-function recCounts(){const n=REC.books.length;return n?`${n}권 · ${REC.books.reduce((a,b)=>a+Object.values(b.ch).reduce((x,c)=>x+Object.keys(c).length,0),0).toLocaleString()}절`:''}
+function recCounts(){const n=REC.books.length;return n?`${n}권 · ${REC.books.reduce((a,b)=>a+Object.values(b.ch).reduce((x,c)=>x+Object.keys(c).length,0),0).toLocaleString()}절 단위`:''}
 function recFillBooks(){const sel=$('#rc-book');sel.innerHTML=REC.books.map((b,i)=>`<option value="${i}">${esc(b.name)}</option>`).join('');$('#rc-binfo').textContent=recCounts()||'bible.json을 선택하세요';recFillCh()}
 const recBook=()=>REC.books[+$('#rc-book').value];
 function recFillCh(){const b=recBook();$('#rc-ch').innerHTML=b?Object.keys(b.ch).map(Number).sort((x,y)=>x-y).map(c=>`<option>${c}</option>`).join(''):'';recFillV()}
 function recFillV(){const b=recBook();if(!b){$('#rc-v1').innerHTML=$('#rc-v2').innerHTML='';$('#rc-text').textContent='';return}
-  const vs=Object.keys(b.ch[+$('#rc-ch').value]||{}).map(Number).sort((x,y)=>x-y),o=vs.map(v=>`<option>${v}</option>`).join('');
+  const cn=+$('#rc-ch').value,set=new Set();for(const k of Object.keys(b.ch[cn]||{})){const a=+k,z=(b.e[cn]||{})[a]||a;for(let v=a;v<=z;v++)set.add(v)}
+  const vs=[...set].sort((x,y)=>x-y),o=vs.map(v=>`<option>${v}</option>`).join('');
   const v1=$('#rc-v1'),v2=$('#rc-v2');v1.innerHTML=o;v2.innerHTML=o;v2.value=vs[vs.length-1];recText()}
 function recSel(){const b=recBook(),c=+$('#rc-ch').value,v1=+$('#rc-v1').value,v2=Math.max(v1,+$('#rc-v2').value);if(!b)return null;
-  const arr=[];for(let v=v1;v<=v2;v++)if(b.ch[c]&&b.ch[c][v])arr.push([v,b.ch[c][v]]);
+  const arr=[];for(const k of Object.keys(b.ch[c]||{}).map(Number).sort((x,y)=>x-y)){const z=(b.e[c]||{})[k]||k;if(z>=v1&&k<=v2)arr.push([z>k?k+'-'+z:k,b.ch[c][k]])}
   return {ref:`${b.name} ${c}:${v1===v2?v1:v1+'-'+v2}`,verses:arr}}
 function recText(){const s=recSel();$('#rc-text').innerHTML=s?s.verses.map(([v,t])=>`<sup>${v}</sup>${esc(t)}`).join(' '):'';if(s)$('#rc-ref').value=s.ref}
 function recParseRef(str){
   const m=String(str).trim().match(/^(.+?)\s*(\d+)\s*[:장.]\s*(\d+)(?:\s*[-~–]\s*(\d+))?\s*절?$/);if(!m)return false;
-  const name=m[1].trim(),bi=REC.books.findIndex(b=>b.name===name)>=0?REC.books.findIndex(b=>b.name===name):REC.books.findIndex(b=>b.name.startsWith(name)||name.startsWith(b.name));
+  const name=m[1].trim().replace(/\s+/g,''),hit=f=>REC.books.findIndex(f),bi=[hit(b=>b.name===name),hit(b=>(b.al||[]).includes(name)),hit(b=>b.name.startsWith(name)||name.startsWith(b.name))].find(i=>i>=0)??-1;
   if(bi<0)return false;$('#rc-book').value=bi;recFillCh();$('#rc-ch').value=m[2];recFillV();$('#rc-v1').value=m[3];$('#rc-v2').value=m[4]||m[3];recText();return true}
 $('#rc-book').onchange=recFillCh;$('#rc-ch').onchange=recFillV;$('#rc-v1').onchange=()=>{if(+$('#rc-v2').value<+$('#rc-v1').value)$('#rc-v2').value=$('#rc-v1').value;recText()};$('#rc-v2').onchange=()=>{if(+$('#rc-v2').value<+$('#rc-v1').value)$('#rc-v1').value=$('#rc-v2').value;recText()};
 $('#rc-ref').onchange=e=>{if(!recParseRef(e.target.value))$('#rc-status').textContent='본문을 찾지 못했습니다. 예: 창세기 1:1-10'};
