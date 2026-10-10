@@ -1282,7 +1282,7 @@ $('#rc-close').onclick=()=>$('#recdlg').close();
 function recLibTitles(){const seen=new Map();for(const it of libItems()){const k=normT(it.title);if(k&&!seen.has(k))seen.set(k,it.title)}return [...seen.values()]}
 const recFindLib=t=>{const n=normT(t);return libItems().filter(i=>i.title===t||normT(i.title)===n)};
 function recPrompt(sel,nlib,nout,titles){
-  return `성경 본문: ${sel.ref}\n\n본문 내용:\n${sel.verses.map(([v,t])=>v+'. '+t).join('\n')}\n\n[악보함 곡 제목 목록]\n${titles.join('\n')}\n\n요청:\n1) 이 본문의 주제·정서에 어울리는 찬양을 악보함 목록에서 ${nlib}곡 고르세요. 제목은 목록에 있는 것을 글자 그대로 쓰세요.\n2) 악보함 목록에 없는 어울리는 찬양(찬송가·CCM 등)을 ${nout}곡 추천하세요. 가능하면 작곡가·가수도 적으세요.\n각 곡마다 본문과 어떻게 어울리는지 한두 문장으로 이유를 쓰세요.\n\n반드시 아래 JSON만 출력하세요(코드블록·설명 금지):\n{"summary":"본문 주제 요약 한 문장","library":[{"title":"","reason":""}],"outside":[{"title":"","artist":"","reason":""}]}`}
+  return `성경 본문: ${sel.ref}\n\n본문 내용:\n${sel.verses.map(([v,t])=>v+'. '+t).join('\n')}\n\n[악보함 곡 제목 목록]\n${titles.join('\n')}\n\n요청:\n1) 이 본문의 주제·정서에 어울리는 찬양을 악보함 목록에서 ${nlib}곡 고르세요. 제목은 목록에 있는 것을 글자 그대로 쓰세요.\n2) 악보함 목록에 없는 어울리는 찬양(찬송가·CCM 등)을 ${nout}곡 추천하세요. 한국 교회에서 한국어로 부르는 곡(한국어 찬송가, 한국어 CCM·한국 찬양팀 곡, 한국어로 번안되어 널리 불리는 곡)을 우선하고, 한국어 제목이 없는 외국 곡은 되도록 피하세요. 제목은 한국에서 쓰는 한국어 제목으로 쓰고, 가능하면 작곡가·가수(찬양팀)도 적으세요.\n각 곡마다 본문과 어떻게 어울리는지 한두 문장으로 이유를 쓰세요.\n\n반드시 아래 JSON만 출력하세요(코드블록·설명 금지):\n{"summary":"본문 주제 요약 한 문장","library":[{"title":"","reason":""}],"outside":[{"title":"","artist":"","reason":""}]}`}
 async function recAsk(){
   const key=REC.key;if(!key){$('#rc-status').textContent='claude_api_key.txt 파일이 필요합니다.';return}
   const sel=recSel();if(!sel||!sel.verses.length){$('#rc-status').textContent='성경 본문을 선택하세요.';return}
