@@ -252,3 +252,9 @@ input[type=checkbox],input[type=range],label{cursor:pointer}
 /* 키보드로 이동할 때 보이는 테두리 */
 button:focus-visible,.chip:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
 @media(prefers-reduced-motion:reduce){button,.chip,.card,.tool{transition:none;transform:none!important}}
+
+/* 칩 색상은 그룹 제목 밑줄 색과 같게: 코드=파랑, 빠르기=주황, 카테고리=청록 */
+#f-key{--gc:var(--acc)}#f-tempo{--gc:#ea580c}#f-tag{--gc:#0d9488}
+.chip.on{background:var(--gc,var(--acc));border-color:var(--gc,var(--acc))}
+.chip:hover{background:color-mix(in srgb,var(--gc,var(--acc)) 16%,var(--card));border-color:var(--gc,var(--acc));color:var(--gc,var(--acc))}
+.chip.on:hover{background:var(--gc,var(--acc));border-color:var(--gc,var(--acc));color:#fff;filter:brightness(1.12)}
