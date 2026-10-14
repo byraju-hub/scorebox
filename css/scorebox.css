@@ -223,3 +223,32 @@ table.stt th{color:var(--mut);font-weight:600;font-size:12px}table.stt td.n,tabl
 #hdlg ul{margin:4px 0 0;padding:0 0 0 16px;max-height:220px;overflow:auto;font-size:12px;columns:2}
 #hdlg li small{color:var(--mut)}
 .logo{width:1.15em;height:1.15em;vertical-align:-.2em;margin-right:.35em;border-radius:22%}
+
+/* ===== 롤오버(마우스 올림) 효과 — 모든 버튼·칩·카드·입력칸 공통 ===== */
+button,.chip,.card,.ci,.pk,.bki,.tri,select,input,textarea,#tabs button{transition:background-color .12s,border-color .12s,color .12s,box-shadow .12s,transform .12s,filter .12s}
+/* 일반 버튼: 연한 강조색 배경 + 강조색 테두리 + 살짝 떠오름, 누르면 눌림 */
+button:not(.tool):not(.p):not(.obtn):not(.bkb):hover:not(:disabled){background:color-mix(in srgb,var(--acc) 14%,var(--card));border-color:var(--acc);color:var(--acc);box-shadow:0 2px 6px #0003;transform:translateY(-1px)}
+button:not(.tool):not(:disabled):active{transform:translateY(0) scale(.96);box-shadow:none}
+button:disabled{cursor:default}
+/* 파란(강조) 버튼 / 주황 버튼: 밝아지면서 떠오름 */
+button.p:hover:not(:disabled),button.obtn:not(.off):hover:not(:disabled){filter:brightness(1.12);box-shadow:0 2px 8px #0004;transform:translateY(-1px)}
+button.obtn.off:hover:not(:disabled){background:#f08c0026;border-color:#f08c00;color:#d9730d;box-shadow:0 2px 6px #0003;transform:translateY(-1px)}
+/* 빨간 삭제 버튼(인라인 색): 진하게 */
+button[style*="#c92a2a"]:hover:not(:disabled){filter:brightness(1.15);box-shadow:0 2px 8px #c92a2a66;transform:translateY(-1px)}
+/* 코드·빠르기·카테고리 선택 칩 */
+.chip:hover{background:color-mix(in srgb,var(--acc) 14%,var(--card));border-color:var(--acc);color:var(--acc);box-shadow:0 2px 6px #0002;transform:translateY(-1px)}
+.chip.on:hover{background:var(--acc);color:#fff;filter:brightness(1.12)}
+.chip:active{transform:translateY(0) scale(.95)}
+/* 악보 카드 · 콘티 목록 · 추천/바구니/휴지통 목록 */
+.card:hover{border-color:var(--acc);box-shadow:0 4px 12px #0003;transform:translateY(-2px)}
+.card.inb:hover{border-color:#f08c00}
+.ci:hover:not(.on){background:color-mix(in srgb,var(--acc) 12%,var(--card))}
+.pk:hover,.tri:hover,.rci:hover{background:color-mix(in srgb,var(--acc) 8%,transparent)}
+.bki:hover{box-shadow:0 1px 6px #f08c0055}
+/* 입력칸·선택칸 */
+select:hover:not(:disabled),input:not([type=checkbox]):not([type=range]):hover:not(:disabled),textarea:hover:not(:disabled){border-color:var(--acc)}
+select{cursor:pointer}
+input[type=checkbox],input[type=range],label{cursor:pointer}
+/* 키보드로 이동할 때 보이는 테두리 */
+button:focus-visible,.chip:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+@media(prefers-reduced-motion:reduce){button,.chip,.card,.tool{transition:none;transform:none!important}}
