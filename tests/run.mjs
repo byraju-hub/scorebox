@@ -165,6 +165,9 @@ await test('콘티 텍스트 복사: 인쇄 창에도 버튼이 있고 같은 �
     return copied;
   });
   ok(r === '샬롬~*\n10/16 금요기도회 설교 후 찬양입니다.\n\n1. 예수늘함께계시네 (D)\n2. 나무엇과도주님을 (D)\n', JSON.stringify(r));
+  ok(!errors.length, errors.join());
+  await ctx.close();
+});
 
 await test('배치 "가로 한 면에 2칸 (단면)": 장마다 2칸, 앞/뒤 구분 없이 1·2·3 장, 모든 장에 머리글', async () => {
   const { ctx, page, errors } = await setup({ 'G-a.png': { w: 600, h: 900 }, 'G-b.png': { w: 601, h: 900 }, 'G-c.png': { w: 602, h: 900 }, 'G-d.png': { w: 603, h: 900 }, 'G-e.png': { w: 604, h: 900 } });
