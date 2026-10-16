@@ -143,7 +143,7 @@ function contiText(c){
     if(g.sec&&g.sec!==sec&&/#\d/.test(g.sec)){out+=`${i?'\n':''}[${g.sec.replace(/^\s*/, '')}]\n`;sec=g.sec;i=0}
     i++;out+=`${i}. ${g.title}${(k=>k?` (${k}${g.refrain?', 후렴':''})`:g.refrain?' (후렴)':'')(songKey(g))}\n`;
   }
-  return out.trim()+'\n';
+  return out.trim();
 }
 function renderContiDetail(){
   const c=C.sel,box=$('#cd');
