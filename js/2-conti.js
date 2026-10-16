@@ -9,7 +9,13 @@ const fmtDate=d=>{const [y,m,dd]=d.split('-');return `${+m}/${+dd}(${dowOf(d)})`
 const todayStr=()=>{const t=new Date();return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`};
 const songsOf=c=>c.songs||[];
 const PREF_DEF={paper:'A3',mode:'2up',order:'booklet',margin:6,minScale:85,dpi:200,frame:true,numbers:true};
-const prefs=()=>{const o=fsx.db.printPrefs;if(o&&!o.v){o.paper=PREF_DEF.paper;o.mode=PREF_DEF.mode;o.margin=PREF_DEF.margin;o.v=2}return fsx.db.printPrefs=Object.assign({},PREF_DEF,{v:2},o||{})};
+/* 인쇄 설정: 콘티마다 따로 저장(c.print). 따로 정하지 않은 콘티는 곡 수에 맞는 프리셋(1곡 / 2곡 / 3곡 이상)을 따름 */
+const PRESET_KEYS=['1','2','3'],presetLabel=k=>k==='3'?'3곡 이상':k+'곡';
+function presets(){const d=fsx.db.printPresets=fsx.db.printPresets||{};for(const k of PRESET_KEYS)d[k]=Object.assign({},PREF_DEF,d[k]||{});return d}
+const printCount=c=>(c.songs||[]).filter(g=>g.print!==false).length;
+const presetKey=c=>{const n=printCount(c);return n<=1?'1':n===2?'2':'3'};
+const prefsOf=c=>Object.assign({},presets()[presetKey(c)],c.print||{});
+const prefs=()=>prefsOf(P.c||{songs:[]});
 function saveSoon(){clearTimeout(C.timer);C.timer=setTimeout(()=>saveDb(),400)}
 
 /* --- 가져오기: 구간(sections) 형식 → 평평한 songs 배열 --- */
@@ -239,6 +245,7 @@ async function buildLayout(c,p){
     let ix=cur+1;while(panels[ix]&&panels[ix].length)ix++;put(ix,it);
   }
   const single=p.mode==='2up1';  // 단면: 한 장에 2칸, 장마다 따로 (앞/뒤 구분 없음)
+  const panelCount=panels.length;
   const group=p.mode==='1up'||single?2:p.mode==='3up'?6:4;while(panels.length%group)panels.push([]);
   const pages=[];
   const ensure=i=>pages[i]||(pages[i]={W,H,front:single||i%2===0,single,header:'',panels:[],frame:{x:fx,y:fy,w:fw,h:fh},per,k,pad});
@@ -267,7 +274,7 @@ async function buildLayout(c,p){
   const res=pages.filter((pg,i)=>used[i]);
   res.forEach(pg=>pg.header=pg.front?(c.header||''):'');
   res.forEach((pg,i)=>pg.no=i+1);
-  return {pages:res,warns,count:items.length};
+  return {pages:res,warns,count:items.length,panelCount};
 }
 /* HTML 렌더 (미리보기 / 인쇄) */
 function renderPageHTML(pg,p){
@@ -305,24 +312,37 @@ const blobOf=(cv,q=0.92)=>new Promise(r=>cv.toBlob(r,'image/jpeg',q));
 /* --- 인쇄 대화상자 --- */
 const P={c:null,lay:null,timer:0,busy:false};
 function defaultHeader(c){const [y,m,d]=c.date.split('-');return `${y}년 ${+m}월 ${+d}일 ${c.service}${c.subtitle?' - '+c.subtitle:''}`}
+function syncPControls(){  // 설정 칸을 이 콘티의 설정(또는 곡 수 프리셋)으로 채움
+  const p=prefs();P.pk=presetKey(P.c);
+  $('#p-paper').value=p.paper;$('#p-mode').value=p.mode;$('#p-order').value=p.order;
+  $('#p-margin').value=p.margin;$('#p-minscale').value=p.minScale;$('#p-dpi').value=p.dpi;$('#p-frame').checked=p.frame;$('#p-numbers').checked=p.numbers;
+  updatePresetUI();
+}
+const snapPrefs=()=>({paper:$('#p-paper').value,mode:$('#p-mode').value,order:$('#p-order').value,margin:+$('#p-margin').value||0,minScale:+$('#p-minscale').value,dpi:+$('#p-dpi').value,frame:$('#p-frame').checked,numbers:$('#p-numbers').checked});
+function updatePresetUI(){
+  const k=presetKey(P.c);$('#p-prestat').innerHTML=`지금 <b>${printCount(P.c)}곡</b> → <b>${presetLabel(k)}</b> 프리셋 `+(P.c.print?'<span style="color:#d9730d">(이 콘티는 따로 설정됨)</span>':'<span style="color:var(--mut)">적용 중</span>');
+  $('#p-presave').textContent=`이 설정을 '${presetLabel(k)}' 프리셋으로 저장`;$('#p-prereset').style.display=P.c.print?'':'none';
+}
 function openPrint(c){
-  P.c=c;const p=prefs();
+  P.c=c;
   for(const g of songsOf(c)){if(g.refrain&&!g.crop&&!g.autoRef){g.crop={top:0.6,bottom:1};g.label=g.label||`[${g.title} (후렴)]`;g.autoRef=true}if(g.print===undefined)g.print=!g.special}
   if(!c.headerCustom)c.header=defaultHeader(c);
-  $('#p-paper').value=p.paper;$('#p-mode').value=p.mode;$('#p-order').value=p.order;$('#p-header').value=c.header;
-  $('#p-margin').value=p.margin;$('#p-minscale').value=p.minScale;$('#p-dpi').value=p.dpi;$('#p-frame').checked=p.frame;$('#p-numbers').checked=p.numbers;
+  $('#p-header').value=c.header;syncPControls();
   $('#ptitle').textContent=`인쇄 · JPG — ${c.date} ${c.service}`;
   $('#pdlg').classList.add('on');renderPSongs();refreshPreview();
 }
 $('#pclose').onclick=()=>{$('#pdlg').classList.remove('on');saveSoon();renderContiDetail()};
 for(const id of ['paper','mode','order','margin','minscale','dpi','frame','numbers','header'])$('#p-'+id).addEventListener('input',()=>{
-  const p=prefs();p.paper=$('#p-paper').value;p.mode=$('#p-mode').value;p.order=$('#p-order').value;p.margin=+$('#p-margin').value||0;
-  p.minScale=+$('#p-minscale').value;p.dpi=+$('#p-dpi').value;p.frame=$('#p-frame').checked;p.numbers=$('#p-numbers').checked;P.c.header=$('#p-header').value;if(id==='header')P.c.headerCustom=true;
-  if(p.paper==='A4'&&!P.touchedMargin&&id==='paper'){p.margin=6;$('#p-margin').value=6}
-  if(id==='margin')P.touchedMargin=true;saveSoon();refreshPreview();
+  if(id==='header'){P.c.header=$('#p-header').value;P.c.headerCustom=true}
+  else P.c.print=snapPrefs();   // 설정을 바꾸면 이 콘티에만 저장 (다른 콘티는 그대로)
+  updatePresetUI();saveSoon();refreshPreview();
 });
+$('#p-presave').onclick=()=>{const k=presetKey(P.c),snap=snapPrefs();presets()[k]=snap;delete P.c.print;saveSoon();updatePresetUI();alert(`'${presetLabel(k)}' 프리셋을 저장했습니다.\n앞으로 ${presetLabel(k)}짜리 콘티는 이 용지·배치로 시작합니다 (따로 설정한 콘티는 그대로).`)};
+$('#p-prereset').onclick=()=>{delete P.c.print;syncPControls();saveSoon();refreshPreview()};
 $('#pall').onclick=()=>{songsOf(P.c).forEach(g=>g.print=true);renderPSongs();refreshPreview()};
 $('#pnone').onclick=()=>{songsOf(P.c).forEach(g=>g.print=false);renderPSongs();refreshPreview()};
+const panelOptMax=()=>Math.max(6,((P.lay&&P.lay.panelCount)||0)+1);  // 칸이 늘어나면 칸 번호 선택지도 자동으로 늘어남
+function syncPanelOptions(){const n=panelOptMax();document.querySelectorAll('#psongs select.pl').forEach(sel=>{const have=sel.options.length-3;for(let i=have+1;i<=n;i++){const o=document.createElement('option');o.value=i;o.textContent=`${i}번 칸에 넣기`;sel.append(o)}})}
 function renderPSongs(){
   const box=$('#psongs');box.innerHTML='';
   songsOf(P.c).forEach((g,i)=>{
@@ -330,7 +350,7 @@ function renderPSongs(){
     const crop=g.crop?`✂ ${Math.round(g.crop.top*100)}–${Math.round(g.crop.bottom*100)}%`+((g.crop.left||g.crop.right!=null&&g.crop.right<1)?` · ${Math.round((g.crop.left||0)*100)}–${Math.round((g.crop.right==null?1:g.crop.right)*100)}%`:'')+(g.crop.scale&&g.crop.scale!==100?` · ${g.crop.scale}%`:''):'✂ 자르기';
     r.innerHTML=`<label class="t"><input type="checkbox" ${g.print!==false?'checked':''}> ${i+1}. ${esc(g.title)}${g.refrain?' <small>(후렴)</small>':''}</label>
       <span class="fs"></span><button class="cr">${crop}</button><input class="lb" placeholder="빨간 라벨 예: [입례]" value="${esc(g.label||'')}">
-      <select class="pl"><option value="auto">칸: 자동</option><option value="new">새 칸에서 시작</option><option value="same">위 곡과 같은 칸</option>${[1,2,3,4,5,6].map(n=>`<option value="${n}">${n}번 칸에 넣기</option>`).join('')}</select>`;
+      <select class="pl"><option value="auto">칸: 자동</option><option value="new">새 칸에서 시작</option><option value="same">위 곡과 같은 칸</option>${Array.from({length:panelOptMax()},(_,i)=>i+1).map(n=>`<option value="${n}">${n}번 칸에 넣기</option>`).join('')}</select>`;
     r.querySelector('.fs').append(fileSelect(g,()=>{refreshPreview()}));
     r.querySelector('input[type=checkbox]').onchange=e=>{g.print=e.target.checked;refreshPreview()};
     r.querySelector('.lb').oninput=e=>{g.label=e.target.value;refreshPreview()};
@@ -342,7 +362,8 @@ function renderPSongs(){
 function refreshPreview(){clearTimeout(P.timer);P.timer=setTimeout(async()=>{
   if(P.busy){refreshPreview();return}P.busy=true;
   try{
-    const p=prefs();const lay=P.lay=await buildLayout(P.c,p);const box=$('#pprev');box.innerHTML='';
+    if(!P.c.print&&P.pk!==presetKey(P.c))syncPControls();   // 곡 수가 바뀌면 그 곡 수의 프리셋으로 자동 전환
+    const p=prefs();const lay=P.lay=await buildLayout(P.c,p);const box=$('#pprev');box.innerHTML='';syncPanelOptions();
     $('#pwarn').innerHTML=lay.warns.map(w=>'⚠ '+esc(w)).join('<br>');
     if(!lay.pages.length){box.innerHTML='<p style="color:var(--mut)">인쇄할 악보가 없습니다. 곡을 선택하세요.</p>';return}
     const avail=box.clientWidth-40,k=Math.min(1.2,avail/(lay.pages[0].W*3.7795));
