@@ -258,6 +258,13 @@ $('#hclose').onclick=()=>$('#hdlg').close();
 
 /* ===== 찬송가 장 수를 메모에 기록 (예: 310장) — 메모 검색으로 "310장"을 찾을 수 있게 ===== */
 const HN_RE=/^\s*\d+장(?:\/\d+장)*(?:\s*·\s*|\s*$)/;
+/* 제목 속 찬송가 장 수 제거: '갈릴리마을그숲속에서524' → '갈릴리마을그숲속에서', '…(찬425)' → '…' (찾은 장 수와 같은 숫자만) */
+function stripHymnNum(title,nums){
+  let t=title;
+  for(const n of nums)t=t.replace(new RegExp('\\s*[\\(\\[（]?\\s*(?:찬송가|찬)?\\s*(?<!\\d)'+n+'(?!\\d)\\s*(?:장|번)?\\s*[\\)\\]）]?'),' ');
+  t=t.replace(/[\(\[（]\s*(?:찬송가|찬)?\s*[\)\]）]/g,'').replace(/\s+/g,' ').trim();
+  return t||title;
+}
 function hnPlan(){
   const items=(fsx.db.hymns&&fsx.db.hymns.items)||[],byKey=new Map();
   for(const it of items){const k=normT(it.title);if(k.length<2)continue;if(!byKey.has(k))byKey.set(k,{title:it.title,nums:[]});if(!byKey.get(k).nums.includes(it.n))byKey.get(k).nums.push(it.n)}
@@ -269,9 +276,9 @@ function hnPlan(){
     if(!nums)for(const [h,v] of hk){if(h.length>=5&&ck.some(k=>k.length>=h.length&&k.includes(h))){nums=v.nums;how='부분 일치';break}}
     if(!nums){const m=HSTEM(id).match(/(?<=\D)([1-9]\d{1,2})(?:-\d)?$/);if(m&&+m[1]<=645){nums=[+m[1]];how='파일명 번호'}}
     if(!nums){none.push({id,title:s.title});continue}
-    const tag=nums.sort((a,b)=>a-b).map(n=>n+'장').join('/'),old=s.note||'',rest=old.replace(HN_RE,'').trim(),neu=tag+(rest?' · '+rest:'');
-    if(old===neu){done.push({id,title:s.title,tag});continue}
-    rows.push({id,title:s.title,tag,how,neu,old});
+    nums.sort((a,b)=>a-b);const tag=nums.map(n=>n+'장').join('/'),old=s.note||'',rest=old.replace(HN_RE,'').trim(),neu=tag+(rest?' · '+rest:''),newTitle=stripHymnNum(s.title||'',nums);
+    if(old===neu&&newTitle===s.title){done.push({id,title:s.title,tag});continue}
+    rows.push({id,title:s.title,newTitle,tag,how,neu,old});
   }
   return {rows,none,done,hasNums:items.length>0};
 }
@@ -283,12 +290,15 @@ function hnRender(){
   const l=el('div','');l.innerHTML=`<b>기록할 곡</b> ${fmtN(p.rows.length)}곡 &nbsp;|&nbsp; 이미 기록됨 ${fmtN(p.done.length)}곡 &nbsp;|&nbsp; 장 수를 못 찾은 곡 ${fmtN(p.none.length)}곡 <small style="color:var(--mut)">(카테고리가 "찬송가"인 곡 기준)</small>`;sum.append(l);
   box.replaceChildren();
   const mk=(title,arr,fmt,open)=>{const d=el('details');if(open)d.open=true;d.append(el('summary','',`${title} (${fmtN(arr.length)}곡)`));const ul=el('ul');arr.slice(0,400).forEach(x=>{ul.append(el('li','',fmt(x)))});if(arr.length>400)ul.append(el('li','',`… 외 ${arr.length-400}곡`));d.append(ul);return d};
-  box.append(mk('메모에 기록될 곡',p.rows,x=>`${x.title}  →  ${x.tag}  (${x.how})`,true));
+  box.append(mk('메모에 기록될 곡',p.rows,x=>`${x.title}  →  ${x.tag}  (${x.how})`+(x.newTitle!==x.title?`  · 제목 → ${x.newTitle}`:''),true));
   if(p.none.length)box.append(mk('장 수를 못 찾은 곡 (직접 메모에 적어 주세요)',p.none,x=>x.title,false));
   return p;
 }
 $('#hnapply').onclick=async()=>{
   const p=hnPlan();if(!p.rows.length)return;let n=0;
-  for(const r of p.rows){const s=fsx.db.scores[r.id];if(s){s.note=r.neu;n++}}
-  await saveDb();await load();hnRender();alert(`${n}곡의 메모에 찬송가 장 수를 기록했습니다.\n이제 검색창에 "310장"처럼 입력하면 찾을 수 있습니다.`);
+  let nt=0;
+  for(const r of p.rows){const s=fsx.db.scores[r.id];if(!s)continue;s.note=r.neu;n++;
+    if(r.newTitle&&r.newTitle!==s.title){const o=s.title;s.title=r.newTitle;nt++;
+      for(const c of [...(fsx.db.contis||[]),...(fsx.db.contisTrash||[])])for(const g of c.songs||[])if(g.file===r.id&&g.title===o)g.title=r.newTitle}}
+  await saveDb();await load();hnRender();alert(`${n}곡의 메모에 찬송가 장 수를 기록했습니다.`+(nt?`\n제목에 들어 있던 장 수는 ${nt}곡에서 지웠습니다.`:'')+`\n이제 검색창에 "310장"처럼 입력하면 찾을 수 있습니다.`);
 };
