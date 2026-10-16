@@ -238,13 +238,15 @@ async function buildLayout(c,p){
     if(cur>=0&&it.place!=='new'&&(it.place==='same'||ph/(tots[cur]+gap+h)>=minS)){put(cur,it);continue}
     let ix=cur+1;while(panels[ix]&&panels[ix].length)ix++;put(ix,it);
   }
-  const group=p.mode==='1up'?2:p.mode==='3up'?6:4;while(panels.length%group)panels.push([]);
+  const single=p.mode==='2up1';  // 단면: 한 장에 2칸, 장마다 따로 (앞/뒤 구분 없음)
+  const group=p.mode==='1up'||single?2:p.mode==='3up'?6:4;while(panels.length%group)panels.push([]);
   const pages=[];
-  const ensure=i=>pages[i]||(pages[i]={W,H,front:i%2===0,header:'',panels:[],frame:{x:fx,y:fy,w:fw,h:fh},per,k,pad});
+  const ensure=i=>pages[i]||(pages[i]={W,H,front:single||i%2===0,single,header:'',panels:[],frame:{x:fx,y:fy,w:fw,h:fh},per,k,pad});
   panels.forEach((its,idx)=>{
     let page,side;
     if(p.mode==='1up'){page=idx;side=0}
     else if(p.mode==='3up'){page=Math.floor(idx/3);side=idx%3}
+    else if(single){page=Math.floor(idx/2);side=idx%2}
     else{const sheet=Math.floor(idx/4),q=idx%4;const map=p.order==='seq'?[[0,0],[0,1],[1,0],[1,1]]:[[0,0],[1,0],[1,1],[0,1]];page=sheet*2+map[q][0];side=map[q][1]}
     const pg=ensure(page);
     const px=fx+side*(fw/per)+pad,py=fy+pad;
@@ -260,7 +262,7 @@ async function buildLayout(c,p){
     }
     pg.panels.push({side,items:out});
   });
-  for(let i=0;i<(pages.length+(pages.length%2));i++)ensure(i);
+  for(let i=0;i<(pages.length+(single?0:pages.length%2));i++)ensure(i);
   const used=pages.map(pg=>pg.panels.some(pn=>pn.items.length));
   const res=pages.filter((pg,i)=>used[i]);
   res.forEach(pg=>pg.header=pg.front?(c.header||''):'');
@@ -346,7 +348,7 @@ function refreshPreview(){clearTimeout(P.timer);P.timer=setTimeout(async()=>{
     const avail=box.clientWidth-40,k=Math.min(1.2,avail/(lay.pages[0].W*3.7795));
     lay.pages.forEach(pg=>{
       const lab=document.createElement('div');lab.className='pglab';
-      lab.textContent=`${pg.no}면 (${pg.front?'앞':'뒤'}) · ${p.paper} ${pg.W>pg.H?'가로':'세로'}`;box.append(lab);
+      lab.textContent=`${pg.no}${pg.single?'페이지':'면 ('+(pg.front?'앞':'뒤')+')'} · ${p.paper} ${pg.W>pg.H?'가로':'세로'}`;box.append(lab);
       const w=document.createElement('div');w.className='pgwrap';w.style.zoom=k;w.append(renderPageHTML(pg,p));box.append(w);
     });
   }catch(e){$('#pwarn').textContent='미리보기 오류: '+e.message}finally{P.busy=false}
@@ -404,7 +406,7 @@ async function exportJpgs(){
   const p=prefs(),lay=P.lay||await buildLayout(P.c,p);if(!lay.pages.length){alert('내보낼 악보가 없습니다.');return null}
   try{await document.fonts.load('700 20px "Gowun Dodum"','가A')}catch(e){}
   const out=[];let sheet=0;
-  for(const pg of lay.pages){if(pg.front)sheet++;const n=Math.max(sheet-1,0)*2+(pg.front?1:2);
+  for(const pg of lay.pages){if(pg.front)sheet++;const n=pg.single?pg.no:Math.max(sheet-1,0)*2+(pg.front?1:2);
     const b=await blobOf(renderPageCanvas(pg,p,p.dpi*297/Math.max(pg.W,pg.H)));out.push({name:`${jpgBase()}-${n}.jpg`,blob:b})}
   return out;
 }
