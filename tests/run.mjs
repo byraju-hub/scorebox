@@ -175,7 +175,7 @@ await test('배치 "가로 한 면에 2칸 (단면)": 장마다 2칸, 앞/뒤 �
     const song = (f, t) => ({ title: t, canon: normT(t), key: 'G', files: [f], file: f, print: true, place: 'new' });
     const c = { id: 's1', date: '2026-10-16', type: '금요기도회', service: '금요기도회', header: '머리글', headerCustom: true,
       songs: ['a', 'b', 'c', 'd', 'e'].map(x => song(`G-${x}.png`, x)) };
-    fsx.db.contis = [c]; fsx.db.printPrefs = { ...prefs(), mode: '2up1' };
+    fsx.db.contis = [c]; c.print = { ...prefsOf(c), mode: '2up1' };
     openPrint(c); await new Promise(r => setTimeout(r, 700));
     const pages = P.lay.pages.map(pg => ({ no: pg.no, single: pg.single, front: pg.front, header: pg.header, panels: pg.panels.filter(pn => pn.items.some(i => i.kind === 'img')).length, W: pg.W, H: pg.H }));
     const files = await exportJpgs();
@@ -186,6 +186,46 @@ await test('배치 "가로 한 면에 2칸 (단면)": 장마다 2칸, 앞/뒤 �
   ok(r.pages.every(p => p.single && p.front && p.header === '머리글' && p.W > p.H), `단면 속성 ${JSON.stringify(r.pages)}`);
   ok(r.names.join() === '261016-1.jpg,261016-2.jpg,261016-3.jpg', `파일명 ${r.names}`);
   ok(r.labels[0].includes('1페이지') && !r.labels[0].includes('앞'), `미리보기 이름 ${r.labels}`);
+  ok(!errors.length, errors.join());
+  await ctx.close();
+});
+
+await test('인쇄 설정: 기본 A3·2칸(양면), 콘티마다 따로 저장, 곡 수별 프리셋(1곡/2곡/3곡 이상)', async () => {
+  const files = {}; for (const n of 'abcdefgh') files[`G-${n}.png`] = { w: 600 + n.charCodeAt(0), h: 700 };
+  const { ctx, page, errors } = await setup(files);
+  const r = await page.evaluate(async () => {
+    const song = (n, i) => ({ title: n, canon: n, key: 'G', files: [`G-${n}.png`], file: `G-${n}.png`, print: true, place: 'new' });
+    const mk = (id, n) => ({ id, date: '2026-11-0' + (id.charCodeAt(0) % 9 + 1), type: '주일', service: '주일', songs: 'abcdefgh'.slice(0, n).split('').map(song) });
+    const A = mk('A', 1), B = mk('B', 1), C = mk('C', 2), D = mk('D', 3), E = mk('E', 8);
+    fsx.db.contis = [A, B, C, D, E];
+    const open = async c => { openPrint(c); await new Promise(r => setTimeout(r, 450)); return { paper: $('#p-paper').value, mode: $('#p-mode').value, stat: $('#p-prestat').textContent }; };
+    const out = {};
+    out.defA = await open(A);                                                     // 기본값
+    $('#p-paper').value = 'A4'; $('#p-paper').dispatchEvent(new Event('input')); // A 콘티만 A4 로
+    out.A_after = [A.print && A.print.paper, B.print === undefined];
+    $('#pclose').click(); out.B = await open(B);                                  // B 는 그대로 A3
+    $('#p-paper').value = 'B4'; $('#p-mode').value = '2up1';
+    $('#p-paper').dispatchEvent(new Event('input')); $('#p-presave').click();     // B 설정을 '1곡' 프리셋으로 저장
+    out.preset1 = presets()['1'].paper + '/' + presets()['1'].mode + ' B.print=' + B.print;
+    $('#pclose').click(); out.A = await open(A);                                  // A 는 개별 설정(A4) 유지
+    $('#pclose').click(); out.C = await open(C);                                  // 2곡 → 2곡 프리셋(A3/2up)
+    $('#pclose').click(); out.D = await open(D);                                  // 3곡 → 3곡 이상 프리셋
+    // 곡 수 바뀌면 프리셋 전환: D 에서 곡 하나만 남기면 1곡 프리셋(B4/단면)
+    D.songs[1].print = false; D.songs[2].print = false; refreshPreview(); await new Promise(r => setTimeout(r, 700));
+    out.D_one = { paper: $('#p-paper').value, mode: $('#p-mode').value, stat: $('#p-prestat').textContent };
+    $('#pclose').click(); out.E = await open(E);                                  // 8곡: 칸이 늘어나면 칸 번호 선택지도 늘어남
+    out.opts = document.querySelector('#psongs select.pl').options.length - 3; out.panels = P.lay.panelCount;
+    return out;
+  });
+  ok(r.defA.paper === 'A3' && r.defA.mode === '2up', `기본값 ${JSON.stringify(r.defA)}`);
+  ok(r.A_after[0] === 'A4' && r.A_after[1], `A만 바뀌어야 함 ${r.A_after}`);
+  ok(r.B.paper === 'A3', `다른 콘티는 그대로여야 함 ${JSON.stringify(r.B)}`);
+  ok(r.preset1 === 'B4/2up1 B.print=undefined', `1곡 프리셋 ${r.preset1}`);
+  ok(r.A.paper === 'A4', `개별 설정 유지 ${JSON.stringify(r.A)}`);
+  ok(r.C.paper === 'A3' && r.C.mode === '2up' && r.C.stat.includes('2곡'), `2곡 ${JSON.stringify(r.C)}`);
+  ok(r.D.paper === 'A3' && r.D.stat.includes('3곡 이상'), `3곡 이상 ${JSON.stringify(r.D)}`);
+  ok(r.D_one.paper === 'B4' && r.D_one.mode === '2up1' && r.D_one.stat.includes('1곡 프리셋'), `곡 수 변경 시 프리셋 전환 ${JSON.stringify(r.D_one)}`);
+  ok(r.E.paper === 'A3' && r.opts >= r.panels + 1 && r.opts >= 6, `칸 번호 선택지 ${r.opts}, 칸 ${r.panels}`);
   ok(!errors.length, errors.join());
   await ctx.close();
 });
