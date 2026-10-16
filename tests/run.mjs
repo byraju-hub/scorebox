@@ -153,6 +153,43 @@ await test('콘티 JPG: A4 크기, 같은 날짜 콘티는 a/b 로 구분된 파
   await ctx.close();
 });
 
+await test('콘티 텍스트 복사: 인쇄 창에도 버튼이 있고 같은 형식(샬롬~*, 빈 줄, 번호 곡명 (코드))', async () => {
+  const { ctx, page, errors } = await setup({ 'D-a.png': {}, 'D-b.png': { w: 401 } });
+  const r = await page.evaluate(async () => {
+    const song = (f, t) => ({ title: t, canon: normT(t), key: 'D', files: [f], file: f, print: true });
+    const c = { id: 'z', date: '2026-10-16', type: '금요기도회', service: '금요기도회 설교 후 찬양', songs: [song('D-a.png', '예수늘함께계시네'), song('D-b.png', '나무엇과도주님을')] };
+    fsx.db.contis = [c]; let copied = '';
+    navigator.clipboard.writeText = async t => { copied = t; };
+    openPrint(c); await new Promise(r => setTimeout(r, 400));
+    $('#pcopy').click(); await new Promise(r => setTimeout(r, 100));
+    return copied;
+  });
+  ok(r === '샬롬~*\n10/16 금요기도회 설교 후 찬양입니다.\n\n1. 예수늘함께계시네 (D)\n2. 나무엇과도주님을 (D)\n', JSON.stringify(r));
+  ok(!errors.length, errors.join());
+  await ctx.close();
+});
+
+await test('배치 "가로 한 면에 2칸 (단면)": 장마다 2칸, 앞/뒤 구분 없이 1·2·3 장, 모든 장에 머리글', async () => {
+  const { ctx, page, errors } = await setup({ 'G-a.png': { w: 600, h: 900 }, 'G-b.png': { w: 601, h: 900 }, 'G-c.png': { w: 602, h: 900 }, 'G-d.png': { w: 603, h: 900 }, 'G-e.png': { w: 604, h: 900 } });
+  const r = await page.evaluate(async () => {
+    const song = (f, t) => ({ title: t, canon: normT(t), key: 'G', files: [f], file: f, print: true, place: 'new' });
+    const c = { id: 's1', date: '2026-10-16', type: '금요기도회', service: '금요기도회', header: '머리글', headerCustom: true,
+      songs: ['a', 'b', 'c', 'd', 'e'].map(x => song(`G-${x}.png`, x)) };
+    fsx.db.contis = [c]; fsx.db.printPrefs = { ...prefs(), mode: '2up1' };
+    openPrint(c); await new Promise(r => setTimeout(r, 700));
+    const pages = P.lay.pages.map(pg => ({ no: pg.no, single: pg.single, front: pg.front, header: pg.header, panels: pg.panels.filter(pn => pn.items.some(i => i.kind === 'img')).length, W: pg.W, H: pg.H }));
+    const files = await exportJpgs();
+    return { pages, names: files.map(f => f.name), labels: [...document.querySelectorAll('.pglab')].map(e => e.textContent) };
+  });
+  ok(r.pages.length === 3, `장 수 ${r.pages.length}`);
+  ok(r.pages.map(p => p.panels).join() === '2,2,1', `장별 칸 ${r.pages.map(p => p.panels)}`);
+  ok(r.pages.every(p => p.single && p.front && p.header === '머리글' && p.W > p.H), `단면 속성 ${JSON.stringify(r.pages)}`);
+  ok(r.names.join() === '261016-1.jpg,261016-2.jpg,261016-3.jpg', `파일명 ${r.names}`);
+  ok(r.labels[0].includes('1페이지') && !r.labels[0].includes('앞'), `미리보기 이름 ${r.labels}`);
+  ok(!errors.length, errors.join());
+  await ctx.close();
+});
+
 await test('콘티 휴지통: 삭제 → 휴지통 → 복원, 30일 지난 콘티는 자동 삭제', async () => {
   const { ctx, page, errors } = await setup({});
   const r = await page.evaluate(async () => {

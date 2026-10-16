@@ -155,12 +155,13 @@
   <div class="top"><b id="ptitle">인쇄 · JPG</b><span style="flex:1"></span>
     <button id="pprint" class="p">🖨 인쇄</button>
     <button id="pjpg" title="악보 폴더의 콘티출력 폴더에 A4 크기 JPG로 저장합니다 (예: 261009-1.jpg 앞면, 261009-2.jpg 뒷면)">💾 JPG로 저장</button>
+    <button id="pcopy" title="이 콘티의 텍스트(샬롬~*, 날짜, 곡 목록)를 복사합니다">📋 텍스트 복사</button>
     <button id="pclose">닫기</button></div>
   <div class="body">
     <div id="pset">
       <div class="g">
         <label>용지</label><select id="p-paper"><option value="B4">B4 (257×364mm)</option><option value="A3">A3 (297×420mm)</option><option value="A4">A4 (210×297mm)</option></select>
-        <label>배치</label><select id="p-mode"><option value="2up">가로 · 한 면에 2칸 (양면)</option><option value="3up">가로 · 한 면에 3칸 (양면)</option><option value="1up">세로 · 한 면에 1칸</option></select>
+        <label>배치</label><select id="p-mode"><option value="2up">가로 · 한 면에 2칸 (양면)</option><option value="2up1">가로 · 한 면에 2칸 (단면)</option><option value="3up">가로 · 한 면에 3칸 (양면)</option><option value="1up">세로 · 한 면에 1칸</option></select>
         <label>칸 순서</label><select id="p-order"><option value="booklet">앞-왼 → 뒤-왼 → 뒤-오 → 앞-오 (기존 방식)</option><option value="seq">앞-왼 → 앞-오 → 뒤-왼 → 뒤-오</option></select>
         <label>머리글</label><input id="p-header" placeholder="첫 면 위쪽 제목">
         <label>여백(mm)</label><input id="p-margin" type="number" min="0" max="30" step="1">
