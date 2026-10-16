@@ -164,7 +164,7 @@ await test('콘티 텍스트 복사: 인쇄 창에도 버튼이 있고 같은 �
     $('#pcopy').click(); await new Promise(r => setTimeout(r, 100));
     return copied;
   });
-  ok(r === '샬롬~*\n10/16 금요기도회 설교 후 찬양입니다.\n\n1. 예수늘함께계시네 (D)\n2. 나무엇과도주님을 (D)\n', JSON.stringify(r));
+  ok(r === '샬롬~*\n10/16 금요기도회 설교 후 찬양입니다.\n\n1. 예수늘함께계시네 (D)\n2. 나무엇과도주님을 (D)', JSON.stringify(r));
   ok(!errors.length, errors.join());
   await ctx.close();
 });
