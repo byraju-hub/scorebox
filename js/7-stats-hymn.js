@@ -177,19 +177,24 @@ $('#statclose').onclick=()=>{$('#statdlg').classList.remove('on');tipHide()};
 for(const id of ['#st-period','#st-type','#st-skip'])$(id).addEventListener('change',()=>{ST.top=20;renderStats()});
 
 /* ================= 찬송가 / CCM 분류 ================= */
-function parseHymns(j){
-  const KEYS=['title','제목','name','hymn','hymn_title','hymnTitle','songTitle','song','text','label'];
+function parseHymnItems(j){   // 찬송가 목록 → [{n: 장 수(없으면 0), title}]
+  const KEYS=['title','제목','name','hymn','hymn_title','hymnTitle','songTitle','song','text','label'],NK=['number','no','num','n','장','번호','id','hymn_no','hymnNo'];
   const pick=o=>{if(typeof o==='string')return o;if(o&&typeof o==='object'){for(const k of Object.keys(o))if(KEYS.includes(k)||KEYS.includes(k.toLowerCase())){if(typeof o[k]==='string')return o[k]}
     for(const k of Object.keys(o))if(typeof o[k]==='string'&&/[가-힣]/.test(o[k]))return o[k]}return ''};
+  const numOf=(o,t)=>{if(o&&typeof o==='object')for(const k of Object.keys(o))if(NK.includes(k)||NK.includes(k.toLowerCase())){const v=parseInt(o[k],10);if(v>0)return v}
+    const m=String(t).match(/^\s*(?:제\s*)?(\d+)\s*(?:장|번)?\s*[.\-:)\]]/);return m?+m[1]:0};
   let arr=[];
-  if(Array.isArray(j))arr=j.map(pick);
+  if(Array.isArray(j))arr=j.map(o=>[o,pick(o)]);
   else if(j&&typeof j==='object'){
     const listKey=Object.keys(j).find(k=>Array.isArray(j[k]));
-    if(listKey)arr=j[listKey].map(pick);else arr=Object.values(j).map(pick);
+    if(listKey)arr=j[listKey].map(o=>[o,pick(o)]);else arr=Object.entries(j).map(([k,o])=>{const t=pick(o);return [typeof o==='object'?{...o,n:o.n??k}:{n:k},t]});
   }
   const clean=t=>String(t).replace(/^\s*(제\s*)?\d+\s*(장|번)?\s*[.\-:)\]]?\s*/,'').replace(/\s+/g,' ').trim();
-  return [...new Set(arr.map(clean).filter(t=>normT(t).length>=2))];
+  const seen=new Set(),out=[];
+  for(const [o,t] of arr){const title=clean(t);if(normT(title).length<2)continue;const n=numOf(o,t),k=n+'|'+title;if(seen.has(k))continue;seen.add(k);out.push({n,title})}
+  return out;
 }
+function parseHymns(j){return [...new Set(parseHymnItems(j).map(x=>x.title))]}
 const HSTEM=rel=>{const n=rel.split('/').pop().replace(/\.[A-Za-z0-9]+$/,'');return n.replace(/^[A-Ga-g][#b]?m?-/,'')};
 function candKeys(id,s){
   const set=new Set([normT(s.title)]);const stem=HSTEM(id);set.add(normT(stem));
@@ -229,14 +234,14 @@ function hymnRender(){
 function ensureHymnTags(){const L=tagList();for(const n of ['CCM','찬송가']){const i=L.findIndex(t=>t.name===n);const t=i>=0?L.splice(i,1)[0]:{name:n,keywords:[]};L.unshift(t)}}
 $('#hymnbtn').onclick=()=>{
   const h=fsx.db.hymns;$('#hinfo').textContent=h&&h.titles.length?`저장된 목록 ${fmtN(h.titles.length)}개 (${h.updated||''})`:'아직 불러온 목록이 없습니다';
-  $('#hdlg').showModal();hymnRender();
+  $('#hdlg').showModal();hymnRender();hnRender();
 };
 $('#hfile').onclick=()=>$('#hfilei').click();
 $('#hfilei').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
-  try{const titles=parseHymns(JSON.parse(await f.text()));
+  try{const items=parseHymnItems(JSON.parse(await f.text())),titles=[...new Set(items.map(x=>x.title))];
     if(!titles.length){alert('찬송가 제목을 찾지 못했습니다. 파일 형식을 알려 주세요.');return}
-    fsx.db.hymns={titles,updated:todayStr()};await saveDb();$('#hinfo').textContent=`${f.name} · 제목 ${fmtN(titles.length)}개 불러옴 (예: ${titles.slice(0,3).join(', ')})`;hymnRender();
+    fsx.db.hymns={titles,items:items.filter(x=>x.n),updated:todayStr()};await saveDb();$('#hinfo').textContent=`${f.name} · 제목 ${fmtN(titles.length)}개 불러옴 (예: ${titles.slice(0,3).join(', ')})`;hymnRender();hnRender();
   }catch(err){alert('파일을 읽을 수 없습니다: '+err.message)}
 };
 for(const id of ['#h-num','#h-part','#h-ccm','#h-skip'])$(id).addEventListener('change',hymnRender);
@@ -250,3 +255,40 @@ $('#happly').onclick=async()=>{
   alert(`분류했습니다.\n찬송가 ${fmtN(p.hymn.length)}곡${p.o.ccm?` · CCM ${fmtN(p.ccm.length)}곡`:''}\n왼쪽 카테고리(Tag)의 '찬송가' / 'CCM' 칩으로 골라 볼 수 있습니다.`);
 };
 $('#hclose').onclick=()=>$('#hdlg').close();
+
+/* ===== 찬송가 장 수를 메모에 기록 (예: 310장) — 메모 검색으로 "310장"을 찾을 수 있게 ===== */
+const HN_RE=/^\s*\d+장(?:\/\d+장)*(?:\s*·\s*|\s*$)/;
+function hnPlan(){
+  const items=(fsx.db.hymns&&fsx.db.hymns.items)||[],byKey=new Map();
+  for(const it of items){const k=normT(it.title);if(k.length<2)continue;if(!byKey.has(k))byKey.set(k,{title:it.title,nums:[]});if(!byKey.get(k).nums.includes(it.n))byKey.get(k).nums.push(it.n)}
+  const hk=[...byKey.entries()],rows=[],none=[],done=[];
+  for(const [id,s] of Object.entries(fsx.db.scores)){
+    if(s.missing||s.excluded||!(s.tags||[]).includes('찬송가'))continue;
+    const ck=candKeys(id,s);let nums=null,how='';
+    for(const k of ck)if(byKey.has(k)){nums=byKey.get(k).nums;how='제목 일치';break}
+    if(!nums)for(const [h,v] of hk){if(h.length>=5&&ck.some(k=>k.length>=h.length&&k.includes(h))){nums=v.nums;how='부분 일치';break}}
+    if(!nums){const m=HSTEM(id).match(/(?<=\D)([1-9]\d{1,2})(?:-\d)?$/);if(m&&+m[1]<=645){nums=[+m[1]];how='파일명 번호'}}
+    if(!nums){none.push({id,title:s.title});continue}
+    const tag=nums.sort((a,b)=>a-b).map(n=>n+'장').join('/'),old=s.note||'',rest=old.replace(HN_RE,'').trim(),neu=tag+(rest?' · '+rest:'');
+    if(old===neu){done.push({id,title:s.title,tag});continue}
+    rows.push({id,title:s.title,tag,how,neu,old});
+  }
+  return {rows,none,done,hasNums:items.length>0};
+}
+function hnRender(){
+  const sum=$('#hnsum'),box=$('#hnlists');if(!sum)return;const p=hnPlan();
+  sum.replaceChildren();
+  if(!p.hasNums){sum.append(el('div','','⚠ 저장된 찬송가 목록에 장 수가 없습니다. 위의 "찬송가 목록(JSON) 선택…"으로 번호가 들어 있는 hymns.json 을 한 번 다시 불러오세요.'));$('#hnapply').disabled=!p.rows.length}
+  else $('#hnapply').disabled=!p.rows.length;
+  const l=el('div','');l.innerHTML=`<b>기록할 곡</b> ${fmtN(p.rows.length)}곡 &nbsp;|&nbsp; 이미 기록됨 ${fmtN(p.done.length)}곡 &nbsp;|&nbsp; 장 수를 못 찾은 곡 ${fmtN(p.none.length)}곡 <small style="color:var(--mut)">(카테고리가 "찬송가"인 곡 기준)</small>`;sum.append(l);
+  box.replaceChildren();
+  const mk=(title,arr,fmt,open)=>{const d=el('details');if(open)d.open=true;d.append(el('summary','',`${title} (${fmtN(arr.length)}곡)`));const ul=el('ul');arr.slice(0,400).forEach(x=>{ul.append(el('li','',fmt(x)))});if(arr.length>400)ul.append(el('li','',`… 외 ${arr.length-400}곡`));d.append(ul);return d};
+  box.append(mk('메모에 기록될 곡',p.rows,x=>`${x.title}  →  ${x.tag}  (${x.how})`,true));
+  if(p.none.length)box.append(mk('장 수를 못 찾은 곡 (직접 메모에 적어 주세요)',p.none,x=>x.title,false));
+  return p;
+}
+$('#hnapply').onclick=async()=>{
+  const p=hnPlan();if(!p.rows.length)return;let n=0;
+  for(const r of p.rows){const s=fsx.db.scores[r.id];if(s){s.note=r.neu;n++}}
+  await saveDb();await load();hnRender();alert(`${n}곡의 메모에 찬송가 장 수를 기록했습니다.\n이제 검색창에 "310장"처럼 입력하면 찾을 수 있습니다.`);
+};

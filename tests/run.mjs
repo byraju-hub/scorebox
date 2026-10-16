@@ -267,6 +267,30 @@ await test('제목 띄어쓰기 정리: 찬송가 목록 → 다른 콘티 → A
   await ctx.close();
 });
 
+await test('찬송가 장 수 기록: 찬송가 카테고리 곡의 메모에 "310장" 기록, 기존 메모 보존, 다시 실행해도 그대로, 검색으로 찾기', async () => {
+  const { ctx, page, errors } = await setup({ 'G-a.png': {}, 'G-b310.png': { w: 401 }, 'G-c.png': { w: 402 }, 'G-d.png': { w: 403 } });
+  const r = await page.evaluate(async () => {
+    const sc = fsx.db.scores;
+    sc['G-a.png'].title = '주 하나님 지으신 모든 세계'; sc['G-a.png'].tags = ['찬송가']; sc['G-a.png'].note = '내 메모';
+    sc['G-b310.png'].title = '이름없는곡'; sc['G-b310.png'].tags = ['찬송가'];        // 제목은 목록에 없고 파일명 끝 번호(310)로 찾음
+    sc['G-c.png'].title = '새찬송'; sc['G-c.png'].tags = ['CCM'];                      // CCM 은 대상이 아님
+    sc['G-d.png'].title = '알수없는찬송'; sc['G-d.png'].tags = ['찬송가'];             // 못 찾는 곡
+    fsx.db.hymns = { titles: ['주 하나님 지으신 모든 세계'], items: [{ n: 79, title: '주 하나님 지으신 모든 세계' }], updated: '2026-01-01' };
+    await load(); document.querySelector('#hymnbtn').click();
+    const first = hnPlan(); document.querySelector('#hnapply').click(); await new Promise(r => setTimeout(r, 400));
+    const second = hnPlan();
+    $('#hclose').click(); $('#q').value = '310장'; render();
+    return { rows: first.rows.map(x => x.id + '=' + x.tag + ':' + x.how).join(), none: first.none.map(x => x.id).join(), notes: Object.fromEntries(Object.entries(sc).map(([k, v]) => [k, v.note])), again: second.rows.length, found: [...document.querySelectorAll('.card .t')].map(e => e.textContent).join() };
+  });
+  ok(r.rows.includes('G-a.png=79장:제목 일치') && r.rows.includes('G-b310.png=310장:파일명 번호'), `대상 ${r.rows}`);
+  ok(r.none === 'G-d.png', `못 찾은 곡 ${r.none}`);
+  ok(r.notes['G-a.png'] === '79장 · 내 메모' && r.notes['G-b310.png'] === '310장' && !r.notes['G-c.png'], `메모 ${JSON.stringify(r.notes)}`);
+  ok(r.again === 0, `다시 실행 시 바뀌는 곡 ${r.again}`);
+  ok(r.found === '이름없는곡', `검색 결과 ${r.found}`);
+  ok(!errors.length, errors.join());
+  await ctx.close();
+});
+
 await test('콘티 휴지통: 삭제 → 휴지통 → 복원, 30일 지난 콘티는 자동 삭제', async () => {
   const { ctx, page, errors } = await setup({});
   const r = await page.evaluate(async () => {
