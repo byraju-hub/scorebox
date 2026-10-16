@@ -153,6 +153,22 @@ await test('콘티 JPG: A4 크기, 같은 날짜 콘티는 a/b 로 구분된 파
   await ctx.close();
 });
 
+await test('콘티 텍스트 복사: 인쇄 창에도 버튼이 있고 같은 형식(샬롬~*, 빈 줄, 번호 곡명 (코드))', async () => {
+  const { ctx, page, errors } = await setup({ 'D-a.png': {}, 'D-b.png': { w: 401 } });
+  const r = await page.evaluate(async () => {
+    const song = (f, t) => ({ title: t, canon: normT(t), key: 'D', files: [f], file: f, print: true });
+    const c = { id: 'z', date: '2026-10-16', type: '금요기도회', service: '금요기도회 설교 후 찬양', songs: [song('D-a.png', '예수늘함께계시네'), song('D-b.png', '나무엇과도주님을')] };
+    fsx.db.contis = [c]; let copied = '';
+    navigator.clipboard.writeText = async t => { copied = t; };
+    openPrint(c); await new Promise(r => setTimeout(r, 400));
+    $('#pcopy').click(); await new Promise(r => setTimeout(r, 100));
+    return copied;
+  });
+  ok(r === '샬롬~*\n10/16 금요기도회 설교 후 찬양입니다.\n\n1. 예수늘함께계시네 (D)\n2. 나무엇과도주님을 (D)\n', JSON.stringify(r));
+  ok(!errors.length, errors.join());
+  await ctx.close();
+});
+
 await test('콘티 휴지통: 삭제 → 휴지통 → 복원, 30일 지난 콘티는 자동 삭제', async () => {
   const { ctx, page, errors } = await setup({});
   const r = await page.evaluate(async () => {

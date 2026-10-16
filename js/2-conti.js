@@ -136,6 +136,7 @@ $('#cnew').onclick=()=>{
 
 /* --- 콘티 상세/편집 --- */
 const songKey=g=>g.key||((fsx.db&&fsx.db.scores&&fsx.db.scores[g.file])||{}).key||((g.file||'').split('/').pop().match(/^([A-G][#b]?m?)[-_ ]/)||[])[1]||'';
+async function copyContiText(c){try{await navigator.clipboard.writeText(contiText(c));alert('콘티 텍스트를 복사했습니다.')}catch(e){prompt('복사하세요',contiText(c))}}
 function contiText(c){
   const [y,m,d]=c.date.split('-');let out=`샬롬~*\n${+m}/${+d} ${c.service}입니다.\n\n`,sec=null,i=0;
   for(const g of songsOf(c)){
@@ -178,7 +179,7 @@ function renderContiDetail(){
   });
   if(!songsOf(c).length)sb.innerHTML='<p style="color:var(--mut)">곡이 없습니다. <b>＋ 곡 추가</b>로 악보함에서 고르세요.</p>';
   $('#d-add').onclick=openPicker;$('#d-print').onclick=()=>openPrint(c);
-  $('#d-copy').onclick=async()=>{try{await navigator.clipboard.writeText(contiText(c));alert('콘티 텍스트를 복사했습니다.')}catch(e){prompt('복사하세요',contiText(c))}};
+  $('#d-copy').onclick=()=>copyContiText(c);
   $('#d-dup').onclick=()=>{const n=JSON.parse(JSON.stringify(c));n.id='n'+Date.now();n.date=todayStr();contis().push(n);C.sel=n;C.jump=true;saveSoon();renderContiList();renderContiDetail()};
   $('#d-del').onclick=()=>{if(!confirm(`${c.date} ${c.service} 콘티를 삭제할까요?\n(휴지통에 30일 동안 보관되며 복원할 수 있습니다)`))return;trash().push(Object.assign({},c,{deletedAt:new Date().toISOString()}));fsx.db.contis=contis().filter(x=>x!==c);C.sel=null;saveSoon();renderContiList();renderContiDetail()};
 }
@@ -407,6 +408,7 @@ async function exportJpgs(){
     const b=await blobOf(renderPageCanvas(pg,p,p.dpi*297/Math.max(pg.W,pg.H)));out.push({name:`${jpgBase()}-${n}.jpg`,blob:b})}
   return out;
 }
+$('#pcopy').onclick=()=>copyContiText(P.c);
 $('#pjpg').onclick=async()=>{
   const files=await exportJpgs();if(!files)return;
   try{
