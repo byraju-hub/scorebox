@@ -47,6 +47,7 @@
     <button class="tool out" id="csv"><span class="ti">⬇</span>엑셀(CSV) 내보내기</button>
     <button class="tool" id="bkupbtn"><span class="ti">🗂</span>백업 · 복원</button>
     <button class="tool warn" id="dupbtn"><span class="ti">🧩</span>중복 곡 정리</button>
+    <button class="tool" id="spacebtn"><span class="ti">␣</span>제목 띄어쓰기 정리</button>
     <button class="tool hym" id="hymnbtn"><span class="ti">🎼</span>찬송가/CCM 분류</button>
   </div>
   <div id="statuschips" style="margin-top:16px;display:flex;gap:4px;flex-wrap:nowrap"><span class="chip" id="f-ex" title="앱 목록에서 제외한 곡 (파일은 그대로 있음)">🚫 제외 곡 <small id="n-ex"></small></span>
@@ -123,6 +124,13 @@
   <div id="rc-text"></div>
   <div class="rw"><button id="rc-go" class="p">🕊 찬양 추천받기</button><button id="rc-close">닫기</button><span id="rc-status" style="color:var(--mut);font-size:12px"></span></div>
   <div id="rc-res"></div>
+</dialog>
+<dialog id="spdlg"><h2 style="margin-top:0;font-size:16px">␣ 제목 띄어쓰기 정리</h2>
+  <p style="color:var(--mut);font-size:12px;margin:0 0 6px">악보 제목은 파일 이름에서 만들어져 띄어쓰기가 없습니다. ① 찬송가 목록 ② 이미 띄어쓰기 된 다른 콘티의 제목으로 먼저 바꾸고, ③ 남은 곡은 AI(Claude Haiku)로 띄어쓰기를 붙입니다. 바꾼 제목은 악보함·콘티·텍스트 복사·인쇄에 모두 쓰입니다.</p>
+  <div id="sp-sum" style="font-size:13px;margin:6px 0"></div>
+  <div class="fr"><button id="sp-ai">✨ AI(Haiku)로 띄어쓰기</button><button id="sp-all">전체 선택/해제</button><span style="flex:1"></span><button id="sp-apply" class="p">선택한 제목 적용</button><button id="sp-close">닫기</button></div>
+  <div id="sp-msg" style="font-size:12px;color:var(--mut);margin:6px 0;white-space:pre-wrap"></div>
+  <div id="sp-list"></div>
 </dialog>
 <dialog id="hdlg"><h2 style="margin-top:0;font-size:16px">🎼 찬송가 / CCM 분류</h2>
   <p style="color:var(--mut);font-size:12px">찬송가 제목 목록(JSON)을 불러오면, 악보함 곡의 제목과 대조해서 <b>찬송가</b> 카테고리를 붙이고 나머지는 <b>CCM</b>으로 표시합니다. 먼저 아래 미리보기로 어떤 곡이 어떻게 분류되는지 확인한 뒤 적용하세요. 불러온 목록은 저장되어 새 악보를 추가한 뒤 다시 분류할 때 쓸 수 있습니다.</p>
@@ -235,5 +243,6 @@
 <script src="js/5-backup.js"></script>
 <script src="js/6-tags-dup.js"></script>
 <script src="js/7-stats-hymn.js"></script>
+<script src="js/8-spacing.js"></script>
 </body>
 </html>

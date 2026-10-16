@@ -259,3 +259,8 @@ button:focus-visible,.chip:focus-visible,select:focus-visible,input:focus-visibl
 .chip:hover{background:color-mix(in srgb,var(--gc,var(--acc)) 16%,var(--card));border-color:var(--gc,var(--acc));color:var(--gc,var(--acc))}
 .chip.on:hover{background:var(--gc,var(--acc));border-color:var(--gc,var(--acc));color:#fff;filter:brightness(1.12)}
 #p-pre button{white-space:normal;text-align:left;max-width:100%}
+
+/* 제목 띄어쓰기 정리 */
+#spdlg{width:min(860px,96vw);height:90vh;padding:16px;overflow:auto}#sp-list{margin-top:6px}
+.sprow{display:flex;align-items:center;gap:8px;padding:5px 2px;border-bottom:1px solid var(--line)}.sprow .old{flex:0 1 38%;min-width:0;word-break:break-all}.sprow .neu{flex:1;min-width:0}.sprow .src{color:var(--mut);white-space:nowrap}.sprow.ai .src{color:#d9730d;font-weight:700}
+#spacebtn.tool{border-left-color:#0ea5e9}#spacebtn.tool:hover{background:#0ea5e9;color:#fff}

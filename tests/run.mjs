@@ -230,6 +230,43 @@ await test('인쇄 설정: 기본 A3·2칸(양면), 콘티마다 따로 저장, 
   await ctx.close();
 });
 
+await test('제목 띄어쓰기 정리: 찬송가 목록 → 다른 콘티 → AI(Haiku) 순으로 적용, 글자가 바뀐 답은 버림', async () => {
+  const { ctx, page, errors } = await setup({ 'G-h.png': {}, 'G-c.png': { w: 401 }, 'G-n.png': { w: 402 }, 'G-x.png': { w: 403 }, 'G-s.png': { w: 404 } });
+  let asked = null;
+  await page.route('https://api.anthropic.com/**', async route => {
+    if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' } });
+    asked = JSON.parse(route.request().postData());
+    const list = JSON.parse(asked.messages[0].content.match(/\[\{"n".*?\}\]/s)[0]);
+    const spaced = { '그날이도적같이': '그날이 도적같이', '나무엇과도': '나 무엇과도' };   // 일부러 틀린 답(글자가 다름)도 섞음
+    const out = list.map(x => ({ n: x.n, t: x.t === '이상한곡제목' ? '이상한곡 제목입니다' : (spaced[x.t] || x.t) }));
+    await route.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ content: [{ type: 'text', text: JSON.stringify(out) }] }) });
+  });
+  await page.evaluate(async () => {
+    const sc = fsx.db.scores;
+    sc['G-h.png'].title = '갈릴리마을그숲속에서524'; sc['G-c.png'].title = '모든능력과모든권세'; sc['G-n.png'].title = '그날이도적같이'; sc['G-x.png'].title = '이상한곡제목'; sc['G-s.png'].title = '이미 띄어쓴 제목';
+    fsx.db.hymns = { titles: ['갈릴리 마을 그 숲속에서', '모든 능력과 모든 권세'], updated: '2026-01-01' };   // 찬송가 목록
+    fsx.db.contis = [{ id: 'c1', date: '2026-01-04', type: '주일', service: '주일', songs: [{ title: '모든 능력과 모든 권세(찬양)', canon: '모든능력과모든권세', key: 'G', files: [], file: '', print: true }, { title: '모든능력과모든권세', canon: '모든능력과모든권세', key: 'G', files: [], file: '', print: true }] }];
+    await load();
+    const root = await navigator.storage.getDirectory(); const w = await (await root.getFileHandle('claude_api_key.txt', { create: true })).createWritable(); await w.write('sk-ant-TEST'); await w.close();
+    document.querySelector('#spacebtn').click();
+  });
+  const rows1 = await page.evaluate(() => SP.rows.map(r => r.old + '→' + r.neu + '[' + r.src + ']').join(' | '));
+  ok(rows1.includes('갈릴리마을그숲속에서524→갈릴리 마을 그 숲속에서[찬송가 목록]'), `찬송가 목록 ${rows1}`);
+  ok(rows1.includes('모든능력과모든권세→모든 능력과 모든 권세[찬송가 목록]') || rows1.includes('[다른 콘티]'), `찬송가/콘티 ${rows1}`);
+  ok(await page.evaluate(() => SP.todo.map(g => g.old).sort().join()) === '그날이도적같이,이상한곡제목', '남은 곡(AI 대상)이 다름');
+  await page.click('#sp-ai'); await page.waitForFunction(() => !SP.busy && /AI가|실패/.test($('#sp-msg').textContent), null, { timeout: 15000 }); await page.waitForTimeout(200);
+  const ai = await page.evaluate(() => SP.rows.filter(r => r.src === 'AI').map(r => r.old + '→' + r.neu).join('|'));
+  ok(ai.includes('그날이도적같이→그날이 도적같이') && ai.includes('이상한곡제목→이상한곡 제목입니다') === false, `AI 결과 ${ai}`);   // 글자가 바뀐 '입니다' 답은 버려짐
+  await page.click('#sp-apply'); await page.waitForTimeout(400);
+  const r = await page.evaluate(() => ({ t: Object.fromEntries(Object.entries(fsx.db.scores).map(([k, v]) => [k, v.title])), conti: fsx.db.contis[0].songs.map(g => g.title) }));
+  ok(r.t['G-h.png'] === '갈릴리 마을 그 숲속에서', `찬송가 적용 ${r.t['G-h.png']}`);
+  ok(r.t['G-c.png'] === '모든 능력과 모든 권세(찬양)' || r.t['G-c.png'] === '모든 능력과 모든 권세', `콘티 제목 적용 ${r.t['G-c.png']}`);
+  ok(r.t['G-n.png'] === '그날이 도적같이' && r.t['G-x.png'] === '이상한곡제목' && r.t['G-s.png'] === '이미 띄어쓴 제목', `AI/보존 ${JSON.stringify(r.t)}`);
+  ok(r.conti[1].includes(' ') && r.conti[1].replace(/\s/g, '').startsWith('모든능력과모든권세'), `콘티 속 곡 ${r.conti}`);
+  ok(!errors.length, errors.join());
+  await ctx.close();
+});
+
 await test('콘티 휴지통: 삭제 → 휴지통 → 복원, 30일 지난 콘티는 자동 삭제', async () => {
   const { ctx, page, errors } = await setup({});
   const r = await page.evaluate(async () => {
