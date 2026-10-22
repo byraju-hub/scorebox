@@ -34,14 +34,16 @@ async function loadDb(){
   db.scores=db.scores||{};
   db.tempos=db.tempos||DEFAULT_TEMPOS.map(t=>({...t,keywords:[...t.keywords]}));
   db.keys=db.keys||DEFAULT_KEYS.map(k=>({...k,aliases:[]}));
+  delete db.printPrefs;   // 예전 '모든 콘티 공통' 인쇄 설정 — 지금은 콘티별 설정과 곡 수 프리셋(printPresets)을 씀
   fsx.db=db;
 }
 function saveDb(){
-  const text=JSON.stringify(fsx.db,null,1);
+  const text=JSON.stringify(fsx.db,null,1),root=fsx.root;   // 저장을 요청한 순간의 폴더에 저장 (그 사이 폴더를 바꿔도 섞이지 않게)
+  fsx.busy=(fsx.busy||0)+1;   // 저장 중인 횟수 (창을 닫기 전에 확인)
   fsx.q=fsx.q.then(async()=>{
-    const h=await fsx.root.getFileHandle(DATA_NAME,{create:true});
+    const h=await root.getFileHandle(DATA_NAME,{create:true});
     const w=await h.createWritable();await w.write(text);await w.close();  // 닫을 때 한 번에 교체 (중간에 깨지지 않음)
-  }).catch(e=>alert('분류 정보를 저장하지 못했습니다: '+e.message));
+  }).catch(e=>alert('분류 정보를 저장하지 못했습니다: '+e.message)).finally(()=>fsx.busy--);
   return fsx.q;
 }
 
@@ -61,7 +63,7 @@ function guess(stem,tempos,keys){
   title=title.replace(/[_\-]+/g,' ').replace(/\s+/g,' ').trim()||stem;
   return {title,key,tempo};
 }
-const stemOf=rel=>{const n=rel.split('/').pop();const i=n.lastIndexOf('.');return i>0?n.slice(0,i):n};
+const stemOf=rel=>{const n=rel.split('/').pop().normalize('NFC');const i=n.lastIndexOf('.');return i>0?n.slice(0,i):n};  // macOS 에서 온 한글 파일명(NFD)도 일반 한글로
 
 async function walk(dir,prefix,out){
   for await(const [name,h] of dir.entries()){
@@ -137,8 +139,9 @@ async function apiTempos(items){
 }
 async function apiKeys(items){
   const keys=[],rename={},used=new Set();
-  for(const k of items){const name=String(k.name||'').trim();if(!name||used.has(name))continue;used.add(name);
-    const old=k.old||name;if(!(old in rename))rename[old]=name;
+  for(const k of items){const name=String(k.name||'').trim();if(!name)continue;
+    const old=k.old||name;if(!(old in rename))rename[old]=name;   // 이미 있는 이름으로 바꾸면 그 코드로 합침 (곡의 코드가 지워지지 않게)
+    if(used.has(name))continue;used.add(name);
     keys.push({name,aliases:(k.aliases||[]).map(a=>String(a).trim()).filter(a=>a&&a!==name)})}
   fsx.db.keys=keys;
   for(const s of Object.values(fsx.db.scores))s.key=rename[s.key]||'';
@@ -242,7 +245,8 @@ async function save(next){
   await apiUpdate([it.id],{title:$('#e-title').value,key:$('#e-key').value,tempo:$('#e-tempo').value,
     tags:splitTags($('#e-tags').value),note:$('#e-note').value,reviewed:true});
   const idx=st.list.indexOf(it);await load();
-  const nx=next&&st.list[Math.min(idx,st.list.length-1)];
+  const j=st.list.findIndex(x=>x.id===it.id),at=j>=0?j+1:idx;   // 저장한 곡이 목록에 남아 있으면 그 다음 곡으로
+  const nx=next&&at<st.list.length&&st.list[at];
   if(nx)openDlg(nx);else $('#dlg').close();
 }
 async function afterRemove(idx){
@@ -362,8 +366,26 @@ const msg=t=>{const e=$('#smsg');e.textContent=t||'';e.style.color='var(--warn)'
 async function openRoot(handle){
   msg('폴더를 읽는 중…');
   fsx.root=handle;
-  try{await loadDb();const r=await scanFs();await load();$('#start').style.display='none';if(typeof backupAuto==='function')backupAuto()}
+  try{await loadDb();const r=await scanFs();await load();$('#start').style.display='none';tabsHello();if(typeof backupAuto==='function')backupAuto()}
   catch(e){if(e instanceof SyntaxError){msg('scorebox_data.json 파일이 손상되어 읽을 수 없습니다.\n백업 폴더를 지정해 두었다면 아래 버튼으로 최근 백업을 복원할 수 있습니다.');$('#btn-restore').style.display=''}else msg('폴더를 열지 못했습니다: '+e.message)}
+}
+/* ---------- 같은 앱이 다른 탭(창)에서도 열려 있으면 경고 ---------- */
+// 두 곳에서 고치면 나중에 저장한 쪽이 scorebox_data.json 을 통째로 덮어써 다른 쪽의 변경이 사라짐
+const TABS={id:Math.random().toString(36).slice(2),peers:new Set(),ch:window.BroadcastChannel?new BroadcastChannel('scorebox'):null};
+function tabsShow(){
+  let b=$('#multitab');
+  if(!b){b=document.createElement('div');b.id='multitab';b.innerHTML='<span>⚠ ScoreBox 가 다른 탭(창)에서도 열려 있습니다. 두 곳에서 고치면 나중에 저장한 쪽이 다른 쪽의 변경을 덮어씁니다. 한 곳만 남기고 닫아 주세요.</span><button type="button" title="닫기">✕</button>';b.querySelector('button').onclick=()=>b.hidden=true;document.body.append(b)}
+  b.hidden=!TABS.peers.size;
+}
+function tabsHello(){if(TABS.ch)TABS.ch.postMessage({t:'hello',id:TABS.id})}
+if(TABS.ch){
+  TABS.ch.onmessage=({data:m})=>{
+    if(!m||m.id===TABS.id||!fsx.root)return;
+    if(m.t==='hello'){TABS.peers.add(m.id);TABS.ch.postMessage({t:'here',id:TABS.id});tabsShow()}
+    else if(m.t==='here'){TABS.peers.add(m.id);tabsShow()}
+    else if(m.t==='bye'&&TABS.peers.delete(m.id))tabsShow();
+  };
+  addEventListener('pagehide',()=>{if(fsx.root)TABS.ch.postMessage({t:'bye',id:TABS.id})});
 }
 async function pick(){
   try{

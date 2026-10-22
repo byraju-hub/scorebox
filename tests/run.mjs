@@ -153,6 +153,50 @@ await test('콘티 JPG: A4 크기, 같은 날짜 콘티는 a/b 로 구분된 파
   await ctx.close();
 });
 
+await test('JPG 다시 저장: 장 수가 줄면 같은 콘티의 예전 -3·-4 파일은 지우고, 다른 콘티 파일은 그대로', async () => {
+  const { ctx, page, errors } = await setup({ 'G-hana.png': { w: 600, h: 800 } });
+  const r = await page.evaluate(async () => {
+    const song = (f, t) => ({ title: t, canon: normT(t), key: f[0], files: [f], file: f, print: true });
+    fsx.db.contis = [{ id: 'x3', date: '2025-03-09', type: '주일', service: '주일', songs: [song('G-hana.png', '하나')] }];
+    const out = await fsx.root.getDirectoryHandle(DIRS.out, { create: true });
+    for (const n of ['250309-3.jpg', '250309-4.jpg', '250309a-1.jpg', '250316-1.jpg', 'memo.txt']) await out.getFileHandle(n, { create: true });
+    openPrint(fsx.db.contis[0]); await new Promise(r => setTimeout(r, 600));
+    const files = await exportJpgs(), removed = await saveJpgs(files);
+    const left = []; for await (const [n] of out.entries()) left.push(n);
+    return { made: files.map(f => f.name), removed: removed.sort(), left: left.sort() };
+  });
+  ok(r.removed.join() === '250309-3.jpg,250309-4.jpg', `지운 파일 ${r.removed}`);
+  ok(r.made.every(n => r.left.includes(n)), `새 파일이 없음 ${r.left}`);
+  ok(['250309a-1.jpg', '250316-1.jpg', 'memo.txt'].every(n => r.left.includes(n)), `다른 파일이 지워짐 ${r.left}`);
+  ok(!errors.length, errors.join());
+  await ctx.close();
+});
+
+await test('다른 탭에서도 열면 두 탭 모두 경고, 한쪽을 닫으면 경고가 사라짐 · 창을 닫기 직전 기다리던 저장을 바로 실행', async () => {
+  const { ctx, page, errors } = await setup({ 'G-hana.png': {} });
+  const vis = p => p.evaluate(() => { const b = $('#multitab'); return !!b && !b.hidden; });
+  ok(!(await vis(page)), '혼자 열었는데 경고가 보임');
+  const page2 = await ctx.newPage(); page2.on('dialog', d => d.accept());
+  await page2.goto(URL_);
+  await page2.evaluate(async () => { DIRS.out = 'out'; DIRS.trash = '_trash'; await window.ScoreBox.open(await navigator.storage.getDirectory()); });
+  await page.waitForTimeout(300);
+  ok(await vis(page) && await vis(page2), '두 탭 중 경고가 안 보이는 탭이 있음');
+  await page2.close({ runBeforeUnload: true }); await page.waitForTimeout(300);
+  ok(!(await vis(page)), '다른 탭을 닫았는데 경고가 남아 있음');
+  // 400ms 안에 창이 가려지면(닫기·최소화) 기다리지 않고 바로 저장
+  const saved = await page.evaluate(async () => {
+    fsx.db.flushMark = 'yes'; saveSoon();
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+    const pending = C.timer; await fsx.q;
+    const t = await (await (await fsx.root.getFileHandle('scorebox_data.json')).getFile()).text();
+    return { pending, mark: JSON.parse(t).flushMark };
+  });
+  ok(saved.pending === null && saved.mark === 'yes', `바로 저장되지 않음 ${JSON.stringify(saved)}`);
+  ok(!errors.length, errors.join());
+  await ctx.close();
+});
+
 await test('콘티 텍스트 복사: 인쇄 창에도 버튼이 있고 같은 형식(샬롬~*, 빈 줄, 번호 곡명 (코드))', async () => {
   const { ctx, page, errors } = await setup({ 'D-a.png': {}, 'D-b.png': { w: 401 } });
   const r = await page.evaluate(async () => {
@@ -289,6 +333,43 @@ await test('찬송가 장 수 기록: 찬송가 카테고리 곡의 메모에 "3
   ok(r.titles['G-b310.png'] === '이름없는곡' && r.titles['G-e.png'] === '주 하나님 지으신 모든 세계', `제목에서 장 수 제거 ${JSON.stringify(r.titles)}`);
   ok(r.again === 0, `다시 실행 시 바뀌는 곡 ${r.again}`);
   ok(r.found === '이름없는곡', `검색 결과 ${r.found}`);
+  ok(!errors.length, errors.join());
+  await ctx.close();
+});
+
+await test('버그 수정 회귀: 코드 이름 합치기, 저장 후 다음, 잘못된 콘티 가져오기, 이전 콘티 배치로 JPG, NFD 한글', async () => {
+  const { ctx, page, errors } = await setup({ 'Db-a.png': {}, 'G-b.png': { w: 401 }, 'G-c.png': { w: 402, h: 900 }, 'A-d.png': { w: 403, h: 500 } });
+  const r = await page.evaluate(async () => {
+    const out = {};
+    // 1) 코드 이름을 이미 있는 이름으로 바꾸면 합쳐져야 함 (곡의 코드가 지워지면 안 됨)
+    fsx.db.scores['Db-a.png'].key = 'Db';
+    await apiKeys(fsx.db.keys.map(k => k.name === 'Db' ? { name: 'C#', old: 'Db', aliases: [] } : { name: k.name, old: k.name, aliases: k.aliases }));
+    out.key = fsx.db.scores['Db-a.png'].key;
+    // 2) 저장 후 다음 ▶ 이 다음 곡으로 넘어가야 함
+    await load(); openDlg(st.list[0]); const first = st.cur.id; await save(true); out.next = [first, st.cur && st.cur.id];
+    $('#dlg').close();
+    // 3) 날짜 없는 콘티·songs 없는 구간은 건너뛰고 목록이 깨지지 않아야 함
+    const n = importContis([{ id: 'bad' }, { id: 'ok', date: '2026-02-01', type: '주일', service: '주일', sections: [{ name: '찬양' }] }]);
+    setMode('conti'); let listOk = true; try { renderContiList(); } catch (e) { listOk = false; }
+    out.imp = [n, contis().map(c => c.id).join(), listOk];
+    // 4) 다른 콘티를 열고 바로 JPG 저장해도 그 콘티의 배치로 저장
+    const song = (f, t) => ({ title: t, canon: t, key: 'G', files: [f], file: f, print: true });
+    const A = { id: 'A', date: '2026-03-01', type: '주일', service: '주일', songs: [song('G-c.png', 'c')] };
+    const B = { id: 'B', date: '2026-03-08', type: '주일', service: '주일', songs: [song('A-d.png', 'd'), song('G-b.png', 'b')] };
+    contis().push(A, B);
+    openPrint(A); await new Promise(r => setTimeout(r, 500)); $('#pclose').click();
+    openPrint(B); const files = await exportJpgs();   // 미리보기를 기다리지 않음
+    out.jpg = [files[0].name, P.lay.count];
+    $('#pclose').click();
+    // 5) macOS 식(NFD) 한글도 같은 제목으로 인식
+    out.nfc = normT('감사'.normalize('NFD')) === normT('감사');
+    return out;
+  });
+  ok(r.key === 'C#', `코드 합치기 후 곡의 코드 ${r.key}`);
+  ok(r.next[1] && r.next[1] !== r.next[0], `저장 후 다음 ${r.next}`);
+  ok(r.imp[0] === 1 && r.imp[1] === 'ok' && r.imp[2], `콘티 가져오기 ${r.imp}`);
+  ok(r.jpg[0] === '260308-1.jpg' && r.jpg[1] === 2, `JPG 가 현재 콘티 배치가 아님 ${r.jpg}`);
+  ok(r.nfc, 'NFD 한글 정규화');
   ok(!errors.length, errors.join());
   await ctx.close();
 });

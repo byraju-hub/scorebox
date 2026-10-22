@@ -194,7 +194,6 @@ function parseHymnItems(j){   // 찬송가 목록 → [{n: 장 수(없으면 0),
   for(const [o,t] of arr){const title=clean(t);if(normT(title).length<2)continue;const n=numOf(o,t),k=n+'|'+title;if(seen.has(k))continue;seen.add(k);out.push({n,title})}
   return out;
 }
-function parseHymns(j){return [...new Set(parseHymnItems(j).map(x=>x.title))]}
 const HSTEM=rel=>{const n=rel.split('/').pop().replace(/\.[A-Za-z0-9]+$/,'');return n.replace(/^[A-Ga-g][#b]?m?-/,'')};
 function candKeys(id,s){
   const set=new Set([normT(s.title)]);const stem=HSTEM(id);set.add(normT(stem));
