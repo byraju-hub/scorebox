@@ -293,6 +293,43 @@ await test('찬송가 장 수 기록: 찬송가 카테고리 곡의 메모에 "3
   await ctx.close();
 });
 
+await test('버그 수정 회귀: 코드 이름 합치기, 저장 후 다음, 잘못된 콘티 가져오기, 이전 콘티 배치로 JPG, NFD 한글', async () => {
+  const { ctx, page, errors } = await setup({ 'Db-a.png': {}, 'G-b.png': { w: 401 }, 'G-c.png': { w: 402, h: 900 }, 'A-d.png': { w: 403, h: 500 } });
+  const r = await page.evaluate(async () => {
+    const out = {};
+    // 1) 코드 이름을 이미 있는 이름으로 바꾸면 합쳐져야 함 (곡의 코드가 지워지면 안 됨)
+    fsx.db.scores['Db-a.png'].key = 'Db';
+    await apiKeys(fsx.db.keys.map(k => k.name === 'Db' ? { name: 'C#', old: 'Db', aliases: [] } : { name: k.name, old: k.name, aliases: k.aliases }));
+    out.key = fsx.db.scores['Db-a.png'].key;
+    // 2) 저장 후 다음 ▶ 이 다음 곡으로 넘어가야 함
+    await load(); openDlg(st.list[0]); const first = st.cur.id; await save(true); out.next = [first, st.cur && st.cur.id];
+    $('#dlg').close();
+    // 3) 날짜 없는 콘티·songs 없는 구간은 건너뛰고 목록이 깨지지 않아야 함
+    const n = importContis([{ id: 'bad' }, { id: 'ok', date: '2026-02-01', type: '주일', service: '주일', sections: [{ name: '찬양' }] }]);
+    setMode('conti'); let listOk = true; try { renderContiList(); } catch (e) { listOk = false; }
+    out.imp = [n, contis().map(c => c.id).join(), listOk];
+    // 4) 다른 콘티를 열고 바로 JPG 저장해도 그 콘티의 배치로 저장
+    const song = (f, t) => ({ title: t, canon: t, key: 'G', files: [f], file: f, print: true });
+    const A = { id: 'A', date: '2026-03-01', type: '주일', service: '주일', songs: [song('G-c.png', 'c')] };
+    const B = { id: 'B', date: '2026-03-08', type: '주일', service: '주일', songs: [song('A-d.png', 'd'), song('G-b.png', 'b')] };
+    contis().push(A, B);
+    openPrint(A); await new Promise(r => setTimeout(r, 500)); $('#pclose').click();
+    openPrint(B); const files = await exportJpgs();   // 미리보기를 기다리지 않음
+    out.jpg = [files[0].name, P.lay.count];
+    $('#pclose').click();
+    // 5) macOS 식(NFD) 한글도 같은 제목으로 인식
+    out.nfc = normT('감사'.normalize('NFD')) === normT('감사');
+    return out;
+  });
+  ok(r.key === 'C#', `코드 합치기 후 곡의 코드 ${r.key}`);
+  ok(r.next[1] && r.next[1] !== r.next[0], `저장 후 다음 ${r.next}`);
+  ok(r.imp[0] === 1 && r.imp[1] === 'ok' && r.imp[2], `콘티 가져오기 ${r.imp}`);
+  ok(r.jpg[0] === '260308-1.jpg' && r.jpg[1] === 2, `JPG 가 현재 콘티 배치가 아님 ${r.jpg}`);
+  ok(r.nfc, 'NFD 한글 정규화');
+  ok(!errors.length, errors.join());
+  await ctx.close();
+});
+
 await test('콘티 휴지통: 삭제 → 휴지통 → 복원, 30일 지난 콘티는 자동 삭제', async () => {
   const { ctx, page, errors } = await setup({});
   const r = await page.evaluate(async () => {

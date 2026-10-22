@@ -38,9 +38,9 @@ async function loadDb(){
   fsx.db=db;
 }
 function saveDb(){
-  const text=JSON.stringify(fsx.db,null,1);
+  const text=JSON.stringify(fsx.db,null,1),root=fsx.root;   // 저장을 요청한 순간의 폴더에 저장 (그 사이 폴더를 바꿔도 섞이지 않게)
   fsx.q=fsx.q.then(async()=>{
-    const h=await fsx.root.getFileHandle(DATA_NAME,{create:true});
+    const h=await root.getFileHandle(DATA_NAME,{create:true});
     const w=await h.createWritable();await w.write(text);await w.close();  // 닫을 때 한 번에 교체 (중간에 깨지지 않음)
   }).catch(e=>alert('분류 정보를 저장하지 못했습니다: '+e.message));
   return fsx.q;
@@ -62,7 +62,7 @@ function guess(stem,tempos,keys){
   title=title.replace(/[_\-]+/g,' ').replace(/\s+/g,' ').trim()||stem;
   return {title,key,tempo};
 }
-const stemOf=rel=>{const n=rel.split('/').pop();const i=n.lastIndexOf('.');return i>0?n.slice(0,i):n};
+const stemOf=rel=>{const n=rel.split('/').pop().normalize('NFC');const i=n.lastIndexOf('.');return i>0?n.slice(0,i):n};  // macOS 에서 온 한글 파일명(NFD)도 일반 한글로
 
 async function walk(dir,prefix,out){
   for await(const [name,h] of dir.entries()){
@@ -138,8 +138,9 @@ async function apiTempos(items){
 }
 async function apiKeys(items){
   const keys=[],rename={},used=new Set();
-  for(const k of items){const name=String(k.name||'').trim();if(!name||used.has(name))continue;used.add(name);
-    const old=k.old||name;if(!(old in rename))rename[old]=name;
+  for(const k of items){const name=String(k.name||'').trim();if(!name)continue;
+    const old=k.old||name;if(!(old in rename))rename[old]=name;   // 이미 있는 이름으로 바꾸면 그 코드로 합침 (곡의 코드가 지워지지 않게)
+    if(used.has(name))continue;used.add(name);
     keys.push({name,aliases:(k.aliases||[]).map(a=>String(a).trim()).filter(a=>a&&a!==name)})}
   fsx.db.keys=keys;
   for(const s of Object.values(fsx.db.scores))s.key=rename[s.key]||'';
@@ -243,7 +244,8 @@ async function save(next){
   await apiUpdate([it.id],{title:$('#e-title').value,key:$('#e-key').value,tempo:$('#e-tempo').value,
     tags:splitTags($('#e-tags').value),note:$('#e-note').value,reviewed:true});
   const idx=st.list.indexOf(it);await load();
-  const nx=next&&st.list[Math.min(idx,st.list.length-1)];
+  const j=st.list.findIndex(x=>x.id===it.id),at=j>=0?j+1:idx;   // 저장한 곡이 목록에 남아 있으면 그 다음 곡으로
+  const nx=next&&at<st.list.length&&st.list[at];
   if(nx)openDlg(nx);else $('#dlg').close();
 }
 async function afterRemove(idx){

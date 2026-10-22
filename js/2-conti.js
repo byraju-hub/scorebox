@@ -2,7 +2,7 @@
 /* ================= 콘티 (목록 · 편집 · 인쇄 · JPG) ================= */
 const C={sel:null,q:'',type:'',year:'',timer:null,page:1,per:15,jump:false};
 const DOW='일월화수목금토';
-const normT=s=>String(s||'').replace(/[0-9\s\-_().,·~!?:;+'"“”‘’]/g,'');
+const normT=s=>String(s||'').normalize('NFC').replace(/[0-9\s\-_().,·~!?:;+'"“”‘’]/g,'');
 const contis=()=>fsx.db.contis=fsx.db.contis||[];
 const dowOf=d=>DOW[new Date(d+'T00:00:00').getDay()];
 const fmtDate=d=>{const [y,m,dd]=d.split('-');return `${+m}/${+dd}(${dowOf(d)})`};
@@ -24,14 +24,15 @@ function flattenConti(e){
   const songs=[],notes=[];
   for(const s of e.sections||[]){
     if(s.name==='말씀'){notes.push((s.extra||[]).join(' · '));continue}
-    for(const g of s.songs)songs.push({title:g.title,canon:g.canon,key:g.key||'',refrain:!!g.refrain,note:g.note||'',special:!!g.special,
+    for(const g of s.songs||[])songs.push({title:g.title,canon:g.canon,key:g.key||'',refrain:!!g.refrain,note:g.note||'',special:!!g.special,
       sec:s.name,files:g.files||[],file:g.file||'',print:!g.special});
   }
   return {id:e.id,date:e.date,type:e.type,service:e.service,subtitle:e.subtitle||'',theme:e.theme||'',songs,notes:notes.filter(Boolean).join(' / ')};
 }
 function importContis(list){
   const have=new Set(contis().map(c=>c.id));let n=0;
-  for(const e of list){const c=flattenConti(e);if(!have.has(c.id)){contis().push(c);have.add(c.id);n++}}
+  for(const e of list){if(!e||typeof e!=='object'||!/^\d{4}-\d\d-\d\d$/.test(e.date||''))continue;   // 날짜가 없거나 형식이 다르면 건너뜀
+    const c=flattenConti(e);if(!c.id)c.id='i'+Date.now()+'_'+n;if(!have.has(c.id)){contis().push(c);have.add(c.id);n++}}
   return n;
 }
 
@@ -165,7 +166,7 @@ function renderContiDetail(){
       <span id="d-saved" style="color:var(--mut);font-size:12px"></span></div>
     ${c.notes?`<div style="color:var(--mut);font-size:12px;margin-bottom:6px">말씀: ${esc(c.notes)}</div>`:''}
     <div id="d-songs"></div>`;
-  const bind=(id,k,fn)=>$(id).onchange=e=>{c[k]=e.target.value;if(fn)fn();touch()};
+  const bind=(id,k,fn)=>$(id).onchange=e=>{if(k==='date'&&!e.target.value){e.target.value=c.date;return}c[k]=e.target.value;if(fn)fn();touch()};   // 날짜는 비울 수 없음
   bind('#d-date','date',()=>{c.id=c.id.startsWith('n')?c.id:c.id});bind('#d-type','type');bind('#d-service','service');bind('#d-sub','subtitle');bind('#d-theme','theme');
   const touch=()=>{saveSoon();$('#d-saved').textContent='저장됨';renderContiList()};
   const sb=$('#d-songs');sb.innerHTML='';
@@ -324,7 +325,7 @@ function updatePresetUI(){
   $('#p-presave').textContent=`이 설정을 '${presetLabel(k)}' 프리셋으로 저장`;$('#p-prereset').style.display=P.c.print?'':'none';
 }
 function openPrint(c){
-  P.c=c;
+  P.c=c;P.lay=null;
   for(const g of songsOf(c)){if(g.refrain&&!g.crop&&!g.autoRef){g.crop={top:0.6,bottom:1};g.label=g.label||`[${g.title} (후렴)]`;g.autoRef=true}if(g.print===undefined)g.print=!g.special}
   if(!c.headerCustom)c.header=defaultHeader(c);
   $('#p-header').value=c.header;syncPControls();
@@ -339,8 +340,8 @@ for(const id of ['paper','mode','order','margin','minscale','dpi','frame','numbe
 });
 $('#p-presave').onclick=()=>{const k=presetKey(P.c),snap=snapPrefs();presets()[k]=snap;delete P.c.print;saveSoon();updatePresetUI();alert(`'${presetLabel(k)}' 프리셋을 저장했습니다.\n앞으로 ${presetLabel(k)}짜리 콘티는 이 용지·배치로 시작합니다 (따로 설정한 콘티는 그대로).`)};
 $('#p-prereset').onclick=()=>{delete P.c.print;syncPControls();saveSoon();refreshPreview()};
-$('#pall').onclick=()=>{songsOf(P.c).forEach(g=>g.print=true);renderPSongs();refreshPreview()};
-$('#pnone').onclick=()=>{songsOf(P.c).forEach(g=>g.print=false);renderPSongs();refreshPreview()};
+$('#pall').onclick=()=>{songsOf(P.c).forEach(g=>g.print=true);renderPSongs();refreshPreview();saveSoon()};
+$('#pnone').onclick=()=>{songsOf(P.c).forEach(g=>g.print=false);renderPSongs();refreshPreview();saveSoon()};
 const panelOptMax=()=>Math.max(6,((P.lay&&P.lay.panelCount)||0)+1);  // 칸이 늘어나면 칸 번호 선택지도 자동으로 늘어남
 function syncPanelOptions(){const n=panelOptMax();document.querySelectorAll('#psongs select.pl').forEach(sel=>{const have=sel.options.length-3;for(let i=have+1;i<=n;i++){const o=document.createElement('option');o.value=i;o.textContent=`${i}번 칸에 넣기`;sel.append(o)}})}
 function renderPSongs(){
@@ -351,10 +352,10 @@ function renderPSongs(){
     r.innerHTML=`<label class="t"><input type="checkbox" ${g.print!==false?'checked':''}> ${i+1}. ${esc(g.title)}${g.refrain?' <small>(후렴)</small>':''}</label>
       <span class="fs"></span><button class="cr">${crop}</button><input class="lb" placeholder="빨간 라벨 예: [입례]" value="${esc(g.label||'')}">
       <select class="pl"><option value="auto">칸: 자동</option><option value="new">새 칸에서 시작</option><option value="same">위 곡과 같은 칸</option>${Array.from({length:panelOptMax()},(_,i)=>i+1).map(n=>`<option value="${n}">${n}번 칸에 넣기</option>`).join('')}</select>`;
-    r.querySelector('.fs').append(fileSelect(g,()=>{refreshPreview()}));
-    r.querySelector('input[type=checkbox]').onchange=e=>{g.print=e.target.checked;refreshPreview()};
-    r.querySelector('.lb').oninput=e=>{g.label=e.target.value;refreshPreview()};
-    const pl=r.querySelector('.pl');pl.value=g.place||'auto';pl.onchange=()=>{g.place=pl.value;refreshPreview()};
+    r.querySelector('.fs').append(fileSelect(g,()=>{refreshPreview();saveSoon()}));
+    r.querySelector('input[type=checkbox]').onchange=e=>{g.print=e.target.checked;refreshPreview();saveSoon()};
+    r.querySelector('.lb').oninput=e=>{g.label=e.target.value;refreshPreview();saveSoon()};
+    const pl=r.querySelector('.pl');pl.value=g.place||'auto';pl.onchange=()=>{g.place=pl.value;refreshPreview();saveSoon()};
     r.querySelector('.cr').onclick=()=>openCrop(g);
     box.append(r);
   });
@@ -408,13 +409,13 @@ function crUpd(){
   crPrev();
 }
 $('#crtop').oninput=crUpd;$('#crbot').oninput=crUpd;$('#crlef').oninput=crUpd;$('#crrig').oninput=crUpd;$('#crsc').oninput=crUpd;
-$('#crok').onclick=()=>{const t=+$('#crtop').value/100,b=+$('#crbot').value/100,l=+$('#crlef').value/100,rr=+$('#crrig').value/100,sc=+$('#crsc').value;CR.crop=(t===0&&b===1&&l===0&&rr===1&&sc===100)?null:{top:t,bottom:b,left:l,right:rr,scale:sc};$('#crdlg').close();renderPSongs();refreshPreview()};
-$('#crreset').onclick=()=>{CR.crop=null;$('#crdlg').close();renderPSongs();refreshPreview()};
+$('#crok').onclick=()=>{const t=+$('#crtop').value/100,b=+$('#crbot').value/100,l=+$('#crlef').value/100,rr=+$('#crrig').value/100,sc=+$('#crsc').value;CR.crop=(t===0&&b===1&&l===0&&rr===1&&sc===100)?null:{top:t,bottom:b,left:l,right:rr,scale:sc};$('#crdlg').close();renderPSongs();refreshPreview();saveSoon()};
+$('#crreset').onclick=()=>{CR.crop=null;$('#crdlg').close();renderPSongs();refreshPreview();saveSoon()};
 $('#crcancel').onclick=()=>$('#crdlg').close();
 
 /* --- 인쇄 / JPG --- */
 $('#pprint').onclick=async()=>{
-  const p=prefs(),lay=P.lay||await buildLayout(P.c,p);if(!lay.pages.length){alert('인쇄할 악보가 없습니다.');return}
+  const p=prefs(),lay=P.lay=await buildLayout(P.c,p);if(!lay.pages.length){alert('인쇄할 악보가 없습니다.');return}   // 미리보기가 아직 갱신 전이어도 지금 설정으로 다시 배치
   const {W,H}=lay.pages[0];
   let sty=document.getElementById('pagecss');if(!sty){sty=document.createElement('style');sty.id='pagecss';document.head.append(sty)}
   sty.textContent=`@page{size:${W}mm ${H}mm;margin:0}`;
@@ -422,9 +423,10 @@ $('#pprint').onclick=async()=>{
   await Promise.all([...root.querySelectorAll('img')].map(i=>i.decode().catch(()=>{})));
   window.addEventListener('afterprint',()=>{root.innerHTML=''},{once:true});window.print();
 };
-const jpgBase=()=>{const d=P.c.date.replace(/-/g,'').slice(2),same=contis().filter(c=>c.date===P.c.date);return same.length>1?d+'abcdefghijklmnopqrstuvwxyz'[Math.max(0,same.indexOf(P.c))]:d};
+const jpgBase=()=>{const d=P.c.date.replace(/-/g,'').slice(2),same=contis().filter(c=>c.date===P.c.date).sort((a,b)=>String(a.id).localeCompare(String(b.id)));   // id 순서로 a·b (목록 순서가 바뀌어도 그대로)
+  return same.length>1?d+'abcdefghijklmnopqrstuvwxyz'[Math.max(0,same.indexOf(P.c))]:d};
 async function exportJpgs(){
-  const p=prefs(),lay=P.lay||await buildLayout(P.c,p);if(!lay.pages.length){alert('내보낼 악보가 없습니다.');return null}
+  const p=prefs(),lay=P.lay=await buildLayout(P.c,p);if(!lay.pages.length){alert('내보낼 악보가 없습니다.');return null}
   try{await document.fonts.load('700 20px "Gowun Dodum"','가A')}catch(e){}
   const out=[];let sheet=0;
   for(const pg of lay.pages){if(pg.front)sheet++;const n=pg.single?pg.no:Math.max(sheet-1,0)*2+(pg.front?1:2);

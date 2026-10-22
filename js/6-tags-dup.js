@@ -85,7 +85,8 @@ async function dupResolve(keepId,removeIds){
     keep.tags=[...new Set([...(keep.tags||[]),...(s.tags||[])])].sort();
     if(!keep.note&&s.note)keep.note=s.note;
     keep.reviewed=keep.reviewed||s.reviewed;
-    for(const c of contis())for(const g of c.songs||[]){if(g.file===r)g.file=keepId;if(g.files)g.files=[...new Set(g.files.map(f=>f===r?keepId:f))]}
+    for(const c of [...contis(),...(fsx.db.contisTrash||[])])for(const g of c.songs||[]){if(g.file===r)g.file=keepId;if(g.files)g.files=[...new Set(g.files.map(f=>f===r?keepId:f))]}
+    if(Array.isArray(fsx.db.basket))fsx.db.basket=[...new Set(fsx.db.basket.map(f=>f===r?keepId:f))];
     if(D.mode==='delete')delete sc[r];else s.excluded=true;
   }
   await saveDb();st.sel.clear();await load();renderDup();

@@ -19,7 +19,11 @@ async function bkRestore(dir,name){
   const data=JSON.parse(await (await (await dir.getFileHandle(name)).getFile()).text());
   if(!data||typeof data!=='object'||!data.scores)throw new Error('ScoreBox 데이터 파일이 아닙니다');
   if(fsx.db)await bkWrite(dir,`scorebox_data_${bkStamp(true)}_before_restore.json`,JSON.stringify(fsx.db,null,1));
-  fsx.db=data;await saveDb();
+  fsx.db=data;await saveDb();bkAfterSwap();await scanFs();
+}
+function bkAfterSwap(){  // 복원하면 열려 있던 콘티·인쇄 창은 예전 데이터를 가리키므로 닫고 다시 그림
+  C.sel=null;P.c=null;P.lay=null;$('#pdlg').classList.remove('on');
+  if(document.body.classList.contains('conti')){renderContiList();renderContiDetail()}
 }
 async function bkRender(){
   const h=BK.handle||(BK.handle=await kvGet('backupDir')),dir=await bkDir(false);
@@ -44,6 +48,6 @@ $('#btn-restore').onclick=async()=>{
   const dir=await bkDir(true);if(!dir){alert('백업 폴더가 지정되어 있지 않거나 접근이 허용되지 않았습니다.');return}
   const names=(await bkList(dir));if(!names.length){alert('백업 파일이 없습니다.');return}
   if(!confirm(`가장 최근 백업(${names[0]})으로 복원할까요?`))return;
-  try{const data=JSON.parse(await (await (await dir.getFileHandle(names[0])).getFile()).text());fsx.db=data;await saveDb();$('#btn-restore').style.display='none';
+  try{const data=JSON.parse(await (await (await dir.getFileHandle(names[0])).getFile()).text());fsx.db=data;await saveDb();bkAfterSwap();$('#btn-restore').style.display='none';
     const r=await scanFs();await load();$('#start').style.display='none'}catch(e){alert('복원하지 못했습니다: '+e.message)}
 };
