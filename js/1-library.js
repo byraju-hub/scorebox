@@ -34,6 +34,7 @@ async function loadDb(){
   db.scores=db.scores||{};
   db.tempos=db.tempos||DEFAULT_TEMPOS.map(t=>({...t,keywords:[...t.keywords]}));
   db.keys=db.keys||DEFAULT_KEYS.map(k=>({...k,aliases:[]}));
+  delete db.printPrefs;   // 예전 '모든 콘티 공통' 인쇄 설정 — 지금은 콘티별 설정과 곡 수 프리셋(printPresets)을 씀
   fsx.db=db;
 }
 function saveDb(){

@@ -13,7 +13,6 @@ aside h1{box-sizing:border-box;height:55px;margin:-14px -14px 14px;display:flex;
 h3{font-size:13px;font-weight:700;color:var(--mut);margin:16px 0 6px;text-transform:none}
 #statuschips .chip{flex:1 1 0;min-width:0;text-align:center;white-space:nowrap;margin:0;padding:3px 4px}
 .chip{display:inline-block;padding:3px 9px;margin:2px;border:1px solid var(--line);border-radius:14px;background:var(--card);cursor:pointer;user-select:none}
-.chip.on{background:var(--acc);color:#fff;border-color:var(--acc)}
 .chip small{opacity:.6;margin-left:3px}
 input,select,textarea,button{font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
 button{cursor:pointer}button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
@@ -26,7 +25,7 @@ button{cursor:pointer}button.p{background:var(--acc);color:#fff;border-color:var
 @media(prefers-color-scheme:dark){.badge.ru{color:#7dd3fc}.badge.ru.up{color:#c4b5fd}}
 .card .bkb{position:absolute;right:6px;bottom:6px;width:24px;height:24px;padding:0;border-radius:50%;border:1.5px solid #f08c00;background:var(--card);color:#f08c00;display:flex;align-items:center;justify-content:center}.card .bkb:hover{background:#f08c0026}.card .bkb.on{background:#f08c00;color:#fff}.card .meta{padding-right:34px}
 button.obtn{background:#f08c00;color:#fff;border-color:#f08c00}button.obtn.off{background:var(--card);color:#d9730d}
-#basketbox{margin-top:14px}#basketbox .bhd{display:flex;align-items:center;gap:6px;font-weight:700;color:#d9730d;margin-bottom:6px}#basketbox .bhd span.n{background:#f08c00;color:#fff;border-radius:10px;padding:0 8px;font-size:12px}
+#basketbox{margin-top:14px}
 #bklist{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}.bki{display:flex;align-items:center;gap:4px;padding:4px 6px;border:1px solid #f08c0088;border-left:4px solid #f08c00;border-radius:6px;background:var(--card);font-size:12px}.bki .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bki button{padding:0 5px;line-height:18px;font-size:11px}
 .pk.inbk{border-left:4px solid #f08c00;background:#f08c0014}.pk button.inbk{background:#f08c00;color:#fff;border-color:#f08c00}
 .thumb{height:calc(var(--cw,170px)*1.25);background:#8883;display:flex;align-items:center;justify-content:center;font-size:40px}
@@ -134,25 +133,16 @@ body.conti #bar,body.conti #bulk,body.conti #grid,body.conti #libside{display:no
 .sec .si{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:16px;background:var(--sb,#8883);flex-shrink:0}
 .sec.key{--sc:#2f5fd0;--sb:#2f5fd02e}.sec.speed{--sc:#ea580c;--sb:#ea580c2e}.sec.tag{--sc:#0d9488;--sb:#0d94882e}
 .tools-h{--sc:#8b5cf6;--sb:#8b5cf62e;margin-top:24px}
-#f-key .chip.on{background:#2f5fd0;border-color:#2f5fd0}
-#f-tempo .chip.on{background:#ea580c;border-color:#ea580c}
-#f-tag .chip.on{background:#0d9488;border-color:#0d9488}
 #toolbox{display:flex;flex-direction:column;gap:8px}
 .tool{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;font-weight:600;text-align:left;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--acc);border-radius:8px;box-shadow:0 1px 2px #0002;transition:background .12s,color .12s,transform .12s}
 .tool .ti{font-size:18px;width:22px;text-align:center;flex-shrink:0}
 .tool:hover{background:var(--acc);color:#fff;transform:translateX(2px)}
 .tool:active{transform:translateX(2px) scale(.98)}
-.tool.set{border-left-color:#8b5cf6}.tool.set:hover{background:#8b5cf6}
-.tool.out{border-left-color:#16a34a}.tool.out:hover{background:#16a34a}
 .tool.all{border-left-color:#0ea5e9;margin-top:4px}.tool.all.cur{background:color-mix(in srgb,var(--acc) 16%,var(--card));color:var(--acc);border-color:var(--acc);border-left-color:var(--acc)}.tool.all.cur:hover{background:color-mix(in srgb,var(--acc) 26%,var(--card));color:var(--acc)}
-#toolbox2 .tool.all{margin-top:0}
-.tool.rec{border-left-color:#7c3aed}.tool.rec:hover{background:#7c3aed}
 #recdlg{width:min(860px,96vw);height:92vh;padding:16px;overflow:auto}#recdlg label.f{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--mut)}
 #recdlg .rw{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin:8px 0}#recdlg select,#recdlg input{max-width:100%}
 #rc-text{font-size:13px;background:#8881;border-radius:6px;padding:8px 10px;max-height:150px;overflow:auto;line-height:1.6}#rc-text sup{color:#7c3aed;font-weight:700;margin-right:2px}
 #rc-res h3{font-size:14px;margin:16px 0 6px}.rci{display:flex;gap:8px;align-items:flex-start;padding:8px;border:1px solid var(--line);border-left:4px solid #7c3aed;border-radius:8px;margin-bottom:6px;flex-wrap:wrap}.rci .t{flex:1;min-width:220px}.rci .t b{font-size:14px}.rci .t small{display:block;color:var(--mut);margin-top:2px;line-height:1.5}.rci.out{border-left-color:#868e96}.rci a{color:var(--acc)}
-.tool.trash{border-left-color:#868e96}.tool.new{border-left-color:#2a78d6}.tool.imp{border-left-color:#1c7ed6}.tool.hym{border-left-color:#db2777}.tool.hym:hover{background:#db2777}
-.tool.warn{border-left-color:var(--warn)}.tool.warn:hover{background:var(--warn);color:#000}
 /* 도구 모음 버튼 색상 (하나씩 다르게) */
 #rescan.tool{border-left-color:#0284c7}#rescan.tool:hover{background:#0284c7;color:#fff}
 #chdir.tool{border-left-color:#0891b2}#chdir.tool:hover{background:#0891b2;color:#fff}
@@ -236,8 +226,6 @@ button.obtn.off:hover:not(:disabled){background:#f08c0026;border-color:#f08c00;c
 /* 빨간 삭제 버튼(인라인 색): 진하게 */
 button[style*="#c92a2a"]:hover:not(:disabled){filter:brightness(1.15);box-shadow:0 2px 8px #c92a2a66;transform:translateY(-1px)}
 /* 코드·빠르기·카테고리 선택 칩 */
-.chip:hover{background:color-mix(in srgb,var(--acc) 14%,var(--card));border-color:var(--acc);color:var(--acc);box-shadow:0 2px 6px #0002;transform:translateY(-1px)}
-.chip.on:hover{background:var(--acc);color:#fff;filter:brightness(1.12)}
 .chip:active{transform:translateY(0) scale(.95)}
 /* 악보 카드 · 콘티 목록 · 추천/바구니/휴지통 목록 */
 .card:hover{border-color:var(--acc);box-shadow:0 4px 12px #0003;transform:translateY(-2px)}
@@ -255,8 +243,8 @@ button:focus-visible,.chip:focus-visible,select:focus-visible,input:focus-visibl
 
 /* 칩 색상은 그룹 제목 밑줄 색과 같게: 코드=파랑, 빠르기=주황, 카테고리=청록 */
 #f-key{--gc:var(--acc)}#f-tempo{--gc:#ea580c}#f-tag{--gc:#0d9488}
-.chip.on{background:var(--gc,var(--acc));border-color:var(--gc,var(--acc))}
-.chip:hover{background:color-mix(in srgb,var(--gc,var(--acc)) 16%,var(--card));border-color:var(--gc,var(--acc));color:var(--gc,var(--acc))}
+.chip.on{background:var(--gc,var(--acc));border-color:var(--gc,var(--acc));color:#fff}
+.chip:hover{background:color-mix(in srgb,var(--gc,var(--acc)) 16%,var(--card));border-color:var(--gc,var(--acc));color:var(--gc,var(--acc));box-shadow:0 2px 6px #0002;transform:translateY(-1px)}
 .chip.on:hover{background:var(--gc,var(--acc));border-color:var(--gc,var(--acc));color:#fff;filter:brightness(1.12)}
 #p-pre button{white-space:normal;text-align:left;max-width:100%}
 

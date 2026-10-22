@@ -440,4 +440,3 @@ $('#pjpg').onclick=async()=>{
     alert(`JPG ${files.length}장을 악보 폴더의 '콘티출력' 폴더에 저장했습니다.\n\n${files.map(f=>f.name).join('\n')}`);
   }catch(e){alert('폴더에 저장하지 못했습니다: '+e.message+'')}
 };
-window.ScoreBoxConti={importContis,buildLayout,renderPageCanvas,prefs,contiText,flattenConti};
