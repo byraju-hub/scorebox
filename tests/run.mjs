@@ -153,6 +153,50 @@ await test('콘티 JPG: A4 크기, 같은 날짜 콘티는 a/b 로 구분된 파
   await ctx.close();
 });
 
+await test('JPG 다시 저장: 장 수가 줄면 같은 콘티의 예전 -3·-4 파일은 지우고, 다른 콘티 파일은 그대로', async () => {
+  const { ctx, page, errors } = await setup({ 'G-hana.png': { w: 600, h: 800 } });
+  const r = await page.evaluate(async () => {
+    const song = (f, t) => ({ title: t, canon: normT(t), key: f[0], files: [f], file: f, print: true });
+    fsx.db.contis = [{ id: 'x3', date: '2025-03-09', type: '주일', service: '주일', songs: [song('G-hana.png', '하나')] }];
+    const out = await fsx.root.getDirectoryHandle(DIRS.out, { create: true });
+    for (const n of ['250309-3.jpg', '250309-4.jpg', '250309a-1.jpg', '250316-1.jpg', 'memo.txt']) await out.getFileHandle(n, { create: true });
+    openPrint(fsx.db.contis[0]); await new Promise(r => setTimeout(r, 600));
+    const files = await exportJpgs(), removed = await saveJpgs(files);
+    const left = []; for await (const [n] of out.entries()) left.push(n);
+    return { made: files.map(f => f.name), removed: removed.sort(), left: left.sort() };
+  });
+  ok(r.removed.join() === '250309-3.jpg,250309-4.jpg', `지운 파일 ${r.removed}`);
+  ok(r.made.every(n => r.left.includes(n)), `새 파일이 없음 ${r.left}`);
+  ok(['250309a-1.jpg', '250316-1.jpg', 'memo.txt'].every(n => r.left.includes(n)), `다른 파일이 지워짐 ${r.left}`);
+  ok(!errors.length, errors.join());
+  await ctx.close();
+});
+
+await test('다른 탭에서도 열면 두 탭 모두 경고, 한쪽을 닫으면 경고가 사라짐 · 창을 닫기 직전 기다리던 저장을 바로 실행', async () => {
+  const { ctx, page, errors } = await setup({ 'G-hana.png': {} });
+  const vis = p => p.evaluate(() => { const b = $('#multitab'); return !!b && !b.hidden; });
+  ok(!(await vis(page)), '혼자 열었는데 경고가 보임');
+  const page2 = await ctx.newPage(); page2.on('dialog', d => d.accept());
+  await page2.goto(URL_);
+  await page2.evaluate(async () => { DIRS.out = 'out'; DIRS.trash = '_trash'; await window.ScoreBox.open(await navigator.storage.getDirectory()); });
+  await page.waitForTimeout(300);
+  ok(await vis(page) && await vis(page2), '두 탭 중 경고가 안 보이는 탭이 있음');
+  await page2.close({ runBeforeUnload: true }); await page.waitForTimeout(300);
+  ok(!(await vis(page)), '다른 탭을 닫았는데 경고가 남아 있음');
+  // 400ms 안에 창이 가려지면(닫기·최소화) 기다리지 않고 바로 저장
+  const saved = await page.evaluate(async () => {
+    fsx.db.flushMark = 'yes'; saveSoon();
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+    const pending = C.timer; await fsx.q;
+    const t = await (await (await fsx.root.getFileHandle('scorebox_data.json')).getFile()).text();
+    return { pending, mark: JSON.parse(t).flushMark };
+  });
+  ok(saved.pending === null && saved.mark === 'yes', `바로 저장되지 않음 ${JSON.stringify(saved)}`);
+  ok(!errors.length, errors.join());
+  await ctx.close();
+});
+
 await test('콘티 텍스트 복사: 인쇄 창에도 버튼이 있고 같은 형식(샬롬~*, 빈 줄, 번호 곡명 (코드))', async () => {
   const { ctx, page, errors } = await setup({ 'D-a.png': {}, 'D-b.png': { w: 401 } });
   const r = await page.evaluate(async () => {

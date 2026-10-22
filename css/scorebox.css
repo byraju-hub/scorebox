@@ -252,3 +252,8 @@ button:focus-visible,.chip:focus-visible,select:focus-visible,input:focus-visibl
 #spdlg{width:min(860px,96vw);height:90vh;padding:16px;overflow:auto}#sp-list{margin-top:6px}
 .sprow{display:flex;align-items:center;gap:8px;padding:5px 2px;border-bottom:1px solid var(--line)}.sprow .old{flex:0 1 38%;min-width:0;word-break:break-all}.sprow .neu{flex:1;min-width:0}.sprow .src{color:var(--mut);white-space:nowrap}.sprow.ai .src{color:#d9730d;font-weight:700}
 #spacebtn.tool{border-left-color:#0ea5e9}#spacebtn.tool:hover{background:#0ea5e9;color:#fff}
+/* 다른 탭(창)에서도 열려 있을 때 경고 막대 */
+#multitab{position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:1000;max-width:min(860px,calc(100vw - 32px));display:flex;gap:10px;align-items:center;padding:9px 12px 9px 16px;background:#b91c1c;color:#fff;border-radius:0 0 10px 10px;box-shadow:0 4px 14px rgba(0,0,0,.25);font-size:14px;line-height:1.4}
+#multitab[hidden]{display:none}
+#multitab button{flex:none;border:0;background:rgba(255,255,255,.2);color:#fff;border-radius:6px;padding:3px 8px;cursor:pointer}
+#multitab button:hover{background:rgba(255,255,255,.35)}

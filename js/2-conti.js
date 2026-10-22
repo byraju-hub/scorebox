@@ -16,7 +16,12 @@ const printCount=c=>(c.songs||[]).filter(g=>g.print!==false).length;
 const presetKey=c=>{const n=printCount(c);return n<=1?'1':n===2?'2':'3'};
 const prefsOf=c=>Object.assign({},presets()[presetKey(c)],c.print||{});
 const prefs=()=>prefsOf(P.c||{songs:[]});
-function saveSoon(){clearTimeout(C.timer);C.timer=setTimeout(()=>saveDb(),400)}
+function saveSoon(){clearTimeout(C.timer);C.timer=setTimeout(()=>{C.timer=null;saveDb()},400)}
+// 창·탭을 닫거나 다른 곳으로 갈 때 아직 기다리는 저장이 있으면 바로 저장
+function saveNow(){if(C.timer){clearTimeout(C.timer);C.timer=null;saveDb()}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow()});
+addEventListener('pagehide',saveNow);
+addEventListener('beforeunload',e=>{saveNow();if(fsx.busy>0){e.preventDefault();e.returnValue=''}});  // 저장이 끝나기 전에 닫으려 하면 한 번 묻기
 
 /* --- 가져오기: 구간(sections) 형식 → 평평한 songs 배열 --- */
 function flattenConti(e){
@@ -434,11 +439,19 @@ async function exportJpgs(){
   return out;
 }
 $('#pcopy').onclick=()=>copyContiText(P.c);
+// 콘티출력 폴더에 저장하고, 같은 콘티의 예전 JPG 중 이번에 안 만든 면(장 수가 줄어 남은 -3, -4 등)은 지움
+async function saveJpgs(files){
+  const dir=await fsx.root.getDirectoryHandle(DIRS.out,{create:true});
+  for(const f of files){const h=await dir.getFileHandle(f.name,{create:true});const w=await h.createWritable();await w.write(f.blob);await w.close()}
+  const re=new RegExp(`^${jpgBase()}-\\d+\\.jpg$`,'i'),keep=new Set(files.map(f=>f.name)),old=[];
+  for await(const [n,h] of dir.entries())if(h.kind==='file'&&re.test(n)&&!keep.has(n))old.push(n);
+  for(const n of old)await dir.removeEntry(n);
+  return old;
+}
 $('#pjpg').onclick=async()=>{
   const files=await exportJpgs();if(!files)return;
   try{
-    const dir=await fsx.root.getDirectoryHandle(DIRS.out,{create:true});
-    for(const f of files){const h=await dir.getFileHandle(f.name,{create:true});const w=await h.createWritable();await w.write(f.blob);await w.close()}
-    alert(`JPG ${files.length}장을 악보 폴더의 '콘티출력' 폴더에 저장했습니다.\n\n${files.map(f=>f.name).join('\n')}`);
+    const old=await saveJpgs(files);
+    alert(`JPG ${files.length}장을 악보 폴더의 '콘티출력' 폴더에 저장했습니다.\n\n${files.map(f=>f.name).join('\n')}`+(old.length?`\n\n이 콘티의 예전 JPG 중 이제 필요 없는 ${old.length}장을 지웠습니다: ${old.join(', ')}`:''));
   }catch(e){alert('폴더에 저장하지 못했습니다: '+e.message+'')}
 };

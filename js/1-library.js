@@ -39,10 +39,11 @@ async function loadDb(){
 }
 function saveDb(){
   const text=JSON.stringify(fsx.db,null,1),root=fsx.root;   // 저장을 요청한 순간의 폴더에 저장 (그 사이 폴더를 바꿔도 섞이지 않게)
+  fsx.busy=(fsx.busy||0)+1;   // 저장 중인 횟수 (창을 닫기 전에 확인)
   fsx.q=fsx.q.then(async()=>{
     const h=await root.getFileHandle(DATA_NAME,{create:true});
     const w=await h.createWritable();await w.write(text);await w.close();  // 닫을 때 한 번에 교체 (중간에 깨지지 않음)
-  }).catch(e=>alert('분류 정보를 저장하지 못했습니다: '+e.message));
+  }).catch(e=>alert('분류 정보를 저장하지 못했습니다: '+e.message)).finally(()=>fsx.busy--);
   return fsx.q;
 }
 
@@ -365,8 +366,26 @@ const msg=t=>{const e=$('#smsg');e.textContent=t||'';e.style.color='var(--warn)'
 async function openRoot(handle){
   msg('폴더를 읽는 중…');
   fsx.root=handle;
-  try{await loadDb();const r=await scanFs();await load();$('#start').style.display='none';if(typeof backupAuto==='function')backupAuto()}
+  try{await loadDb();const r=await scanFs();await load();$('#start').style.display='none';tabsHello();if(typeof backupAuto==='function')backupAuto()}
   catch(e){if(e instanceof SyntaxError){msg('scorebox_data.json 파일이 손상되어 읽을 수 없습니다.\n백업 폴더를 지정해 두었다면 아래 버튼으로 최근 백업을 복원할 수 있습니다.');$('#btn-restore').style.display=''}else msg('폴더를 열지 못했습니다: '+e.message)}
+}
+/* ---------- 같은 앱이 다른 탭(창)에서도 열려 있으면 경고 ---------- */
+// 두 곳에서 고치면 나중에 저장한 쪽이 scorebox_data.json 을 통째로 덮어써 다른 쪽의 변경이 사라짐
+const TABS={id:Math.random().toString(36).slice(2),peers:new Set(),ch:window.BroadcastChannel?new BroadcastChannel('scorebox'):null};
+function tabsShow(){
+  let b=$('#multitab');
+  if(!b){b=document.createElement('div');b.id='multitab';b.innerHTML='<span>⚠ ScoreBox 가 다른 탭(창)에서도 열려 있습니다. 두 곳에서 고치면 나중에 저장한 쪽이 다른 쪽의 변경을 덮어씁니다. 한 곳만 남기고 닫아 주세요.</span><button type="button" title="닫기">✕</button>';b.querySelector('button').onclick=()=>b.hidden=true;document.body.append(b)}
+  b.hidden=!TABS.peers.size;
+}
+function tabsHello(){if(TABS.ch)TABS.ch.postMessage({t:'hello',id:TABS.id})}
+if(TABS.ch){
+  TABS.ch.onmessage=({data:m})=>{
+    if(!m||m.id===TABS.id||!fsx.root)return;
+    if(m.t==='hello'){TABS.peers.add(m.id);TABS.ch.postMessage({t:'here',id:TABS.id});tabsShow()}
+    else if(m.t==='here'){TABS.peers.add(m.id);tabsShow()}
+    else if(m.t==='bye'&&TABS.peers.delete(m.id))tabsShow();
+  };
+  addEventListener('pagehide',()=>{if(fsx.root)TABS.ch.postMessage({t:'bye',id:TABS.id})});
 }
 async function pick(){
   try{
