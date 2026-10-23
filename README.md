@@ -2,7 +2,7 @@
 
 [![자동 테스트](https://github.com/byraju-hub/scorebox/actions/workflows/test.yml/badge.svg)](https://github.com/byraju-hub/scorebox/actions/workflows/test.yml)
 
-**찬양팀을 위한 악보 정리 · 콘티 작성 도구**입니다.
+**예배인도자를 위한 악보 정리 · 콘티 작성 도구**입니다.
 PC에 모아 둔 악보 이미지를 코드 · 빠르기 · 카테고리로 정리하고, 찬양 콘티를 만들어 바로 인쇄하거나 JPG로 저장할 수 있습니다.
 
 - 설치 프로그램도, 회원 가입도, 서버도 필요 없습니다. **Chrome 에서 `scorebox.html` 을 열면 끝**입니다.
