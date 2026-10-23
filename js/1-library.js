@@ -274,6 +274,7 @@ $('#bapply').onclick=async()=>{
   await apiUpdate([...st.sel],patch,splitTags($('#bat').value));
   st.sel.clear();$('#bat').value='';load();
 };
+$('#moretoggle').onclick=()=>{const m=$('#moretools'),o=m.hidden;m.hidden=!o;$('#moretoggle').setAttribute('aria-expanded',o)};   // 기타 도구 모음 펼치기/접기
 $('#rescan').onclick=async()=>{const r=await scanFs();await load();alert(`스캔 완료: 파일 ${r.total}개 (사라진 파일 ${r.missing}개)`)};
 $('#csv').onclick=exportCsv;
 $('#f-ex').onclick=()=>{st.showEx=!st.showEx;st.sel.clear();load()};
