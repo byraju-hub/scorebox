@@ -374,6 +374,22 @@ await test('버그 수정 회귀: 코드 이름 합치기, 저장 후 다음, �
   await ctx.close();
 });
 
+await test('악보함 도구 모음: 자주 쓰는 5개만 보이고, 나머지는 "기타 도구 모음"을 눌러야 펼쳐짐', async () => {
+  const { ctx, page, errors } = await setup({ 'G-hana.png': {} });
+  const vis = ids => page.evaluate(ids => ids.map(i => { const e = document.getElementById(i); return !!e && e.offsetParent !== null }), ids);
+  const main = ['recbtn', 'rescan', 'hymnbtn', 'dupbtn', 'spacebtn', 'moretoggle'], more = ['chdir', 'kcfg', 'cfg', 'tcfg', 'csv', 'bkupbtn'];
+  ok((await vis(main)).every(Boolean), '기본 도구가 안 보임');
+  ok((await vis(more)).every(v => !v), '기타 도구가 처음부터 펼쳐져 있음');
+  await page.click('#moretoggle');
+  ok((await vis(more)).every(Boolean), '눌렀는데 기타 도구가 안 보임');
+  await page.click('#bkupbtn'); ok(await page.evaluate(() => $('#bkdlg') ? $('#bkdlg').open : true), '펼친 뒤 도구가 동작하지 않음');
+  await page.evaluate(() => document.querySelectorAll('dialog[open]').forEach(d => d.close()));
+  await page.click('#moretoggle');
+  ok((await vis(more)).every(v => !v), '다시 누르면 접혀야 함');
+  ok(!errors.length, errors.join());
+  await ctx.close();
+});
+
 await test('콘티 휴지통: 삭제 → 휴지통 → 복원, 30일 지난 콘티는 자동 삭제', async () => {
   const { ctx, page, errors } = await setup({});
   const r = await page.evaluate(async () => {

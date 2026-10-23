@@ -257,3 +257,9 @@ button:focus-visible,.chip:focus-visible,select:focus-visible,input:focus-visibl
 #multitab[hidden]{display:none}
 #multitab button{flex:none;border:0;background:rgba(255,255,255,.2);color:#fff;border-radius:6px;padding:3px 8px;cursor:pointer}
 #multitab button:hover{background:rgba(255,255,255,.35)}
+/* 기타 도구 모음: 눌렀을 때만 펼쳐짐 */
+#moretoggle{border-left-color:#64748b}#moretoggle:hover{background:#64748b;color:#fff}
+#moretoggle .chev{margin-left:auto;transition:transform .15s}
+#moretoggle[aria-expanded=true] .chev{transform:rotate(90deg)}
+#moretools{display:flex;flex-direction:column;gap:8px;padding-left:10px}
+#moretools[hidden]{display:none}

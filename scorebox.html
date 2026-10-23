@@ -38,17 +38,20 @@
   <h3 class="sec tag"><span class="si">🏷️</span>카테고리(Tag)</h3><div id="f-tag"></div>
   <h3 class="sec tools-h"><span class="si">🧰</span>악보함 도구 모음</h3>
   <div id="toolbox">
-    <button class="tool" id="rescan"><span class="ti">📁</span>폴더 다시 스캔</button>
-    <button class="tool" id="chdir"><span class="ti">📂</span>폴더 바꾸기</button>
     <button class="tool" id="recbtn"><span class="ti">🕊</span>찬양 추천</button>
-    <button class="tool" id="kcfg"><span class="ti">⚙</span>코드(Key) 설정</button>
-    <button class="tool" id="cfg"><span class="ti">⚙</span>빠르기(Speed) 설정</button>
-    <button class="tool" id="tcfg"><span class="ti">⚙</span>카테고리(Tag) 설정</button>
-    <button class="tool" id="csv"><span class="ti">⬇</span>엑셀(CSV) 내보내기</button>
-    <button class="tool" id="bkupbtn"><span class="ti">🗂</span>백업 · 복원</button>
+    <button class="tool" id="rescan"><span class="ti">📁</span>폴더 다시 스캔</button>
+    <button class="tool" id="hymnbtn"><span class="ti">🎼</span>찬송가/CCM 분류</button>
     <button class="tool" id="dupbtn"><span class="ti">🧩</span>중복 곡 정리</button>
     <button class="tool" id="spacebtn"><span class="ti">␣</span>제목 띄어쓰기 정리</button>
-    <button class="tool" id="hymnbtn"><span class="ti">🎼</span>찬송가/CCM 분류</button>
+    <button class="tool" id="moretoggle" aria-expanded="false" aria-controls="moretools"><span class="ti">🧰</span>기타 도구 모음<span class="chev" aria-hidden="true">▸</span></button>
+    <div id="moretools" hidden>
+      <button class="tool" id="chdir"><span class="ti">📂</span>폴더 바꾸기</button>
+      <button class="tool" id="kcfg"><span class="ti">⚙</span>코드(Key) 설정</button>
+      <button class="tool" id="cfg"><span class="ti">⚙</span>빠르기(Speed) 설정</button>
+      <button class="tool" id="tcfg"><span class="ti">⚙</span>카테고리(Tag) 설정</button>
+      <button class="tool" id="csv"><span class="ti">⬇</span>엑셀(CSV) 내보내기</button>
+      <button class="tool" id="bkupbtn"><span class="ti">🗂</span>백업 · 복원</button>
+    </div>
   </div>
   <div id="statuschips" style="margin-top:16px;display:flex;gap:4px;flex-wrap:nowrap"><span class="chip" id="f-ex" title="앱 목록에서 제외한 곡 (파일은 그대로 있음)">🚫 제외 곡 <small id="n-ex"></small></span>
   <span class="chip" id="f-unrev">⚠ 확인 필 <small id="n-unrev"></small></span></div>
