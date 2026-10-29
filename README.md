@@ -31,8 +31,8 @@ PC에 모아 둔 악보 이미지를 코드 · 빠르기 · 카테고리로 정�
 ## 설치
 
 ### 방법 1. ZIP 으로 받기 — 가장 간단
-1. 이 페이지 위쪽의 초록색 **`<> Code`** 버튼 → **Download ZIP** 을 누릅니다.
-2. 받은 ZIP 의 압축을 원하는 곳에 풉니다. (예: `C:\ScoreBox`)
+1. **[최신 릴리즈 페이지](https://github.com/byraju-hub/scorebox/releases/latest)** 에서 아래쪽 **Assets** 의 **`ScoreBox-버전.zip`** 을 내려받습니다. (`Source code` 가 아니라 `ScoreBox-…zip` 입니다)
+2. 받은 ZIP 의 압축을 원하는 곳에 풉니다. (예: `C:\` 에 풀면 `C:\ScoreBox` 폴더가 생깁니다)
 3. 폴더 안의 **`scorebox.html`** 을 Chrome 으로 엽니다. (파일을 Chrome 창에 끌어다 놓아도 됩니다)
 
 > 💡 자주 쓰려면 Chrome 에서 연 뒤 **북마크(Ctrl+D)** 해 두세요.
@@ -64,7 +64,7 @@ PC에 모아 둔 악보 이미지를 코드 · 빠르기 · 카테고리로 정�
 
 ## 업데이트
 
-- **ZIP 으로 받았다면**: 새 ZIP 을 받아 같은 폴더에 **덮어쓰기** 합니다.
+- **ZIP 으로 받았다면**: [최신 릴리즈](https://github.com/byraju-hub/scorebox/releases/latest)의 새 ZIP 을 받아 압축을 풀고, 기존 폴더에 **덮어쓰기** 합니다.
 - **Git 으로 받았다면**: 폴더의 **`update.bat`** 을 더블클릭합니다.
 
 업데이트 후 ScoreBox 가 열려 있었다면 Chrome 에서 **Ctrl+F5** 를 누르세요.
