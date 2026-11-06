@@ -1,5 +1,14 @@
 /* Raju's ScoreBox — 콘티: 목록 · 편집 · 곡 추가 · 인쇄 레이아웃 · 자르기 · JPG */
 /* ================= 콘티 (목록 · 편집 · 인쇄 · JPG) ================= */
+/* 예배(종류) · 구분: 예배가 '기타'가 아니면 구분은 '찬양'. 화면·인쇄 머리글·텍스트 복사에는 (예배) (구분) 으로 나옴 */
+const TYPES=['주일오전예배','주일오후예배','수요예배','금요기도회','은혜로기도회','특별집회','기타'];
+const isStdType=t=>TYPES.includes(t)&&t!=='기타';
+const svcLabel=c=>{
+  const sv=String(c.service||'').trim();
+  if(!isStdType(c.type))return sv||(c.type&&c.type!=='기타'?c.type:'');   // 기타·예전 방식은 구분(예전엔 예배 이름)만
+  const rest=sv.startsWith(c.type)?sv.slice(c.type.length).trim():sv;   // '금요기도회 금요기도회 찬양' 처럼 겹치지 않게
+  return `${c.type} ${rest||'찬양'}`;
+};
 const C={sel:null,q:'',type:'',year:'',timer:null,page:1,per:15,jump:false};
 const DOW='일월화수목금토';
 const normT=s=>String(s||'').normalize('NFC').replace(/[0-9\s\-_().,·~!?:;+'"“”‘’]/g,'');
@@ -92,7 +101,7 @@ function contiMatches(c){
   if(C.type&&c.type!==C.type)return false;
   if(C.year&&!c.date.startsWith(C.year))return false;
   const q=C.q.trim().toLowerCase();if(!q)return true;
-  return (c.date+' '+fmtDate(c.date)+' '+c.service+' '+c.subtitle+' '+c.theme+' '+songsOf(c).map(g=>g.title).join(' ')).toLowerCase().includes(q);
+  return (c.date+' '+fmtDate(c.date)+' '+svcLabel(c)+' '+c.subtitle+' '+c.theme+' '+songsOf(c).map(g=>g.title).join(' ')).toLowerCase().includes(q);
 }
 const TRASH_DAYS=30;
 const trash=()=>fsx.db.contisTrash=Array.isArray(fsx.db.contisTrash)?fsx.db.contisTrash:[];
@@ -100,7 +109,7 @@ function trashPurge(){const t=trash(),lim=Date.now()-TRASH_DAYS*86400000,keep=t.
 function trashRender(){
   trashPurge();const t=trash().slice().sort((a,b)=>b.deletedAt.localeCompare(a.deletedAt));
   $('#trres').innerHTML=t.map(c=>{const left=Math.max(0,Math.ceil((new Date(c.deletedAt).getTime()+TRASH_DAYS*86400000-Date.now())/86400000));
-    return `<div class="tri" data-id="${esc(c.id)}"><span class="t"><b>${esc(c.date)} (${dowOf(c.date)})</b> ${esc(c.service)}<small>${songsOf(c).length}곡 · 삭제 ${esc(c.deletedAt.slice(0,10))} · ${left}일 후 자동 삭제</small></span><button class="p" data-a="re">복원</button><button data-a="del">완전 삭제</button></div>`}).join('')||'<p style="color:var(--mut)">휴지통이 비어 있습니다.</p>';
+    return `<div class="tri" data-id="${esc(c.id)}"><span class="t"><b>${esc(c.date)} (${dowOf(c.date)})</b> ${esc(svcLabel(c))}<small>${songsOf(c).length}곡 · 삭제 ${esc(c.deletedAt.slice(0,10))} · ${left}일 후 자동 삭제</small></span><button class="p" data-a="re">복원</button><button data-a="del">완전 삭제</button></div>`}).join('')||'<p style="color:var(--mut)">휴지통이 비어 있습니다.</p>';
   $('#trres').querySelectorAll('.tri').forEach(row=>row.querySelectorAll('button').forEach(b=>b.onclick=()=>{
     const id=row.dataset.id,c=trash().find(x=>x.id===id);if(!c)return;
     if(b.dataset.a==='re'){const {deletedAt,...rest}=c;fsx.db.contisTrash=trash().filter(x=>x!==c);contis().push(rest);C.sel=rest;C.jump=true;saveSoon();$('#trdlg').close();renderContiList();renderContiDetail()}
@@ -109,7 +118,7 @@ function trashRender(){
 $('#ctrash').onclick=()=>{trashRender();$('#trdlg').showModal()};
 $('#trclose').onclick=()=>$('#trdlg').close();
 $('#trempty').onclick=()=>{if(!trash().length||!confirm('휴지통의 콘티를 모두 완전히 삭제할까요? (복원할 수 없습니다)'))return;fsx.db.contisTrash=[];saveSoon();trashRender();renderContiList()};
-function renderContiList(){
+function renderContiList(){fmtBadge();
   trashPurge();$('#ctn').textContent=trash().length?`(${trash().length})`:'';
   if(typeof basketRender==='function')basketRender();
   const all=contis().slice().sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
@@ -120,7 +129,7 @@ function renderContiList(){
   const pages=Math.max(1,Math.ceil(list.length/C.per));
   if(C.jump&&C.sel){const ix=list.findIndex(c=>c.id===C.sel.id);if(ix>=0)C.page=Math.floor(ix/C.per)+1}C.jump=false;
   C.page=Math.min(Math.max(1,C.page),pages);
-  $('#clist').innerHTML=list.slice((C.page-1)*C.per,C.page*C.per).map(c=>`<div class="ci ${C.sel&&C.sel.id===c.id?'on':''}" data-id="${esc(c.id)}"><b>${esc(c.date)} (${dowOf(c.date)})</b> ${esc(c.service)}${c.subtitle?' · '+esc(c.subtitle):''}<br><small>${songsOf(c).length}곡${c.theme?' · '+esc(c.theme):''}</small></div>`).join('')||'<p style="padding:12px;color:var(--mut)">콘티가 없습니다.</p>';
+  $('#clist').innerHTML=list.slice((C.page-1)*C.per,C.page*C.per).map(c=>`<div class="ci ${C.sel&&C.sel.id===c.id?'on':''}" data-id="${esc(c.id)}"><b>${esc(c.date)} (${dowOf(c.date)})</b> ${esc(svcLabel(c))}${c.subtitle?' · '+esc(c.subtitle):''}<br><small>${songsOf(c).length}곡${c.theme?' · '+esc(c.theme):''}</small></div>`).join('')||'<p style="padding:12px;color:var(--mut)">콘티가 없습니다.</p>';
   $('#clist').querySelectorAll('.ci').forEach(el=>el.onclick=()=>{C.sel=contis().find(c=>c.id===el.dataset.id);renderContiList();renderContiDetail()});
   const pg=$('#cpager');pg.style.display=pages>1?'flex':'none';
   if(pages>1){
@@ -142,15 +151,53 @@ $('#cimpf').onchange=async e=>{
   catch(err){alert('콘티 파일을 읽을 수 없습니다: '+err.message)}
 };
 $('#cnew').onclick=()=>{
-  const c={id:'n'+Date.now(),date:todayStr(),type:'금요기도회',service:'금요기도회 찬양',subtitle:'',theme:'',songs:[],notes:''};
+  const c={id:'n'+Date.now(),date:todayStr(),type:'금요기도회',service:'찬양',subtitle:'',theme:'',songs:[],notes:''};
   contis().push(c);C.sel=c;C.jump=true;saveSoon();renderContiList();renderContiDetail();
+};
+
+/* --- 지난 콘티를 (예배) (구분) 양식으로 맞추기 --- */
+for(const id of ['#ctype','#st-type'])$(id).insertAdjacentHTML('beforeend',TYPES.map(t=>`<option>${t}</option>`).join(''));
+const needsFmt=c=>!TYPES.includes(c.type)||(isStdType(c.type)&&String(c.service||'').trim()!=='찬양');
+const fmtItems=()=>[...contis(),...trash()].filter(needsFmt).sort((a,b)=>b.date.localeCompare(a.date));
+function guessFmt(c){   // 예전 '종류 + 예배 이름' → 새 '예배 + 구분' 추측 (확인 후 적용)
+  const old=String(c.service||'').trim(),t=String(c.type||'');let type='기타';
+  if(TYPES.includes(t)&&t!=='기타')type=t;
+  else if(/수요/.test(old))type='수요예배';
+  else if(t==='금요기도회'||/금요/.test(old))type='금요기도회';
+  else if(t==='은혜로기도회'||/은혜로/.test(old))type='은혜로기도회';
+  else if(t==='주일'||/주일/.test(old))type=/오후|3부|저녁/.test(old)?'주일오후예배':'주일오전예배';
+  else if(t==='특별'||/특별|집회/.test(old))type='특별집회';
+  if(type==='기타')return {type,service:old||'찬양'};
+  const rest=old.replace(/^(주일오전예배|주일오후예배|수요예배|수요기도회|금요기도회|은혜로기도회|특별집회|주일|수요|특별)\s*/,'').trim();
+  return rest===''||rest==='찬양'?{type,service:'찬양'}:{type:'기타',service:old};   // 그 밖의 이름은 사라지지 않게 기타 + 예전 이름
+}
+function fmtBadge(){const n=fmtItems().length;$('#cfn').textContent=n?`${n}개`:''}
+function fmtRender(){
+  const items=fmtItems();
+  $('#fmtres').innerHTML=items.length?items.map((c,i)=>{const g=guessFmt(c);
+    return `<div class="tri" data-i="${i}"><input type="checkbox" class="fk" checked><span class="t"><b>${esc(c.date)} (${dowOf(c.date)})</b><small>예전: ${esc(c.type||'(없음)')} / ${esc(c.service||'')}</small></span>
+      <select class="ft">${TYPES.map(t=>`<option ${t===g.type?'selected':''}>${t}</option>`).join('')}</select><input class="fs2" value="${esc(g.service)}" size="16" ${g.type==='기타'?'':'readonly'}></div>`}).join(''):'<p style="padding:12px;color:var(--mut)">양식을 맞출 콘티가 없습니다. 모두 (예배) (구분) 양식입니다.</p>';
+  $('#fmtres').querySelectorAll('.tri').forEach(r=>{const t=r.querySelector('.ft'),f=r.querySelector('.fs2');
+    t.onchange=()=>{const std=isStdType(t.value);f.readOnly=std;if(std)f.value='찬양';else if(!f.value)f.value='찬양'}});
+  $('#fmtapply').disabled=!items.length;
+}
+$('#cfmt').onclick=()=>{fmtRender();$('#fmtdlg').showModal()};
+$('#fmtclose').onclick=()=>$('#fmtdlg').close();
+$('#fmtapply').onclick=()=>{
+  const items=fmtItems();let n=0;
+  $('#fmtres').querySelectorAll('.tri').forEach(r=>{if(!r.querySelector('.fk').checked)return;
+    const c=items[+r.dataset.i],t=r.querySelector('.ft').value,f=r.querySelector('.fs2').value.trim();
+    c.type=t;c.service=isStdType(t)?'찬양':(f||'찬양');n++});
+  if(!n)return;
+  saveSoon();fmtRender();renderContiList();renderContiDetail();
+  alert(`콘티 ${n}개를 (예배) (구분) 양식으로 바꿨습니다.`);
 };
 
 /* --- 콘티 상세/편집 --- */
 const songKey=g=>g.key||((fsx.db&&fsx.db.scores&&fsx.db.scores[g.file])||{}).key||((g.file||'').split('/').pop().match(/^([A-G][#b]?m?)[-_ ]/)||[])[1]||'';
 async function copyContiText(c){try{await navigator.clipboard.writeText(contiText(c));alert('콘티 텍스트를 복사했습니다.')}catch(e){prompt('복사하세요',contiText(c))}}
 function contiText(c){
-  const [y,m,d]=c.date.split('-');let out=`샬롬~*\n${+m}/${+d} ${c.service}입니다.\n\n`,sec=null,i=0;
+  const [y,m,d]=c.date.split('-');let out=`샬롬~*\n${+m}/${+d} ${svcLabel(c)}입니다.\n\n`,sec=null,i=0;
   for(const g of songsOf(c)){
     if(g.sec&&g.sec!==sec&&/#\d/.test(g.sec)){out+=`${i?'\n':''}[${g.sec.replace(/^\s*/, '')}]\n`;sec=g.sec;i=0}
     i++;out+=`${i}. ${g.title}${(k=>k?` (${k}${g.refrain?', 후렴':''})`:g.refrain?' (후렴)':'')(songKey(g))}\n`;
@@ -162,8 +209,8 @@ function renderContiDetail(){
   if(!c){box.innerHTML='<p style="color:var(--mut)">콘티를 선택하세요.</p>';return}
   const up=usageMap();
   box.innerHTML=`<div class="fr"><label>날짜 <input type="date" id="d-date" value="${esc(c.date)}"></label>
-    <label>종류 <select id="d-type">${['주일','금요기도회','은혜로기도회','특별'].map(t=>`<option ${t===c.type?'selected':''}>${t}</option>`).join('')}</select></label>
-    <label>예배 이름 <input id="d-service" value="${esc(c.service)}" size="20"></label>
+    <label>예배 <select id="d-type">${TYPES.includes(c.type)?'':'<option value="" selected disabled>선택…</option>'}${TYPES.map(t=>`<option ${t===c.type?'selected':''}>${t}</option>`).join('')}</select></label>
+    <label>구분 <input id="d-service" value="${esc(isStdType(c.type)?'찬양':c.service)}" size="20" ${isStdType(c.type)?'readonly title="예배가 기타일 때만 직접 쓸 수 있습니다"':''}></label>
     <label>부제 <input id="d-sub" value="${esc(c.subtitle)}" size="14"></label>
     <label>주제 <input id="d-theme" value="${esc(c.theme)}" size="12"></label></div>
     <div class="fr"><button id="d-add" class="p">＋ 곡 추가</button><button id="d-print" class="p">🖨 인쇄 · JPG 만들기</button>
@@ -172,7 +219,7 @@ function renderContiDetail(){
     ${c.notes?`<div style="color:var(--mut);font-size:12px;margin-bottom:6px">말씀: ${esc(c.notes)}</div>`:''}
     <div id="d-songs"></div>`;
   const bind=(id,k,fn)=>$(id).onchange=e=>{if(k==='date'&&!e.target.value){e.target.value=c.date;return}c[k]=e.target.value;if(fn)fn();touch()};   // 날짜는 비울 수 없음
-  bind('#d-date','date',()=>{c.id=c.id.startsWith('n')?c.id:c.id});bind('#d-type','type');bind('#d-service','service');bind('#d-sub','subtitle');bind('#d-theme','theme');
+  bind('#d-date','date',()=>{c.id=c.id.startsWith('n')?c.id:c.id});bind('#d-type','type',()=>{if(isStdType(c.type)||!c.service)c.service='찬양';renderContiDetail()});bind('#d-service','service');bind('#d-sub','subtitle');bind('#d-theme','theme');
   const touch=()=>{saveSoon();$('#d-saved').textContent='저장됨';renderContiList()};
   const sb=$('#d-songs');sb.innerHTML='';
   songsOf(c).forEach((g,i)=>{
@@ -193,7 +240,7 @@ function renderContiDetail(){
   $('#d-add').onclick=openPicker;$('#d-print').onclick=()=>openPrint(c);
   $('#d-copy').onclick=()=>copyContiText(c);
   $('#d-dup').onclick=()=>{const n=JSON.parse(JSON.stringify(c));n.id='n'+Date.now();n.date=todayStr();contis().push(n);C.sel=n;C.jump=true;saveSoon();renderContiList();renderContiDetail()};
-  $('#d-del').onclick=()=>{if(!confirm(`${c.date} ${c.service} 콘티를 삭제할까요?\n(휴지통에 30일 동안 보관되며 복원할 수 있습니다)`))return;trash().push(Object.assign({},c,{deletedAt:new Date().toISOString()}));fsx.db.contis=contis().filter(x=>x!==c);C.sel=null;saveSoon();renderContiList();renderContiDetail()};
+  $('#d-del').onclick=()=>{if(!confirm(`${c.date} ${svcLabel(c)} 콘티를 삭제할까요?\n(휴지통에 30일 동안 보관되며 복원할 수 있습니다)`))return;trash().push(Object.assign({},c,{deletedAt:new Date().toISOString()}));fsx.db.contis=contis().filter(x=>x!==c);C.sel=null;saveSoon();renderContiList();renderContiDetail()};
 }
 
 /* --- 곡 추가 (악보함에서) --- */
@@ -317,7 +364,7 @@ const blobOf=(cv,q=0.92)=>new Promise(r=>cv.toBlob(r,'image/jpeg',q));
 
 /* --- 인쇄 대화상자 --- */
 const P={c:null,lay:null,timer:0,busy:false};
-function defaultHeader(c){const [y,m,d]=c.date.split('-');return `${y}년 ${+m}월 ${+d}일 ${c.service}${c.subtitle?' - '+c.subtitle:''}`}
+function defaultHeader(c){const [y,m,d]=c.date.split('-');return `${y}년 ${+m}월 ${+d}일 ${svcLabel(c)}${c.subtitle?' '+c.subtitle:''}${c.theme?' 주제: '+c.theme:''}`}
 function syncPControls(){  // 설정 칸을 이 콘티의 설정(또는 곡 수 프리셋)으로 채움
   const p=prefs();P.pk=presetKey(P.c);
   $('#p-paper').value=p.paper;$('#p-mode').value=p.mode;$('#p-order').value=p.order;
@@ -334,7 +381,7 @@ function openPrint(c){
   for(const g of songsOf(c)){if(g.refrain&&!g.crop&&!g.autoRef){g.crop={top:0.6,bottom:1};g.label=g.label||`[${g.title} (후렴)]`;g.autoRef=true}if(g.print===undefined)g.print=!g.special}
   if(!c.headerCustom)c.header=defaultHeader(c);
   $('#p-header').value=c.header;syncPControls();
-  $('#ptitle').textContent=`인쇄 · JPG — ${c.date} ${c.service}`;
+  $('#ptitle').textContent=`인쇄 · JPG — ${c.date} ${svcLabel(c)}`;
   $('#pdlg').classList.add('on');renderPSongs();refreshPreview();
 }
 $('#pclose').onclick=()=>{$('#pdlg').classList.remove('on');saveSoon();renderContiDetail()};

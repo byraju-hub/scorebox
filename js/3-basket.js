@@ -24,7 +24,7 @@ function basketRender(){
 $('#bkclear2').onclick=$('#bkclear').onclick=()=>{if(!basket().length||!confirm('콘티 바구니를 비울까요?'))return;fsx.db.basket=[];saveSoon();basketRender();render()};
 $('#bknew').onclick=()=>{
   const b=basket();if(!b.length)return;
-  const c={id:'n'+Date.now(),date:todayStr(),type:'금요기도회',service:'금요기도회 찬양',subtitle:'',theme:'',songs:b.map(id=>songFromItem({id,...fsx.db.scores[id]})),notes:''};
+  const c={id:'n'+Date.now(),date:todayStr(),type:'금요기도회',service:'찬양',subtitle:'',theme:'',songs:b.map(id=>songFromItem({id,...fsx.db.scores[id]})),notes:''};
   contis().push(c);C.sel=c;C.jump=true;
   if(confirm(`바구니의 ${b.length}곡으로 새 콘티를 만들었습니다.\n바구니를 비울까요?`))fsx.db.basket=[];
   saveSoon();basketRender();render();renderContiList();renderContiDetail();
