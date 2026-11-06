@@ -72,7 +72,7 @@ html.rm .hero-side,html:not(.js) .hero-side{bottom:48px}
 /* generic section */
 .sec{padding:clamp(120px,14vw,220px) var(--m)}
 .sec h2{font-size:var(--s-head);max-width:16ch}
-.sec .lead{font-size:var(--s-lead);line-height:1.35;max-width:34ch;margin-top:28px}
+.sec .lead{font-size:var(--s-lead);line-height:1.35;max-width:none;margin-top:28px}
 .sec .sub{max-width:52ch;margin-top:24px}
 
 /* reveal */
@@ -124,7 +124,7 @@ html.rm .hero-side,html:not(.js) .hero-side{bottom:48px}
 .sheet .empty{color:var(--am);font-size:14px;padding:18px 0}
 .sheet .acts{display:flex;gap:8px;flex-wrap:wrap}
 .sheet .tip{color:var(--am);font-size:14px;margin-top:10px;min-height:20px}
-.builder-note{margin-top:28px;max-width:60ch;color:var(--ink)}
+.builder-note{margin-top:28px;max-width:none;color:var(--ink)}
 
 /* how it works (pinned fragment) */
 .how{padding-left:var(--m);padding-right:var(--m);display:grid;grid-template-columns:repeat(12,1fr);column-gap:24px}
@@ -134,7 +134,7 @@ html.rm .hero-side,html:not(.js) .hero-side{bottom:48px}
 .step{min-height:80vh;display:flex;flex-direction:column;justify-content:center;color:var(--muted);transition:color .4s}
 .step.on{color:var(--ink)}
 .step h3{font-size:clamp(1.625rem,1.2rem + 1.4vw,2.25rem);line-height:1.2;letter-spacing:-.025em}
-.step p{margin-top:14px;font-size:1.0625rem;max-width:44ch;color:var(--ink)}
+.step p{margin-top:14px;font-size:1.0625rem;max-width:none;color:var(--ink)}
 .stage-col{grid-column:7/13;grid-row:2;align-self:start;position:sticky;top:12vh;height:max-content;padding-top:0}
 .stage{background:var(--surface2);padding:32px;aspect-ratio:1/1;max-width:640px;width:100%;margin-left:auto;display:grid;place-items:center;position:relative}
 .stage [data-ui]{background:none;width:100%;position:absolute;left:32px;right:32px;width:auto;top:50%;transform:translateY(-50%) scale(.98);opacity:0;pointer-events:none;transition:opacity .5s var(--ease),transform .5s var(--ease);padding:0}
@@ -322,7 +322,7 @@ html.rm .hero-side,html:not(.js) .hero-side{bottom:48px}
 <section class="sec make" id="make" aria-labelledby="make-h">
   <div class="make-head">
     <h2 id="make-h" class="rv">이번 주 콘티,<br>곡만 눌러 보세요.</h2>
-    <p class="lead rv" style="--d:1">실제 ScoreBox와 같은 방식입니다. 악보를 누르면 콘티에 담기고, 한 번에 카톡용 글로 복사됩니다.</p>
+    <p class="lead rv" style="--d:1">실제 ScoreBox와 같은 방식입니다.<br>악보를 누르면 콘티에 담기고,<br>한 번에 카톡용 글로 복사됩니다.</p>
   </div>
 
   <div class="app rv" style="--d:2" id="app" aria-label="콘티 만들기 체험">
@@ -358,11 +358,11 @@ html.rm .hero-side,html:not(.js) .hero-side{bottom:48px}
     </div>
     <div class="step" data-state="1">
       <h3>곡을 고르면 콘티가 됩니다.</h3>
-      <p>날짜와 예배를 정하고, 곡 순서와 쓸 악보를 고르세요. 지난 콘티는 통계로 모아 보여 줍니다.</p>
+      <p>날짜와 예배를 정하고, 곡 순서와 쓸 악보를 고르세요.<br>지난 콘티는 통계로 모아 보여 줍니다.</p>
     </div>
     <div class="step" data-state="2">
       <h3>인쇄하거나, 단톡방에 올리세요.</h3>
-      <p>A3·B4·A4, 한 면에 1~3칸. 악보를 자르고 크기를 맞춰 바로 인쇄하거나 JPG로 저장합니다.</p>
+      <p>A3·B4·A4, 한 면에 1~3칸 설정 가능하고, 악보를 자르고<br>크기를 맞춰 바로 인쇄하거나 JPG로 저장합니다.</p>
     </div>
     <div class="how-end"></div>
   </div>
