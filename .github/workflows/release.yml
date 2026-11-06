@@ -25,7 +25,7 @@ jobs:
       - name: ZIP 만들기 (앱 파일만, 테스트·개발용 파일 제외)
         run: |
           mkdir -p dist/ScoreBox
-          cp -r scorebox.html css js fonts README.md GUIDE.md dist/ScoreBox/
+          cp -r scorebox.html css js fonts README.md GUIDE.md LICENSE dist/ScoreBox/
           cd dist && zip -qr "ScoreBox-${TAG}.zip" ScoreBox
           unzip -l "ScoreBox-${TAG}.zip"
       - name: 릴리즈에 붙이기
