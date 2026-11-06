@@ -401,6 +401,7 @@ await test('예배 · 구분: (예배) (구분) 표기에 중복 없음, 머리�
     out.header = defaultHeader(nw);
     out.text = contiText(nw).split('\n')[1];
     out.guess = fsx.db.contis.slice(0, 5).map(c => { const g = guessFmt(c); return g.type + '|' + g.service });
+    out.guess2 = [mk('g1', '금요기도회', '금요기도회 설교 후 기도회'), mk('g2', '은혜로기도회', '은혜로기도회 설교 후 기도회'), mk('g3', '특별', '소그룹모임')].map(c => { const g = guessFmt(c); return g.type + '|' + g.service });
     out.types = [...document.querySelectorAll('#ctype option')].map(o => o.textContent).join(',');
     setMode('conti'); C.sel = nw; renderContiList(); renderContiDetail();
     out.std = { ro: $('#d-service').readOnly, v: $('#d-service').value };
@@ -417,8 +418,9 @@ await test('예배 · 구분: (예배) (구분) 표기에 중복 없음, 머리�
   ok(r.label.join() === '금요기도회 찬양,주일 1부,금요기도회 설교 후 찬양,특별 찬양,주일 찬양,주일오전예배 찬양', `표기 ${r.label}`);
   ok(r.header === '2026년 10월 16일 주일오전예배 찬양 감사 주제: 은혜', `머리글 ${r.header}`);
   ok(r.text === '10/16 주일오전예배 찬양입니다.', `텍스트 복사 ${r.text}`);
-  ok(r.types === '모든 예배,주일오전예배,주일오후예배,수요예배,금요기도회,은혜로기도회,특별집회,기타', `예배 목록 ${r.types}`);
+  ok(r.types === '모든 예배,주일오전예배,주일오후예배,수요예배,금요기도회,금요기도회 설교 후 기도회,은혜로기도회,은혜로기도회 설교 후 기도회,소그룹모임,특별집회,기타', `예배 목록 ${r.types}`);
   ok(r.guess.join() === '금요기도회|찬양,기타|주일 1부,기타|금요기도회 설교 후 찬양,특별집회|찬양,주일오전예배|찬양', `추측 ${r.guess}`);
+  ok(r.guess2.join() === '금요기도회 설교 후 기도회|찬양,은혜로기도회 설교 후 기도회|찬양,소그룹모임|찬양', `새 예배 추측 ${r.guess2}`);
   ok(r.std.ro && r.std.v === '찬양', `기타가 아닐 때 구분 ${JSON.stringify(r.std)}`);
   ok(!r.etc.ro && r.etc.v === '찬양' && r.etc.type === '기타', `기타일 때 구분 ${JSON.stringify(r.etc)}`);
   ok(r.badge === '5개' && r.rows === 5, `정리 대상 ${r.badge}/${r.rows}`);

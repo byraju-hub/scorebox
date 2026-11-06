@@ -1,7 +1,7 @@
 /* Raju's ScoreBox — 콘티: 목록 · 편집 · 곡 추가 · 인쇄 레이아웃 · 자르기 · JPG */
 /* ================= 콘티 (목록 · 편집 · 인쇄 · JPG) ================= */
 /* 예배(종류) · 구분: 예배가 '기타'가 아니면 구분은 '찬양'. 화면·인쇄 머리글·텍스트 복사에는 (예배) (구분) 으로 나옴 */
-const TYPES=['주일오전예배','주일오후예배','수요예배','금요기도회','은혜로기도회','특별집회','기타'];
+const TYPES=['주일오전예배','주일오후예배','수요예배','금요기도회','금요기도회 설교 후 기도회','은혜로기도회','은혜로기도회 설교 후 기도회','소그룹모임','특별집회','기타'];
 const isStdType=t=>TYPES.includes(t)&&t!=='기타';
 const svcLabel=c=>{
   const sv=String(c.service||'').trim();
@@ -161,14 +161,17 @@ const needsFmt=c=>!TYPES.includes(c.type)||(isStdType(c.type)&&String(c.service|
 const fmtItems=()=>[...contis(),...trash()].filter(needsFmt).sort((a,b)=>b.date.localeCompare(a.date));
 function guessFmt(c){   // 예전 '종류 + 예배 이름' → 새 '예배 + 구분' 추측 (확인 후 적용)
   const old=String(c.service||'').trim(),t=String(c.type||'');let type='기타';
-  if(TYPES.includes(t)&&t!=='기타')type=t;
+  const named=TYPES.filter(isStdType).sort((a,b)=>b.length-a.length).find(x=>old.startsWith(x));   // 이름이 새 예배 이름으로 시작하면 그대로 (예: 금요기도회 설교 후 기도회)
+  if(named)type=named;
+  else if(TYPES.includes(t)&&t!=='기타')type=t;
+  else if(/소그룹/.test(old))type='소그룹모임';
   else if(/수요/.test(old))type='수요예배';
   else if(t==='금요기도회'||/금요/.test(old))type='금요기도회';
   else if(t==='은혜로기도회'||/은혜로/.test(old))type='은혜로기도회';
   else if(t==='주일'||/주일/.test(old))type=/오후|3부|저녁/.test(old)?'주일오후예배':'주일오전예배';
   else if(t==='특별'||/특별|집회/.test(old))type='특별집회';
   if(type==='기타')return {type,service:old||'찬양'};
-  const rest=old.replace(/^(주일오전예배|주일오후예배|수요예배|수요기도회|금요기도회|은혜로기도회|특별집회|주일|수요|특별)\s*/,'').trim();
+  const rest=old.replace(/^(금요기도회 설교 후 기도회|은혜로기도회 설교 후 기도회|주일오전예배|주일오후예배|수요예배|수요기도회|금요기도회|은혜로기도회|소그룹모임|특별집회|주일|수요|특별)\s*/,'').trim();
   return rest===''||rest==='찬양'?{type,service:'찬양'}:{type:'기타',service:old};   // 그 밖의 이름은 사라지지 않게 기타 + 예전 이름
 }
 function fmtBadge(){const n=fmtItems().length;$('#cfn').textContent=n?`${n}개`:''}
