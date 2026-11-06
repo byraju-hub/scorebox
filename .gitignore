@@ -4,3 +4,4 @@ backup/
 node_modules/
 tests/output/
 tests/node_modules
+.taste-skill/
