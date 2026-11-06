@@ -268,3 +268,5 @@ button:focus-visible,.chip:focus-visible,select:focus-visible,input:focus-visibl
 @media(prefers-color-scheme:dark){:root{--s5:#9577e8;--s6:#e060ac;--s7:#8d98aa}}
 #cfmt.tool{border-left-color:#0d9488}#cfmt.tool:hover{background:#0d9488;color:#fff}
 #fmtdlg{width:min(760px,96vw);height:70vh;padding:14px;flex-direction:column}#fmtdlg[open]{display:flex}#fmtres{overflow:auto;flex:1;margin-top:8px}
+:root{--s8:#1296ad;--s9:#9a6b3f;--s10:#7aa51f}
+@media(prefers-color-scheme:dark){:root{--s8:#2fb0c7;--s9:#b8855a;--s10:#98c23a}}
