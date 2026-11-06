@@ -73,7 +73,7 @@ function hbars(rows,{unit='회',detail=false,lw=0}={}){
       let open=null;const toggle=()=>{
         if(open){open.remove();open=null;return}
         open=el('div','hd');open.append(el('span','',`사용한 콘티 ${r.cs.length}개 :`));
-        r.cs.slice(0,12).forEach(c=>{const b=el('button','',`${fmtDate(c.date)} ${c.date.slice(0,4)} · ${c.service.replace(/\s*찬양$/,'')}`);b.onclick=()=>gotoConti(c.id);open.append(b)});
+        r.cs.slice(0,12).forEach(c=>{const b=el('button','',`${fmtDate(c.date)} ${c.date.slice(0,4)} · ${svcLabel(c).replace(/\s*찬양$/,'')}`);b.onclick=()=>gotoConti(c.id);open.append(b)});
         if(r.cs.length>12)open.append(el('span','',`… 외 ${r.cs.length-12}개`));row.after(open);
       };
       row.addEventListener('click',toggle);row.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}});
@@ -98,7 +98,7 @@ function columns(items,{unit='개'}={}){
   box.append(cols);return box;
 }
 /* --- 누적 막대 (예배 종류 비율: 슬롯 1~4 고정 색, 조각 사이 2px 간격) --- */
-const TYPE_COLOR={'주일':'--s1','금요기도회':'--s2','은혜로기도회':'--s3','특별':'--s4'};
+const TYPE_COLOR={'주일오전예배':'--s1','주일오후예배':'--s5','수요예배':'--s6','금요기도회':'--s2','은혜로기도회':'--s3','특별집회':'--s4','기타':'--s7'};
 function lumOf(rgb){const m=rgb.match(/\d+/g).map(Number),f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)};return .2126*f(m[0])+.7152*f(m[1])+.0722*f(m[2])}
 function stacked(rows,{unit='개'}={}){
   const wrap=el('div'),total=rows.reduce((a,r)=>a+r.value,0),bar=el('div','sb'),lg=el('div','lg');
@@ -142,7 +142,7 @@ function renderStats(){
     while(yy<ey||(yy===ey&&mm<=em)){const k=`${yy}-${String(mm).padStart(2,'0')}`;items.push({label:`${String(yy).slice(2)}.${String(mm).padStart(2,'0')}`,value:byMonth.get(k)||0,tip:`${yy}년 ${mm}월`});mm++;if(mm>12){mm=1;yy++}}}}
   grid.append(card('time',tl,span>24?'기간이 길어 연도별로 묶었습니다.':'콘티를 만든 날짜 기준입니다.',columns(items),['기간','콘티 수'],items.map(i=>[i.tip,i.value]),{numCols:[1]}));
   // ③ 예배 종류 비율
-  const tc={'주일':0,'금요기도회':0,'은혜로기도회':0,'특별':0};for(const c of cs)tc[c.type]=(tc[c.type]||0)+1;
+  const tc=Object.fromEntries(TYPES.map(k=>[k,0]));for(const c of cs)tc[c.type]=(tc[c.type]||0)+1;
   const trows=Object.keys(tc).map(k=>({label:k,value:tc[k]}));
   grid.append(card('type','예배 종류 비율','콘티 수 기준입니다.',stacked(trows),['예배 종류','콘티 수','비율'],trows.map(r=>[r.label,r.value,cs.length?Math.round(r.value/cs.length*100)+'%':'-']),{numCols:[1,2]}));
   // ④ 코드 분포 / ⑤ 빠르기 분포

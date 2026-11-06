@@ -26,7 +26,8 @@
       <button class="tool" id="cnew"><span class="ti">＋</span>새 콘티</button>
       <button class="tool" id="statbtn"><span class="ti">📊</span>콘티 통계</button>
       <button class="tool" id="cimp" title="contis.json 같은 콘티 파일을 불러옵니다"><span class="ti">📥</span>콘티 가져오기</button>
-      <button class="tool" id="ctrash" title="삭제한 콘티는 30일 동안 휴지통에 보관됩니다"><span class="ti">🗑</span>콘티 휴지통 <small id="ctn" style="margin-left:auto;color:var(--mut)"></small></button></div>
+      <button class="tool" id="ctrash" title="삭제한 콘티는 30일 동안 휴지통에 보관됩니다"><span class="ti">🗑</span>콘티 휴지통 <small id="ctn" style="margin-left:auto;color:var(--mut)"></small></button>
+      <button class="tool" id="cfmt" title="예전 콘티를 (예배)(구분) 양식에 맞게 정리합니다"><span class="ti">📝</span>예배 양식 정리 <small id="cfn" style="margin-left:auto;color:var(--mut)"></small></button></div>
     <div id="basketbox"><h3 class="sec" style="--sc:#f08c00;--sb:#f08c0033;margin-top:18px"><span class="si">🧺</span>콘티 바구니 <span class="n" id="bkn" style="margin-left:auto;background:#f08c00;color:#fff;border-radius:10px;padding:0 8px;font-size:12px">0</span></h3><div id="bklist"></div>
       <div style="display:flex;flex-direction:column;gap:6px"><button class="obtn" id="bknew">＋ 바구니로 새 콘티 만들기</button><button id="bkclear">바구니 비우기</button></div>
       <p style="color:var(--mut);font-size:11px;margin:6px 0 0">악보함에서 악보를 열고 “🧺 콘티 바구니에 담기”를 누르세요. 콘티에서 곡을 추가할 때 바구니의 곡이 먼저 나옵니다.</p></div>
@@ -91,7 +92,7 @@
   <div id="cl">
     <div class="tools">
       <input type="search" id="cq" placeholder="곡 제목 · 날짜 · 예배 검색">
-      <div class="row"><select id="ctype"><option value="">모든 예배</option><option>주일</option><option>금요기도회</option><option>은혜로기도회</option><option>특별</option></select>
+      <div class="row"><select id="ctype"><option value="">모든 예배</option></select>
         <select id="cyear"><option value="">모든 연도</option></select>
         <span id="ccnt" style="color:var(--mut);align-self:center"></span></div>
       <input type="file" id="cimpf" accept=".json" style="display:none">
@@ -107,7 +108,7 @@
 <div id="statdlg">
   <div class="top"><b style="font-size:15px">📊 콘티 통계</b><span style="flex:1"></span>
     <label>기간 <select id="st-period"><option value="all">전체 기간</option><option value="year">올해</option><option value="lastyear">작년</option><option value="12">최근 12개월</option><option value="6">최근 6개월</option><option value="3">최근 3개월</option><option value="1">최근 1개월</option></select></label>
-    <label>예배 <select id="st-type"><option value="">모든 예배</option><option>주일</option><option>금요기도회</option><option>은혜로기도회</option><option>특별</option></select></label>
+    <label>예배 <select id="st-type"><option value="">모든 예배</option></select></label>
     <label><input type="checkbox" id="st-skip" checked> 입례·영접송·축복송 제외</label>
     <button id="statclose">닫기</button></div>
   <div id="statbody"></div>
@@ -205,6 +206,9 @@
   <div class="fr"><label>크기 <input type="range" id="crsc" min="30" max="150" step="5" value="100"> <span id="crscv"></span></label><small style="color:var(--mut)">100% = 칸 너비에 맞춤 · 작게는 가운데 정렬, 크게는 가운데 기준으로 좌우가 잘림</small></div>
   <div class="fr"><button id="crok" class="p">적용</button><button id="crreset">전체 사용</button><button id="crcancel">취소</button></div>
   </div><div id="crright"><div style="font-size:12px;color:var(--mut);margin-bottom:4px">인쇄 미리보기 (칸 1개)</div><div id="crprev"></div><div id="crinfo"></div></div></div></dialog>
+<dialog id="fmtdlg"><div class="fr"><b style="flex:1">📝 예배 양식 정리 <small style="color:var(--mut);font-weight:400">예전 콘티를 (예배) (구분) 양식으로 바꿉니다</small></b><button id="fmtapply" class="p">선택한 콘티 바꾸기</button><button id="fmtclose">닫기</button></div>
+  <p style="color:var(--mut);font-size:12px;margin:6px 0 0">예배를 고르면 구분은 <b>찬양</b>이 됩니다. <b>기타</b>는 구분을 직접 쓸 수 있고, 예전 이름(예: 설교 후 찬양)이 그대로 남도록 기타로 제안한 곳도 있습니다. 바꾸기 전에 확인하고, 고치고 싶은 줄은 직접 고르세요. (🗂 백업을 먼저 해 두면 안전합니다)</p>
+  <div id="fmtres"></div></dialog>
 <dialog id="trdlg"><div class="fr"><b style="flex:1">🗑 휴지통 <small style="color:var(--mut);font-weight:400">삭제한 콘티는 30일 동안 보관된 뒤 자동으로 완전히 삭제됩니다</small></b><button id="trempty">휴지통 비우기</button><button id="trclose">닫기</button></div>
   <div id="trres"></div></dialog>
 <dialog id="pickdlg"><div class="fr"><input type="search" id="pkq" placeholder="악보함에서 곡 찾기" style="flex:1"><select id="pksort"><option value="name">이름순</option><option value="old">오래 안 쓴 순</option><option value="most">많이 쓴 순</option></select><button id="pkclose">닫기</button></div>

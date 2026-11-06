@@ -390,6 +390,44 @@ await test('악보함 도구 모음: 자주 쓰는 5개만 보이고, 나머지�
   await ctx.close();
 });
 
+await test('예배 · 구분: (예배) (구분) 표기에 중복 없음, 머리글에 부제·주제, 예전 콘티 양식 맞추기', async () => {
+  const { ctx, page, errors } = await setup({ 'G-a.png': {} });
+  const r = await page.evaluate(async () => {
+    const mk = (id, type, service, extra = {}) => ({ id, date: '2026-10-16', type, service, subtitle: '', theme: '', songs: [], ...extra });
+    const nw = mk('n1', '주일오전예배', '찬양', { subtitle: '감사', theme: '은혜' });
+    fsx.db.contis = [mk('a', '금요기도회', '금요기도회 찬양'), mk('b', '주일', '주일 1부'), mk('c', '금요기도회', '금요기도회 설교 후 찬양'), mk('d', '특별', '특별 찬양'), mk('e', '주일', '주일 찬양'), nw];
+    const out = {};
+    out.label = fsx.db.contis.map(svcLabel);
+    out.header = defaultHeader(nw);
+    out.text = contiText(nw).split('\n')[1];
+    out.guess = fsx.db.contis.slice(0, 5).map(c => { const g = guessFmt(c); return g.type + '|' + g.service });
+    out.types = [...document.querySelectorAll('#ctype option')].map(o => o.textContent).join(',');
+    setMode('conti'); C.sel = nw; renderContiList(); renderContiDetail();
+    out.std = { ro: $('#d-service').readOnly, v: $('#d-service').value };
+    const sel = $('#d-type'); sel.value = '기타'; sel.dispatchEvent(new Event('change'));
+    out.etc = { ro: $('#d-service').readOnly, v: $('#d-service').value, type: nw.type };
+    nw.type = '주일오전예배'; nw.service = '찬양';
+    out.badge = $('#cfn').textContent;
+    $('#cfmt').click(); await new Promise(r => setTimeout(r, 100)); out.rows = document.querySelectorAll('#fmtres .tri').length;
+    $('#fmtapply').click(); await new Promise(r => setTimeout(r, 100));
+    out.after = fsx.db.contis.slice(0, 5).map(c => c.type + '|' + c.service + '|' + svcLabel(c));
+    out.left = fmtItems().length;
+    return out;
+  });
+  ok(r.label.join() === '금요기도회 찬양,주일 1부,금요기도회 설교 후 찬양,특별 찬양,주일 찬양,주일오전예배 찬양', `표기 ${r.label}`);
+  ok(r.header === '2026년 10월 16일 주일오전예배 찬양 감사 주제: 은혜', `머리글 ${r.header}`);
+  ok(r.text === '10/16 주일오전예배 찬양입니다.', `텍스트 복사 ${r.text}`);
+  ok(r.types === '모든 예배,주일오전예배,주일오후예배,수요예배,금요기도회,은혜로기도회,특별집회,기타', `예배 목록 ${r.types}`);
+  ok(r.guess.join() === '금요기도회|찬양,기타|주일 1부,기타|금요기도회 설교 후 찬양,특별집회|찬양,주일오전예배|찬양', `추측 ${r.guess}`);
+  ok(r.std.ro && r.std.v === '찬양', `기타가 아닐 때 구분 ${JSON.stringify(r.std)}`);
+  ok(!r.etc.ro && r.etc.v === '찬양' && r.etc.type === '기타', `기타일 때 구분 ${JSON.stringify(r.etc)}`);
+  ok(r.badge === '5개' && r.rows === 5, `정리 대상 ${r.badge}/${r.rows}`);
+  ok(r.after.join() === '금요기도회|찬양|금요기도회 찬양,기타|주일 1부|주일 1부,기타|금요기도회 설교 후 찬양|금요기도회 설교 후 찬양,특별집회|찬양|특별집회 찬양,주일오전예배|찬양|주일오전예배 찬양', `적용 결과 ${r.after}`);
+  ok(r.left === 0, `정리 후 남은 대상 ${r.left}`);
+  ok(!errors.length, errors.join());
+  await ctx.close();
+});
+
 await test('콘티 휴지통: 삭제 → 휴지통 → 복원, 30일 지난 콘티는 자동 삭제', async () => {
   const { ctx, page, errors } = await setup({});
   const r = await page.evaluate(async () => {
