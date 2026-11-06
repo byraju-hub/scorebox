@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Raju's ScoreBox — 예배인도자를 위한 무료 악보 정리·콘티 도구</title>
+<meta name="theme-color" content="#133621">
+<meta property="og:title" content="Raju's ScoreBox — 예배인도자를 위한 콘티 제작 도구">
+<meta property="og:description" content="악보는 내 PC에 정리하고, 찬양 콘티는 한 번에 만들어 인쇄하거나 JPG로 저장하세요. 설치도 회원 가입도 없는 무료 도구입니다.">
+<meta property="og:type" content="website">
 <meta name="description" content="악보는 내 PC에 정리하고, 찬양 콘티는 한 번에 만들어 인쇄하거나 JPG로 저장하세요. 설치도 회원 가입도 없는 무료 도구입니다.">
 <link rel="icon" type="image/svg+xml" href="assets/scorebox-icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,7 +25,10 @@
   --ease:cubic-bezier(.2,.7,.2,1);
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;color-scheme:dark;scrollbar-color:#3a6a4a var(--bg)}
+section[id]{scroll-margin-top:64px}
+h1,h2,h3{text-wrap:balance}
+p{text-wrap:pretty}
 body{margin:0;background:var(--bg);color:var(--ink);font:400 var(--s-body)/1.55 var(--font);-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word}
 img{display:block;max-width:100%}
 a{color:inherit}
@@ -61,7 +68,6 @@ html:not(.js) .hero-pic::after,html.rm .hero-pic::after{opacity:1}
 html.rm .hero-text,html.rm .hero-side,html:not(.js) .hero-text,html:not(.js) .hero-side{width:auto}
 html.rm .hero-text,html:not(.js) .hero-text{bottom:48px}
 html.rm .hero-side,html:not(.js) .hero-side{bottom:48px}
-.hero-hint{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);font-size:var(--s-small);color:var(--muted);transition:opacity .3s}
 
 /* generic section */
 .sec{padding:clamp(120px,14vw,220px) var(--m)}
@@ -132,7 +138,7 @@ html.rm .hero-side,html:not(.js) .hero-side{bottom:48px}
 .stage-col{grid-column:7/13;grid-row:2;align-self:start;position:sticky;top:12vh;height:max-content;padding-top:0}
 .stage{background:var(--surface2);padding:32px;aspect-ratio:1/1;max-width:640px;width:100%;margin-left:auto;display:grid;place-items:center;position:relative}
 .stage [data-ui]{background:none;width:100%;position:absolute;left:32px;right:32px;width:auto;top:50%;transform:translateY(-50%) scale(.98);opacity:0;pointer-events:none;transition:opacity .5s var(--ease),transform .5s var(--ease);padding:0}
-.stage [data-ui] img{width:100%;aspect-ratio:4/3;object-fit:cover;object-position:left top}
+.stage [data-ui] img{width:100%;height:auto;display:block}
 .stage [data-ui].on{opacity:1;transform:translateY(-50%);pointer-events:auto}
 .how-end{height:12vh}
 .stepui{display:none}
@@ -226,7 +232,6 @@ html.rm .hero-side,html:not(.js) .hero-side{bottom:48px}
   .hero-side{left:var(--m);right:var(--m);bottom:24px;width:auto}
   .hero-side p{font-size:1rem;max-width:none}
   .hero-side .btn{width:100%}
-  .hero-hint{display:none}
   html.rm .hero-text,html:not(.js) .hero-text{top:auto;bottom:210px}
   .make-head h2,.make-head .lead{grid-column:1/13}
   .make-head .lead{margin-top:20px}
@@ -307,10 +312,9 @@ html.rm .hero-side,html:not(.js) .hero-side{bottom:48px}
       <h1>악보는 한 곳에,<br>콘티는 한 번에.</h1>
     </div>
     <div class="hero-side" id="heroSide">
-      <p>예배인도자를 위한 무료 악보 정리·콘티 도구. PC의 Chrome에서 바로 열립니다.</p>
+      <p>예배인도자를 위한 무료 악보 정리·콘티 도구. PC의 Chrome 브라우저(Edge도 가능)에서 바로 열립니다.</p>
       <a class="btn" href="https://github.com/byraju-hub/scorebox/releases/latest" target="_blank" rel="noopener noreferrer">다운로드(무료)</a>
     </div>
-    <div class="hero-hint" id="heroHint" aria-hidden="true">스크롤하면 사진이 열립니다</div>
   </div>
 </section>
 
@@ -364,9 +368,9 @@ html.rm .hero-side,html:not(.js) .hero-side{bottom:48px}
   </div>
   <div class="stage-col">
     <div class="stage" aria-hidden="true">
-      <div data-ui class="on" id="st0"><img src="assets/shot-library.jpg" width="1600" height="1213" alt="ScoreBox 악보함 화면. 악보가 카드로 정렬되어 있고 악보 그림은 흐리게 처리했습니다"></div>
-      <div data-ui id="st1"><img src="assets/shot-conti.jpg" width="1600" height="1212" alt="ScoreBox 콘티 화면. 왼쪽에 콘티 목록, 오른쪽에 곡 순서가 있습니다"></div>
-      <div data-ui id="st2"><img src="assets/shot-print.jpg" width="1600" height="954" alt="ScoreBox 인쇄·JPG 화면. 용지와 배치 설정, 악보 배치 미리보기(흐리게 처리)"></div>
+      <div data-ui class="on" id="st0"><img src="assets/shot-s0.jpg" width="800" height="576" alt="ScoreBox 악보함 화면. 악보가 카드로 정렬되어 있고 악보 그림은 흐리게 처리했습니다"></div>
+      <div data-ui id="st1"><img src="assets/shot-s1.jpg" width="800" height="448" alt="ScoreBox 콘티 화면. 왼쪽에 콘티 목록, 오른쪽에 곡 순서가 있습니다"></div>
+      <div data-ui id="st2"><img src="assets/shot-s2.jpg" width="880" height="624" alt="ScoreBox 인쇄·JPG 화면. 용지와 배치 설정, 악보 배치 미리보기(흐리게 처리)"></div>
     </div>
   </div>
 </section>
@@ -379,32 +383,32 @@ html.rm .hero-side,html:not(.js) .hero-side{bottom:48px}
       <div class="th"><h2 id="show-h">예배 준비에 필요한 것만.</h2></div>
 
       <article class="fc">
-        <div class="pic"><img src="assets/shot-library.jpg" width="1600" height="1213" alt="악보함 화면(악보 그림은 흐리게 처리)" loading="lazy" decoding="async"></div>
+        <div class="pic"><img src="assets/card-library.jpg" width="1040" height="568" alt="악보함 화면(악보 그림은 흐리게 처리)" loading="lazy" decoding="async"></div>
         <div class="cap"><h3>악보함</h3><p>코드·빠르기·카테고리로 찾고,<br>중복 곡도 한 번에 정리합니다.</p></div>
       </article>
 
       <article class="fc">
-        <div class="pic"><img src="assets/shot-conti.jpg" width="1600" height="1212" alt="콘티 작성 화면" loading="lazy" decoding="async"></div>
+        <div class="pic"><img src="assets/card-conti.jpg" width="1280" height="704" alt="콘티 작성 화면" loading="lazy" decoding="async"></div>
         <div class="cap"><h3>콘티</h3><p>날짜·예배별로 콘티 바구니를 통해<br>한 번에 콘티를 제작합니다.</p></div>
       </article>
 
       <article class="fc">
-        <div class="pic"><img src="assets/shot-print.jpg" width="1600" height="954" alt="인쇄·JPG 화면(악보 그림은 흐리게 처리)" loading="lazy" decoding="async"></div>
+        <div class="pic"><img src="assets/card-print.jpg" width="1200" height="656" alt="인쇄·JPG 화면(악보 그림은 흐리게 처리)" loading="lazy" decoding="async"></div>
         <div class="cap"><h3>인쇄 · JPG</h3><p>콘티에서 악보의 배치 및 구성을 하고<br>악보 크기를 자유롭게 조절하며<br>jpg 파일로 저장도 합니다.</p></div>
       </article>
 
       <article class="fc">
-        <div class="pic"><img src="assets/shot-stats.jpg" width="1600" height="1227" alt="콘티 통계 화면. 많이 쓴 곡 순위와 예배 종류 비율" loading="lazy" decoding="async"></div>
+        <div class="pic"><img src="assets/card-stats.jpg" width="1200" height="656" alt="콘티 통계 화면. 많이 쓴 곡 순위와 예배 종류 비율" loading="lazy" decoding="async"></div>
         <div class="cap"><h3>콘티 통계</h3><p>많이 사용한 곡과 사용하지 않은 곡,<br>예배별 비율 및<br>전체적인 통계를 살펴봅니다.</p></div>
       </article>
 
       <article class="fc">
-        <div class="pic"><img src="assets/shot-recommend.jpg" width="1245" height="1723" alt="찬양 추천 화면. 성경 본문을 고르면 어울리는 찬양 목록이 나옵니다" loading="lazy" decoding="async"></div>
+        <div class="pic"><img src="assets/card-recommend.jpg" width="1245" height="680" alt="찬양 추천 화면. 성경 본문을 고르면 어울리는 찬양 목록이 나옵니다" loading="lazy" decoding="async"></div>
         <div class="cap"><h3>찬양 추천</h3><p>성경 본문을 고르면<br>어울리는 찬양을 추천합니다.<br>(AI API Key가 필요합니다.)</p></div>
       </article>
 
       <article class="fc">
-        <div class="pic"><img src="assets/shot-backup.jpg" width="916" height="1422" alt="백업·복원 화면. 날짜별 백업 목록" loading="lazy" decoding="async"></div>
+        <div class="pic"><img src="assets/card-backup.jpg" width="916" height="500" alt="백업·복원 화면. 날짜별 백업 목록" loading="lazy" decoding="async"></div>
         <div class="cap"><h3>백업 · 복원</h3><p>하루 한 번 자동으로 백업하며,<br>클릭 한 번으로 복원됩니다.</p></div>
       </article>
     </div>
@@ -424,7 +428,7 @@ html.rm .hero-side,html:not(.js) .hero-side{bottom:48px}
   <img src="assets/photo-keys-hands.jpg" alt="신시사이저 건반 위에서 연주하는 손" width="1920" height="1282" loading="lazy" decoding="async">
   <div class="cta-text">
     <h2 id="cta-h" class="rv">이번 주 콘티,<br>여기서 시작하세요.</h2>
-    <p class="rv" style="--d:1">무료입니다. 설치도 회원 가입도 없이, 다운로드 후<br>Chrome 브라우저에서 열기만 하면 됩니다.</p>
+    <p class="rv" style="--d:1">무료입니다. 설치도 회원 가입도 없이, 다운로드 후<br>Chrome 브라우저(Edge도 가능)에서 열기만 하면 됩니다.</p>
     <a class="btn rv" style="--d:2" href="https://github.com/byraju-hub/scorebox/releases/latest" target="_blank" rel="noopener noreferrer">다운로드(무료)</a>
   </div>
 </section>
@@ -476,7 +480,7 @@ var clamp=function(v,a,b){return Math.min(b,Math.max(a,v))};
 })();
 
 /* ---- hero: window opens to the edges ---- */
-var hero=$('#hero'),pic=$('#heroPic'),ht=$('#heroText'),hs=$('#heroSide'),hint=$('#heroHint');
+var hero=$('#hero'),pic=$('#heroPic'),ht=$('#heroText'),hs=$('#heroSide');
 var start={t:126,r:461,b:126,l:461};
 function heroGeom(){
   var W=innerWidth,H=innerHeight,w,h,t;
@@ -498,8 +502,7 @@ function heroDraw(){
   var fade=clamp(1-p*2.6,0,1);
   ht.style.opacity=fade;hs.style.opacity=fade;
   ht.style.transform='translateY('+(-p*40)+'px)';hs.style.transform='translateY('+(-p*40)+'px)';
-  hint.style.opacity=clamp(1-p*6,0,1);
-  ht.style.pointerEvents=hs.style.pointerEvents=fade<.2?'none':'auto';
+    ht.style.pointerEvents=hs.style.pointerEvents=fade<.2?'none':'auto';
 }
 /* hero text positions use the picture's own CSS vars, so keep them fixed at the start geometry */
 (function(){
