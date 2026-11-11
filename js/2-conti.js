@@ -287,10 +287,11 @@ async function buildLayout(c,p){
     const cr=g.crop||{top:0,bottom:1},sy=im.h*cr.top,sh=im.h*(cr.bottom-cr.top),cl=cr.left||0,crr=cr.right==null?1:cr.right;
     let sxx=im.w*cl,sww=im.w*(crr-cl),shr=1;const zs=(cr.scale||100)/100;
     if(zs>1){const vis=sww/zs;sxx+=(sww-vis)/2;sww=vis}else shr=zs;
-    items.push({g,im,sy,sh,sx:sxx,sw:sww,shr,label:g.label||'',place:g.place||'auto',no:items.length+1});
+    const mv=g.move||{};
+    items.push({g,im,sy,sh,sx:sxx,sw:sww,shr,label:g.label||'',place:g.place||'auto',no:items.length+1,top:(+mv.top||0)*k,hx:(+mv.x||0)/100});   // top: 악보 위 여백(mm), hx: 가로 위치(-1 왼쪽 ~ 1 오른쪽)
   }
   const pw=(fw/per)-2*pad,ph=fh-2*pad,minS=p.minScale/100;
-  const hOf=it=>pw*it.shr*it.sh/it.sw+(it.label?labH:0);
+  const hOf=it=>pw*it.shr*it.sh/it.sw+(it.label?labH:0)+it.top;
   const panels=[],tots=[];let cur=-1;
   const put=(ix,it)=>{while(panels.length<=ix){panels.push([]);tots.push(0)}const h=hOf(it);tots[ix]=panels[ix].length?tots[ix]+gap+h:h;panels[ix].push(it);cur=ix};
   for(const it of items){
@@ -317,7 +318,8 @@ async function buildLayout(c,p){
     if(its.length&&sc<0.75)warns.push(`'${its[0].g.title}' 칸이 ${Math.round(sc*100)}%로 작게 축소됩니다`);
     let y=py;const out=[];
     for(const it of its){
-      const w=pw*sc*it.shr,h=(pw*it.shr*it.sh/it.sw)*sc,x=px+(pw-w)/2;
+      const w=pw*sc*it.shr,h=(pw*it.shr*it.sh/it.sw)*sc,x=px+(pw-w)/2*(1+it.hx);
+      y+=it.top*sc;
       if(it.label){out.push({kind:'label',text:it.label,x:px,y,w:pw,h:labH*sc});y+=labH*sc}
       out.push({kind:'img',im:it.im,sx:it.sx,sy:it.sy,sw:it.sw,sh:it.sh,x,y,w,h});
       if(p.numbers&&!it.g.noNum)out.push({kind:'num',text:`(${it.no})`,x:x+0.6*k,y:y+0.6*k});
@@ -403,7 +405,8 @@ function renderPSongs(){
   const box=$('#psongs');box.innerHTML='';
   songsOf(P.c).forEach((g,i)=>{
     const r=document.createElement('div');r.className='pr';
-    const crop=g.crop?`✂ ${Math.round(g.crop.top*100)}–${Math.round(g.crop.bottom*100)}%`+((g.crop.left||g.crop.right!=null&&g.crop.right<1)?` · ${Math.round((g.crop.left||0)*100)}–${Math.round((g.crop.right==null?1:g.crop.right)*100)}%`:'')+(g.crop.scale&&g.crop.scale!==100?` · ${g.crop.scale}%`:''):'✂ 자르기';
+    const mvTxt=g.move&&(g.move.top||g.move.x)?` ↕${g.move.top||0}mm`+(g.move.x?` ↔${g.move.x>0?'+':''}${g.move.x}`:''):'';
+    const crop=(g.crop?`✂ ${Math.round(g.crop.top*100)}–${Math.round(g.crop.bottom*100)}%`+((g.crop.left||g.crop.right!=null&&g.crop.right<1)?` · ${Math.round((g.crop.left||0)*100)}–${Math.round((g.crop.right==null?1:g.crop.right)*100)}%`:'')+(g.crop.scale&&g.crop.scale!==100?` · ${g.crop.scale}%`:''):'✂ 자르기')+mvTxt;
     r.innerHTML=`<label class="t"><input type="checkbox" ${g.print!==false?'checked':''}> ${i+1}. ${esc(g.title)}${g.refrain?' <small>(후렴)</small>':''}</label>
       <span class="fs"></span><button class="cr">${crop}</button><input class="lb" placeholder="빨간 라벨 예: [입례]" value="${esc(g.label||'')}">
       <select class="pl"><option value="auto">칸: 자동</option><option value="new">새 칸에서 시작</option><option value="same">위 곡과 같은 칸</option>${Array.from({length:panelOptMax()},(_,i)=>i+1).map(n=>`<option value="${n}">${n}번 칸에 넣기</option>`).join('')}</select>`;
@@ -437,7 +440,7 @@ let CRIM=null;
 async function openCrop(g){
   if(!g.file||!IMG_OK.test(g.file)){alert('이미지 악보만 자를 수 있습니다.');return}
   const im=await loadImg(g.file);if(!im)return;CR=g;CRIM=im;$('#crtitle').textContent=g.title;$('#crimg').src=im.url;
-  const c=g.crop||{top:0,bottom:1};$('#crtop').value=Math.round(c.top*100);$('#crbot').value=Math.round(c.bottom*100);$('#crlef').value=Math.round((c.left||0)*100);$('#crrig').value=Math.round((c.right==null?1:c.right)*100);$('#crsc').value=c.scale||100;crUpd();
+  const c=g.crop||{top:0,bottom:1};$('#crtop').value=Math.round(c.top*100);$('#crbot').value=Math.round(c.bottom*100);$('#crlef').value=Math.round((c.left||0)*100);$('#crrig').value=Math.round((c.right==null?1:c.right)*100);$('#crsc').value=c.scale||100;const mv=g.move||{};$('#crmt').value=mv.top||0;$('#crmx').value=mv.x||0;crUpd();
   $('#crdlg').showModal();
 }
 function crPrev(){
@@ -447,11 +450,12 @@ function crPrev(){
   const t=+$('#crtop').value/100,b=+$('#crbot').value/100,l=+$('#crlef').value/100,rr=+$('#crrig').value/100,zs=+$('#crsc').value/100;
   const im=CRIM;let sx=im.w*l,sw=im.w*(rr-l),sy=im.h*t,sh=im.h*(b-t),shr=1;
   if(zs>1){const vis=sw/zs;sx+=(sw-vis)/2;sw=vis}else shr=zs;
-  let dw=pw*shr,dh=pw*shr*sh/sw;const f=Math.min(1,ph/dh);dw*=f;dh*=f;
+  const mt=+$('#crmt').value*k,hx=+$('#crmx').value/100;
+  let dw=pw*shr,dh=pw*shr*sh/sw;const f=Math.min(1,ph/(dh+mt));dw*=f;dh*=f;const topPx=mt*f;
   const S=PX/pw;box.style.width=PX+'px';box.style.height=(ph*S)+'px';box.innerHTML='';
-  const e=document.createElement('div');e.className='cr';e.style.cssText=`left:${(pw-dw)/2*S}px;top:0;width:${dw*S}px;height:${dh*S}px`;
+  const e=document.createElement('div');e.className='cr';e.style.cssText=`left:${(pw-dw)/2*(1+hx)*S}px;top:${topPx*S}px;width:${dw*S}px;height:${dh*S}px`;
   const g=document.createElement('img');g.src=im.url;g.style.cssText=`width:${im.w/sw*dw*S}px;height:${im.h/sh*dh*S}px;left:${-sx/sw*dw*S}px;top:${-sy/sh*dh*S}px`;e.append(g);box.append(e);
-  $('#crinfo').innerHTML=`칸 너비의 <b>${Math.round(dw/pw*100)}%</b> · 칸 높이의 <b>${Math.round(dh/ph*100)}%</b> 차지`+(f<1?'<br>칸 높이를 넘어 자동으로 줄어든 크기입니다.':'')+`<br>(${p.paper} · ${p.mode==='1up'?'1칸':p.mode==='3up'?'3칸':'2칸'} 기준, 다른 곡이 함께 들어가면 더 작아질 수 있어요)`;
+  $('#crinfo').innerHTML=`칸 너비의 <b>${Math.round(dw/pw*100)}%</b> · 칸 높이의 <b>${Math.round(dh/ph*100)}%</b> 차지`+(mt?` · 위 여백 <b>${+$('#crmt').value}mm</b>`:'')+(f<1?'<br>칸 높이를 넘어 자동으로 줄어든 크기입니다.':'')+`<br>(${p.paper} · ${p.mode==='1up'?'1칸':p.mode==='3up'?'3칸':'2칸'} 기준, 다른 곡이 함께 들어가면 더 작아질 수 있어요)`;
 }
 function crUpd(){
   let t=+$('#crtop').value,b=+$('#crbot').value;if(b-t<5){if(document.activeElement===$('#crtop'))t=b-5;else b=t+5;$('#crtop').value=t;$('#crbot').value=b}
@@ -460,12 +464,15 @@ function crUpd(){
   let l=+$('#crlef').value,rr=+$('#crrig').value;if(rr-l<5){if(document.activeElement===$('#crlef'))l=rr-5;else rr=l+5;$('#crlef').value=l;$('#crrig').value=rr}
   $('#crsh3').style.width=l+'%';$('#crsh4').style.width=(100-rr)+'%';$('#crln3').style.left=l+'%';$('#crln4').style.left=rr+'%';
   $('#crscv').textContent=$('#crsc').value+'%';
+  $('#crmtv').textContent=$('#crmt').value+'mm';$('#crmx').disabled=+$('#crsc').value>=100;
+  const mx=+$('#crmx').value;$('#crmxv').textContent=$('#crmx').disabled?'(크기를 100% 보다 작게 하면 움직여요)':mx===0?'가운데':mx<0?`왼쪽 ${-mx}%`:`오른쪽 ${mx}%`;
   $('#crlv').textContent=l+'%';$('#crrv').textContent=rr+'%';
   crPrev();
 }
-$('#crtop').oninput=crUpd;$('#crbot').oninput=crUpd;$('#crlef').oninput=crUpd;$('#crrig').oninput=crUpd;$('#crsc').oninput=crUpd;
-$('#crok').onclick=()=>{const t=+$('#crtop').value/100,b=+$('#crbot').value/100,l=+$('#crlef').value/100,rr=+$('#crrig').value/100,sc=+$('#crsc').value;CR.crop=(t===0&&b===1&&l===0&&rr===1&&sc===100)?null:{top:t,bottom:b,left:l,right:rr,scale:sc};$('#crdlg').close();renderPSongs();refreshPreview();saveSoon()};
-$('#crreset').onclick=()=>{CR.crop=null;$('#crdlg').close();renderPSongs();refreshPreview();saveSoon()};
+$('#crtop').oninput=crUpd;$('#crbot').oninput=crUpd;$('#crlef').oninput=crUpd;$('#crrig').oninput=crUpd;$('#crsc').oninput=crUpd;$('#crmt').oninput=crUpd;$('#crmx').oninput=crUpd;
+$('#crmreset').onclick=()=>{$('#crmt').value=0;$('#crmx').value=0;crUpd()};
+$('#crok').onclick=()=>{const mt=+$('#crmt').value,mxv=+$('#crmx').value;if(mt||mxv)CR.move={top:mt,x:mxv};else delete CR.move;const t=+$('#crtop').value/100,b=+$('#crbot').value/100,l=+$('#crlef').value/100,rr=+$('#crrig').value/100,sc=+$('#crsc').value;CR.crop=(t===0&&b===1&&l===0&&rr===1&&sc===100)?null:{top:t,bottom:b,left:l,right:rr,scale:sc};$('#crdlg').close();renderPSongs();refreshPreview();saveSoon()};
+$('#crreset').onclick=()=>{CR.crop=null;delete CR.move;$('#crdlg').close();renderPSongs();refreshPreview();saveSoon()};
 $('#crcancel').onclick=()=>$('#crdlg').close();
 
 /* --- 인쇄 / JPG --- */

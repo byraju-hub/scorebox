@@ -430,6 +430,40 @@ await test('예배 · 구분: (예배) (구분) 표기에 중복 없음, 머리�
   await ctx.close();
 });
 
+await test('악보 위치: 위 여백으로 같은 칸 안에서 내리고(칸이 모자라면 자동 축소), 가로 위치는 작게 했을 때만 움직임', async () => {
+  const { ctx, page, errors } = await setup({ 'G-a.png': { w: 600, h: 800 } });
+  const r = await page.evaluate(async () => {
+    const song = () => ({ title: 'a', canon: 'a', key: 'G', files: ['G-a.png'], file: 'G-a.png', print: true });
+    const c = { id: 'm', date: '2026-10-16', type: '금요기도회', service: '찬양', subtitle: '', theme: '', songs: [song()], notes: '' };
+    fsx.db.contis = [c]; const p = prefs();
+    const imgOf = lay => lay.pages[0].panels[0].items.find(i => i.kind === 'img');
+    const base = imgOf(await buildLayout(c, p));
+    c.songs[0].move = { top: 20, x: 0 }; const down = imgOf(await buildLayout(c, p));
+    c.songs[0].move = { top: 0, x: 100 }; const full = imgOf(await buildLayout(c, p));       // 크기 100% → 가로 이동 없음
+    c.songs[0].crop = { top: 0, bottom: 1, left: 0, right: 1, scale: 60 };
+    c.songs[0].move = { top: 0, x: 0 }; const mid = imgOf(await buildLayout(c, p));
+    c.songs[0].move = { top: 0, x: 100 }; const right = imgOf(await buildLayout(c, p));
+    c.songs[0].move = { top: 0, x: -100 }; const left = imgOf(await buildLayout(c, p));
+    c.songs[0].crop = null; c.songs[0].move = { top: 60, x: 0 };      // 칸이 모자라면 줄어듦
+    const tall = imgOf(await buildLayout(c, p));
+    // 자르기 창: 슬라이더 → 저장 / 초기화
+    openPrint(c); await new Promise(r => setTimeout(r, 400));
+    c.songs[0].move = null; delete c.songs[0].move;
+    await openCrop(c.songs[0]); $('#crmt').value = 15; $('#crmt').dispatchEvent(new Event('input'));
+    const disabled = $('#crmx').disabled; $('#crok').click();
+    const saved = JSON.stringify(c.songs[0].move);
+    await openCrop(c.songs[0]); const reopened = $('#crmt').value; $('#crmreset').click(); $('#crok').click();
+    return { base: [base.x, base.y, base.w, base.h], down: [down.x, down.y, down.w, down.h], fullX: full.x, mid: mid.x, right: right.x, left: left.x, midW: mid.w, tall: [tall.y, tall.w], disabled, saved, reopened, cleared: c.songs[0].move === undefined };
+  });
+  ok(Math.abs(r.down[1] - (r.base[1] + 20 * r.down[2] / r.base[2])) < 0.01 && r.down[1] > r.base[1] + 15, `위 여백 ${JSON.stringify(r)}`);   // 칸이 모자라면 여백도 같은 비율로 줄어듦
+  ok(r.fullX === r.base[0], `크기 100%에서 가로 이동됨 ${r.fullX}`);
+  ok(r.left < r.mid && r.mid < r.right, `가로 위치 ${r.left} ${r.mid} ${r.right}`);
+  ok(r.tall[1] < r.base[2], `칸이 모자라도 줄어들지 않음 ${r.tall}`);
+  ok(r.disabled === true && r.saved === '{"top":15,"x":0}' && r.reopened === '15' && r.cleared, `자르기 창 저장·초기화 ${JSON.stringify(r)}`);
+  ok(!errors.length, errors.join());
+  await ctx.close();
+});
+
 await test('콘티 휴지통: 삭제 → 휴지통 → 복원, 30일 지난 콘티는 자동 삭제', async () => {
   const { ctx, page, errors } = await setup({});
   const r = await page.evaluate(async () => {
