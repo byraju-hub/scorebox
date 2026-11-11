@@ -204,6 +204,9 @@
   <div class="fr"><label>왼쪽 <input type="range" id="crlef" min="0" max="95" value="0"> <span id="crlv"></span></label>
     <label>오른쪽 <input type="range" id="crrig" min="5" max="100" value="100"> <span id="crrv"></span></label></div>
   <div class="fr"><label>크기 <input type="range" id="crsc" min="30" max="150" step="5" value="100"> <span id="crscv"></span></label><small style="color:var(--mut)">100% = 칸 너비에 맞춤 · 작게는 가운데 정렬, 크게는 가운데 기준으로 좌우가 잘림</small></div>
+  <div class="fr"><label>위 여백 <input type="range" id="crmt" min="0" max="60" step="1" value="0"> <span id="crmtv"></span></label>
+    <label>가로 위치 <input type="range" id="crmx" min="-100" max="100" step="5" value="0"> <span id="crmxv"></span></label><button id="crmreset" type="button">위치 초기화</button></div>
+  <div class="fr"><small style="color:var(--mut)">같은 칸 안에서 악보의 위치만 바꿉니다. <b>위 여백</b>은 악보를 아래로 내리고(여백만큼 칸이 모자라면 악보가 자동으로 줄어듭니다), <b>가로 위치</b>는 크기를 줄였을 때 왼쪽·오른쪽으로 붙입니다.</small></div>
   <div class="fr"><button id="crok" class="p">적용</button><button id="crreset">전체 사용</button><button id="crcancel">취소</button></div>
   </div><div id="crright"><div style="font-size:12px;color:var(--mut);margin-bottom:4px">인쇄 미리보기 (칸 1개)</div><div id="crprev"></div><div id="crinfo"></div></div></div></dialog>
 <dialog id="fmtdlg"><div class="fr"><b style="flex:1">📝 예배 양식 정리 <small style="color:var(--mut);font-weight:400">예전 콘티를 (예배) (구분) 양식으로 바꿉니다</small></b><button id="fmtapply" class="p">선택한 콘티 바꾸기</button><button id="fmtclose">닫기</button></div>
